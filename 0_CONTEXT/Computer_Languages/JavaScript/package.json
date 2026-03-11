@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node active_inference.js",
-    "test": "node test_active_inference.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "demo": "node ant_colony_demo.js"
   },
   "keywords": [

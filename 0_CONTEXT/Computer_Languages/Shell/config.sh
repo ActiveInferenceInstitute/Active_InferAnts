@@ -62,10 +62,10 @@ validate_config() {
     return 0
 }
 
-# Validate configuration on load
+# Validate configuration on load (use return 1 so sourcing shell is not killed)
 if ! validate_config; then
     echo "Configuration validation failed!" >&2
-    exit 1
+    return 1
 fi
 
-echo "Configuration loaded and validated successfully"
+# Configuration loaded and validated successfully

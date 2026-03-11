@@ -123,20 +123,29 @@ show_statistics() {
     echo -e "  🚀 Run Scripts: $run_count"
     echo -e "  ⚙️ Executable Scripts: $exec_count"
 
-    # Language categories (counts match show_implementations categories)
-    local systems_langs=11   # Ada Assembly C Cpp Rust Zig Nim Crystal Odin V Swift
-    local functional_langs=7 # Haskell OCaml FSharp Clojure Elixir Erlang Racket
-    local scripting_langs=8  # Python JavaScript TypeScript Lua Perl Ruby PHP Shell
-    local scientific_langs=4 # Julia R Fortran MATLAB
-    local jvm_langs=3        # Java Kotlin Scala
-    local ml_langs=3         # Prolog SQL Jock
+    # Language categories (derived from show_implementations category lists)
+    local systems_langs
+    systems_langs=$(echo "Ada Assembly C CSharp Cpp Rust Zig Nim Crystal Odin V Swift Pascal" | wc -w | tr -d ' ')
+    local functional_langs
+    functional_langs=$(echo "Haskell OCaml FSharp Clojure Racket" | wc -w | tr -d ' ')
+    local concurrent_langs
+    concurrent_langs=$(echo "Golang Erlang Elixir" | wc -w | tr -d ' ')
+    local scripting_langs
+    scripting_langs=$(echo "Python JavaScript TypeScript Lua Perl Ruby PHP Shell" | wc -w | tr -d ' ')
+    local scientific_langs
+    scientific_langs=$(echo "Julia R Fortran MATLAB" | wc -w | tr -d ' ')
+    local jvm_langs
+    jvm_langs=$(echo "Java Kotlin Scala" | wc -w | tr -d ' ')
+    local logic_langs
+    logic_langs=$(echo "Prolog SQL Jock" | wc -w | tr -d ' ')
 
     echo -e "  🏗️ Systems Languages: $systems_langs"
     echo -e "  λ Functional Languages: $functional_langs"
+    echo -e "  ⚡ Concurrent Languages: $concurrent_langs"
     echo -e "  📜 Scripting Languages: $scripting_langs"
     echo -e "  🔬 Scientific Languages: $scientific_langs"
     echo -e "  ☕ JVM Languages: $jvm_langs"
-    echo -e "  🧠 Logic Languages: $ml_langs"
+    echo -e "  🧠 Logic Languages: $logic_langs"
 
     echo ""
 }
@@ -148,7 +157,7 @@ show_implementations() {
 
     # Define language categories - map display names to actual directory names
     declare -A categories=(
-        ["Systems"]="Ada:Ada Assembly:Assembly C:C Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V Swift:Swift Pascal:Pascal"
+        ["Systems"]="Ada:Ada Assembly:Assembly C:C CSharp:CSharp Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V Swift:Swift Pascal:Pascal"
         ["Functional"]="Haskell:Haskell OCaml:OCaml FSharp:FSharp Clojure:Clojure Racket:Racket"
         ["Scripting"]="Python:Python JavaScript:JavaScript TypeScript:TypeScript Lua:Lua Perl:Perl Ruby:Ruby PHP:PHP Shell:Shell"
         ["Scientific"]="Julia:Julia R:R Fortran:Fortran MATLAB:MATLAB"

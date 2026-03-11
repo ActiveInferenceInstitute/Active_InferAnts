@@ -18,10 +18,10 @@ echo "✅ Python found: $(python3 --version)"
 
 # Install dependencies
 echo "📦 Installing Python dependencies..."
-pip3 install numpy scipy matplotlib seaborn pandas || {
+if ! pip3 install -r requirements.txt; then
     echo "⚠️ Warning: Could not install packages globally, trying user install..."
-    pip3 install --user numpy scipy matplotlib seaborn pandas
-}
+    pip3 install --user -r requirements.txt
+fi
 
 # Run the main implementation
 echo "🚀 Running Python active inference simulation..."

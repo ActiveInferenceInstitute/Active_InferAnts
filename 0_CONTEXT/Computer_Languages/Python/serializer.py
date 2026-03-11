@@ -73,7 +73,7 @@ class Serializer:
         else:
             raise ValueError(f"Unsupported serialization format: {self.format}")
 
-    def deserialize(self, data: Union[str, bytes], agent_class=None):
+    def deserialize(self, data: Union[str, bytes], agent_class=None) -> Union[Dict[str, Any], Any]:
         """Deserialize agent state"""
         if isinstance(data, str):
             # JSON format

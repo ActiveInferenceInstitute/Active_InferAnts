@@ -469,7 +469,10 @@ class ActiveInferenceTestSuite:
 
 def main():
     parser = argparse.ArgumentParser(description='Active Inference Test Suite')
-    parser.add_argument('--project-root', default='.',
+    # Default project root is two levels up from this file's location
+    # (this script lives at <repo>/0_CONTEXT/Computer_Languages/test_suite.py)
+    _default_project_root = str(Path(__file__).resolve().parent.parent.parent)
+    parser.add_argument('--project-root', default=_default_project_root,
                        help='Path to project root directory')
     parser.add_argument('--output', '-o',
                        help='Output filename for test report')

@@ -23,6 +23,7 @@ LANGUAGES=(
     "Assembly:Assembly"
     "Brainfuck:Brainfuck"
     "C:C"
+    "CSharp:CSharp"
     "Clojure:Clojure"
     "Cpp:Cpp"
     "Crystal:Crystal"
@@ -184,6 +185,7 @@ echo ""
 # Track success/failure
 SUCCESS_COUNT=0
 FAILURE_COUNT=0
+TOTAL_RUN=0
 
 # Run specific language or all languages
 if [ -n "$SPECIFIC_LANG" ]; then
@@ -218,7 +220,6 @@ else
 
         # Run in parallel using background processes
         pids=()
-        results=()
 
         for lang_info in "${LANGUAGES[@]}"; do
             run_language "$lang_info" &
@@ -226,12 +227,10 @@ else
         done
 
         # Wait for all processes to complete
-        for i in "${!pids[@]}"; do
-            if wait "${pids[$i]}"; then
-                results[$i]="success"
+        for pid in "${pids[@]}"; do
+            if wait "$pid"; then
                 ((SUCCESS_COUNT++))
             else
-                results[$i]="failure"
                 ((FAILURE_COUNT++))
             fi
         done
@@ -247,10 +246,10 @@ if [ $FAILURE_COUNT -gt 0 ]; then
     echo -e "${RED}❌ Failed implementations: $FAILURE_COUNT${NC}"
 fi
 
-TOTAL_IMPLEMENTATIONS=${#LANGUAGES[@]}
-echo -e "${BLUE}📈 Total implementations: $TOTAL_IMPLEMENTATIONS${NC}"
+TOTAL_RUN=$((SUCCESS_COUNT + FAILURE_COUNT))
+echo -e "${BLUE}📈 Total implementations run: $TOTAL_RUN of ${#LANGUAGES[@]}${NC}"
 
-if [ $SUCCESS_COUNT -eq $TOTAL_IMPLEMENTATIONS ]; then
+if [ $FAILURE_COUNT -eq 0 ] && [ $TOTAL_RUN -gt 0 ]; then
     echo ""
     echo -e "${GREEN}🎉 All implementations completed successfully!${NC}"
     echo -e "${GREEN}🧠 Active Inference is truly multi-lingual!${NC}"

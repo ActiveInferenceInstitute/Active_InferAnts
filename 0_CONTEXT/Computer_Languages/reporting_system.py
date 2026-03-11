@@ -13,7 +13,7 @@ import subprocess
 import time
 import psutil
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Tuple, Optional, Any, Union
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -23,9 +23,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# Set style for better plots
-plt.style.use('seaborn-v0_8-darkgrid')
-sns.set_palette("husl")
+def _configure_plot_style() -> None:
+    """Configure matplotlib and seaborn global style — called at entry point, not import time."""
+    plt.style.use('seaborn-v0_8-darkgrid')
+    sns.set_palette("husl")
+
 
 class LanguageImplementation:
     """Represents a single language implementation."""
@@ -83,7 +85,7 @@ class LanguageImplementation:
 class ActiveInferenceAnalyzer:
     """Comprehensive analyzer for all implementations."""
 
-    def __init__(self, root_directory: str = "."):
+    def __init__(self, root_directory: Union[str, Path] = "."):
         self.root_directory = Path(root_directory)
         self.implementations = self._discover_implementations()
         self.results = {}
@@ -275,6 +277,7 @@ class ActiveInferenceAnalyzer:
 
 def main():
     """Main function."""
+    _configure_plot_style()
     print("🧠 Active Inference Multi-Language Analysis System")
     print("=" * 60)
 

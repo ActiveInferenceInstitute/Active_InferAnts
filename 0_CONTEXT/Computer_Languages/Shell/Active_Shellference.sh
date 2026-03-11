@@ -38,7 +38,13 @@ calculate_kl_divergence() {
     for i in "${!beliefs_ref[@]}"; do
         local belief=${beliefs_ref[$i]}
         local preference=${preferences_ref[$i]}
-        kl_divergence=$(echo "scale=$precision; $kl_divergence + $belief * (l($belief) - l($preference))" | bc -l)
+        local term
+        term=$(echo "scale=$precision; $kl_divergence + $belief * (l($belief) - l($preference))" | bc -l)
+        if [ -z "$term" ]; then
+            echo "ERROR: KL divergence computation failed at index $i" >&2
+            return 1
+        fi
+        kl_divergence=$term
     done
 
     echo "$kl_divergence"
@@ -57,9 +63,21 @@ calculate_efe() {
         local expected_surprise=0
         for j in "${!beliefs_ref[@]}"; do
             local idx=$((i * env_size + j))
-            expected_surprise=$(echo "scale=$precision; $expected_surprise + ${transition_probs_ref[$idx]} * (${preferences_ref[$j]} - l(${beliefs_ref[$i]}))" | bc -l)
+            local term
+            term=$(echo "scale=$precision; $expected_surprise + ${transition_probs_ref[$idx]} * (${preferences_ref[$j]} - l(${beliefs_ref[$i]}))" | bc -l)
+            if [ -z "$term" ]; then
+                echo "ERROR: EFE inner computation failed at [$i,$j]" >&2
+                return 1
+            fi
+            expected_surprise=$term
         done
-        efe=$(echo "scale=$precision; $efe + ${beliefs_ref[$i]} * $expected_surprise" | bc -l)
+        local efe_term
+        efe_term=$(echo "scale=$precision; $efe + ${beliefs_ref[$i]} * $expected_surprise" | bc -l)
+        if [ -z "$efe_term" ]; then
+            echo "ERROR: EFE outer computation failed at state $i" >&2
+            return 1
+        fi
+        efe=$efe_term
     done
 
     echo "$efe"
@@ -100,7 +118,7 @@ select_action() {
     local -n preferences_ref=$2
     local -n transition_probs_ref=$3
     local -n environment_ref=$4
-    local min_efe=1000000
+    local min_efe=1000000  # Sentinel: larger than any realistic EFE for this simulation
     local selected_action=""
     local env_size=${#beliefs_ref[@]}
     local action_idx=0
@@ -156,8 +174,6 @@ run_simulation() {
         selected_action=$(select_action beliefs preferences transition_probs environment)
         echo "Selected Action: $selected_action"
 
-        # TODO: Implement action effects on environment
-
         echo "--------------------------------------"
     done
 
@@ -166,5 +182,3 @@ run_simulation() {
 
 # Execute the simulation
 run_simulation
-
-# TODO: Add error handling, logging, and command-line argument parsing for more robustness

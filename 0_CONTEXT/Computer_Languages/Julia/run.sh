@@ -27,11 +27,11 @@ if [ -f "RxInfer_Agent_Model.jl" ]; then
 fi
 
 # Run Mountain Car integration if available
-if [ -d "SideCar" ]; then
+if [ -d "SideCar/MC_AI" ]; then
     echo "🏔️ Running Mountain Car reinforcement learning..."
-    cd SideCar/MC_AI
-    julia run.jl
-    cd ../..
+    if ! (cd SideCar/MC_AI && julia run.jl); then
+        echo "⚠️ Warning: Mountain Car simulation failed or not available"
+    fi
 fi
 
 echo ""

@@ -14,7 +14,7 @@ if ! command -v g++ &> /dev/null; then
     exit 1
 fi
 
-echo "✅ G++ found: $(g++) --version | head -1)"
+echo "✅ G++ found: $(g++ --version | head -1)"
 
 # Check if CMake is installed
 if ! command -v cmake &> /dev/null; then
@@ -37,29 +37,19 @@ cmake ..
 echo "🔨 Building C++ implementation..."
 make
 
-if [ $? -eq 0 ]; then
-    # Run the simulation
-    echo "🚀 Running C++ active inference simulation..."
-    ./ActiveInferenceDemo
+# Run the simulation (set -e handles build failures above)
+echo "🚀 Running C++ active inference simulation..."
+./ActiveInferenceDemo
 
-    if [ $? -eq 0 ]; then
-        echo ""
-        echo "✅ C++ simulation completed successfully!"
+echo ""
+echo "✅ C++ simulation completed successfully!"
 
-        # Show performance info if requested
-        if [ "$1" = "--bench" ]; then
-            echo "📊 Performance metrics:"
-            echo "   - Built with optimization flags"
-            echo "   - Uses Eigen library for matrix operations"
-            echo "   - Multi-threaded ant colony simulation"
-        fi
-    else
-        echo "❌ C++ execution failed."
-        exit 1
-    fi
-else
-    echo "❌ C++ build failed."
-    exit 1
+# Show performance info if requested
+if [ "$1" = "--bench" ]; then
+    echo "📊 Performance metrics:"
+    echo "   - Built with optimization flags"
+    echo "   - Uses Eigen library for matrix operations"
+    echo "   - Multi-threaded ant colony simulation"
 fi
 
 cd ..

@@ -53,7 +53,7 @@ class BenchmarkConfig:
     description: str
     iterations: int = 5
     timeout: int = 120
-    parameters: Dict[str, Any] = None
+    parameters: Optional[Dict[str, Any]] = None
 
     def __post_init__(self):
         if self.parameters is None:

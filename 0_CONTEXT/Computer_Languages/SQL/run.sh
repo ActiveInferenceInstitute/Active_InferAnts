@@ -64,7 +64,9 @@ case $DB_SYSTEM in
         sqlite3 active_inference.db < SQL.sql
         echo "🚀 Running SQLite active inference simulation..."
         sqlite3 active_inference.db "SELECT 'Running SQL Active Inference Simulation...';"
-        sqlite3 active_inference.db "CALL run_simulation();" 2>/dev/null || echo "Note: SQLite stored procedures have limited support"
+        # SQLite does not support stored procedures — run the simulation via a direct SELECT
+        sqlite3 active_inference.db "SELECT belief_state, free_energy FROM belief_states ORDER BY time_step LIMIT 10;" 2>/dev/null || \
+            echo "Note: SQLite simulation query returned no results — check SQL.sql schema"
         ;;
 esac
 

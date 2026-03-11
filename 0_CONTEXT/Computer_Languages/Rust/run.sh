@@ -25,12 +25,6 @@ fi
 # Create output directory
 mkdir -p output
 
-# Install dependencies if needed
-echo "📦 Installing dependencies..."
-if ! cargo add ndarray thiserror serde serde_json rand ndarray-rand > /dev/null 2>&1; then
-    echo "⚠️  Dependencies might already be installed or installation failed"
-fi
-
 # Build the implementation
 echo "🔨 Building Rust implementation..."
 cargo build --release
