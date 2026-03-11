@@ -1,21 +1,68 @@
-# Active Inference Implementation in Assembly
+# Active Inference Implementation in x86-64 Assembly
 
-Low-level assembly implementation of active inference demonstrating direct hardware control and optimization.
+This directory contains an x86-64 Assembly implementation demonstrating Active Inference at the machine-code level with SSE floating-point operations.
+
+## Overview
+
+The x86-64 Assembly implementation provides:
+- Core Active Inference generative model (A, B, C, D matrices)
+- Bayesian belief updating via observation likelihood
+- Free energy calculation and policy selection
+- Simulation loop with configurable parameters
+
+## Core Components
+
+- **`active_inference.asm`**: Main Active Inference agent implementation
+- **`run.sh`**: Build and execution script
+
+## Key Features
+
+- **SSE/SSE2 floating-point matrix operations**
+- **Direct register-level belief manipulation**
+- **Minimal runtime overhead — pure machine code**
 
 ## Architecture
-- Direct memory management
-- Optimized floating-point operations
-- Minimal resource usage
-- Hardware-specific optimizations
 
-## Building
+### Generative Model
+
+The implementation defines the standard Active Inference generative model:
+
+- **A matrix** (Likelihood): Maps hidden states to observations — P(o|s)
+- **B matrix** (Transition): State transition probabilities given actions — P(s'|s,a)
+- **C vector** (Preferences): Observation preferences driving goal-directed behavior
+- **D vector** (Prior): Prior beliefs over initial hidden states
+
+### Inference Loop
+
+1. **Observe**: Receive observation from environment
+2. **Update beliefs**: Bayesian posterior = likelihood × prior, normalized
+3. **Evaluate policies**: Calculate expected free energy for each action
+4. **Select action**: Choose policy minimizing expected free energy
+5. **Transition**: Environment updates state based on action
+
+## Dependencies
+
+- NASM assembler, x86-64 Linux
+
+## Building and Running
+
 ```bash
-nasm -f elf64 active_inference.asm
-ld active_inference.o -o active_inference
+# Via run script
+./run.sh
+
+# Manual build
+nasm -f elf64 active_inference.asm -o active_inference.o && ld active_inference.o -o active_inference && ./active_inference
 ```
 
-## Features
-- Direct CPU register manipulation
-- Custom floating-point arithmetic
-- Memory-efficient belief representation
-- Hardware-accelerated computations
+## Configuration
+
+The implementation uses a standard 4-state, 3-observation, 2-action generative model:
+- **States**: 4 hidden states with uniform prior
+- **Observations**: 3 observation channels
+- **Actions**: 2 available actions
+
+## References
+
+1. **Friston, K. (2010)**: The free-energy principle: a unified brain theory?
+2. **Da Costa, L., et al. (2020)**: Active inference on discrete state-spaces
+3. **Parr, T., & Friston, K. (2019)**: Generalised free energy and active inference

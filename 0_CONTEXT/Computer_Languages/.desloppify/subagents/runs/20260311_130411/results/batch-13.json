@@ -1,0 +1,75 @@
+{
+  "batch": "cross_module_architecture",
+  "batch_index": 13,
+  "assessments": {"cross_module_architecture": 68.0},
+  "dimension_notes": {
+    "cross_module_architecture": {
+      "evidence": [
+        "Package size census: Shell/ accounts for 66.7% of tracked LOC and run_all.sh accounts for 33.3% — the mechanical scan covers only 5 files, indicating the scanner did not index the other 38+ files; actual cross-module analysis must come from code inspection",
+        "run_all.sh: LANGUAGES array hardcodes all 39 language directory names and delegates to each lang_dir/run.sh — this is a hub-and-spoke pattern where run_all.sh has a direct dependency on every language module's internal file structure (run.sh at root of lang_dir)",
+        "status_dashboard.sh: independently hardcodes the same set of language directories in a separate `categories` associative array (lines 150-158) — duplicating the registry that run_all.sh maintains; any new language must be added in two places",
+        "Shell/run.sh lines 22-38: conditionally creates a new config.sh file at runtime with different array format (bash arrays) than the existing config.sh which uses space-separated strings exported as scalars — the two config.sh versions are structurally incompatible",
+        "Shell/run.sh line 46: calls ./Active_Shellference.sh using a relative path, which requires the CWD to be Shell/ — run_all.sh correctly wraps this in `(cd \"$lang_dir\" && ./run.sh)` but the coupling to CWD is an implicit boundary contract",
+        "No shared library layer exists — each of the 39 language directories is fully self-contained with its own run.sh; there is no cross-language shared code or common interface definition",
+        "coupling.boundary_violations: empty in holistic context, meaning static analysis found no import-path violations (consistent with each language being an isolated directory with no cross-imports)",
+        "The codebase has no documented architecture contracts (no ARCHITECTURE.md or equivalent), making it impossible to verify drift from intent",
+        "Golang directory is named 'Golang' but status_dashboard.sh categories map 'Compiled' -> 'Golang:Golang', while run_all.sh maps 'Golang:Golang' — naming is consistent but the categorisation of Go as 'Compiled' while other compiled languages (C, Rust, Ada) are in 'Systems' is an unexplained boundary split"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium"
+    }
+  },
+  "dimension_judgment": {
+    "cross_module_architecture": {
+      "strengths": [
+        "Each language implementation is a fully isolated directory with no cross-language imports or shared mutable state — the boundary model is flat and avoids cycles by construction",
+        "run_all.sh correctly uses a subshell `(cd \"$lang_dir\" && ./run.sh)` to isolate CWD changes, preventing one language's run from polluting another's environment"
+      ],
+      "issue_character": "The primary architectural problem is a duplicated language registry: run_all.sh and status_dashboard.sh independently maintain lists of the same 39 languages, guaranteeing drift whenever a language is added or removed; additionally the Shell module has a config format boundary violation where run.sh can overwrite config.sh with an incompatible format.",
+      "score_rationale": "The flat, isolated-directory model is architecturally sound for a multi-language demo repo and avoids the worst coupling problems. However, the duplicated registry between run_all.sh and status_dashboard.sh is a genuine structural issue: it creates a hidden coordination requirement that will cause silent mismatches as the repo evolves. The config format collision in Shell/ adds a secondary boundary violation. These issues align with the 70 anchor (a developer encounters inconsistency that makes them unable to fully trust patterns they've seen) rather than 80 (solid but uneven), because the registry duplication is a systemic pattern that will compound with every new language."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "CMA-01",
+      "summary": "Language registry is duplicated between run_all.sh and status_dashboard.sh, requiring two-place updates for every language addition",
+      "related_files": ["run_all.sh", "status_dashboard.sh"],
+      "evidence": [
+        "run_all.sh lines 21-61: LANGUAGES array lists all 39 languages as 'Name:Dir' pairs",
+        "status_dashboard.sh lines 150-158: categories associative array lists the same languages grouped by category — a separate, independently maintained registry",
+        "Golang is omitted from run_all.sh's LANGUAGES array category groupings but present in status_dashboard.sh under 'Compiled'; any new language added to one file is silently absent from the other"
+      ],
+      "suggestion": "Extract the language registry to a single shared data file (e.g., languages.conf with one 'Name:Dir:Category' entry per line) that both run_all.sh and status_dashboard.sh source; this makes the registry a single source of truth and eliminates the coordination requirement",
+      "confidence": "high",
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "root_cause_cluster": "registry_duplication"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "CMA-02",
+      "summary": "Shell/run.sh can overwrite config.sh with an incompatible bash-array format, breaking Active_Shellference.sh which expects scalar exports",
+      "related_files": ["Shell/run.sh", "Shell/config.sh", "Shell/Active_Shellference.sh"],
+      "evidence": [
+        "Shell/run.sh lines 22-38: if config.sh does not exist, creates it with bash array syntax: CONFIG_ENVIRONMENT=(\"food\" \"danger\" \"safe\")",
+        "Shell/config.sh lines 9-18: the existing config.sh uses scalar exports: export CONFIG_ENVIRONMENT=\"ShellActiveInference_v1.0\" and export CONFIG_INITIAL_BELIEFS=\"0.25 0.25 0.25 0.25\"",
+        "Shell/Active_Shellference.sh line 29: reads CONFIG_ENVIRONMENT and CONFIG_INITIAL_BELIEFS as scalars via simulation[environment]=\"${CONFIG_ENVIRONMENT}\" — the array format generated by run.sh is structurally incompatible"
+      ],
+      "suggestion": "Remove the config.sh generation block from Shell/run.sh (lines 22-38); config.sh already exists and is the authoritative source. If a default config is needed for new environments, document the required scalar-export format in a comment and fail with a clear error if config.sh is missing rather than generating an incompatible replacement",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "shell_config_boundary"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "The language registry was added independently to each script that needed it rather than being extracted to a shared source, a classic copy-paste coordination debt",
+      "Shell/run.sh's config generation was likely added as a convenience for standalone use, without checking compatibility with the existing config.sh format"
+    ],
+    "likely_symptoms": ["CMA-01 will manifest as status_dashboard.sh showing 'Missing' for newly added languages that run_all.sh can run correctly"],
+    "possible_false_positives": ["The Go-as-'Compiled' vs Systems-language categorisation split may be intentional; it does not cause a runtime boundary violation"]
+  }
+}

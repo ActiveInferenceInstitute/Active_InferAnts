@@ -1,0 +1,114 @@
+{
+  "batch": "error_consistency",
+  "batch_index": 17,
+  "assessments": {"error_consistency": 32.0},
+  "dimension_notes": {
+    "error_consistency": {
+      "evidence": [
+        "Shell/Active_Shellference.sh: config.sh is sourced with error check (if ! source ...; then exit 1), but none of the bc/calculate_* functions check whether bc returns an error; a malformed expression silently produces empty output that propagates to subsequent calculations",
+        "Shell/run.sh: uses 'set -e' but then calls './Active_Shellference.sh' without any error capture; if the simulation fails, the only indication is the exit code — no message, no context",
+        "reporting_system.py: run_benchmark() catches TimeoutExpired and Exception separately and returns dicts {'error': 'Timeout'} or {'error': str(e)} — bare string errors, no wrapping of original exception context; callers must string-match 'Timeout' to distinguish",
+        "reporting_system.py: generate_comprehensive_report() and generate_summary_report() are both corrupted/empty, silently returning empty strings — callers get no error, just empty output",
+        "benchmark_suite.py: create_performance_plots() wraps the entire plotting block in 'except Exception as e: logger.error(...)' — all plot failures are swallowed and logged only; callers receive no indication that visualizations failed",
+        "benchmark_suite.py: create_radar_chart() and create_box_plot() also use broad 'except Exception as e: logger.warning(...)' — silent swallowing with only a warning log",
+        "benchmark_suite.py: parse_output_metrics() catches Exception broadly: 'except Exception as e: logger.warning(...)' — all parse failures return {} without caller awareness",
+        "benchmark_suite.py: measure_memory_usage() catches Exception: returns (0.0, 0.0) with only a logger.warning — callers cannot distinguish 'process produced no memory data' from 'monitoring crashed'",
+        "Python/config_manager.py (root): _install_python_deps() catches CalledProcessError and returns False — no message to caller about what failed; _install_java_deps() prints a message to stdout and returns False — inconsistent (some print, some only return False)",
+        "master_controller.py: run_implementations() calls _run_language() which calls subprocess.run(['./ run.sh']) with no error handling at all — failure is silent",
+        "master_controller.py: show_status() uses os.system() which ignores the return code — if status_dashboard.sh fails, the method succeeds silently",
+        "test_suite.py: _extract_python_metrics() and _extract_rust_metrics() use bare 'except: pass' — not even logging the exception",
+        "Shell/config.sh: validate_config() returns 1 on failure, and Active_Shellference.sh checks the return code — this is the one place where error strategy is consistent and explicit"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high"
+    }
+  },
+  "dimension_judgment": {
+    "error_consistency": {
+      "strengths": [
+        "Shell/config.sh validate_config() correctly uses return codes and the caller (Active_Shellference.sh) checks them — a coherent error boundary at config load time",
+        "Shell/run.sh uses 'set -e' and checks for required utilities before proceeding — defensive entry point",
+        "benchmark_suite.py uses Python's logging module consistently (logger.error, logger.warning) rather than bare print for infrastructure errors"
+      ],
+      "issue_character": "Error handling is structurally absent at I/O and subprocess boundaries: most subprocess calls ignore return codes, most exception handlers swallow errors into logs or bare False returns, and two public report-generation methods are effectively dead code returning empty strings with no error signal.",
+      "score_rationale": "The codebase mixes at least three strategies — return-bool, return-dict-with-error-key, raise-exception — without a consistent layer convention. The most critical I/O paths (subprocess execution in master_controller, plot generation in reporting) silently absorb failures. The few correct patterns (config.sh validation, set -e in run scripts) are isolated rather than systemic. This is below the midpoint: a developer debugging a failed benchmark run would find no actionable error context."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "error_consistency",
+      "identifier": "ec_os_system_ignored",
+      "summary": "master_controller.py show_status() uses os.system() and ignores its return code",
+      "related_files": ["master_controller.py"],
+      "evidence": ["Line 47: 'os.system(str(dashboard_script))' — non-zero exit code from status_dashboard.sh is discarded; method appears to succeed even when dashboard fails"],
+      "suggestion": "Replace with subprocess.run(..., check=True) or capture the return code and propagate an error to the caller",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "ec_subprocess_no_check",
+      "summary": "master_controller._run_language() calls subprocess.run without check=True or return-code inspection",
+      "related_files": ["master_controller.py"],
+      "evidence": ["Line 196: 'subprocess.run([\"./run.sh\"])' — no check=True, no returncode inspection; language failures are invisible to the caller"],
+      "suggestion": "Add check=True or inspect result.returncode and raise/return an error to enable callers to distinguish success from failure",
+      "confidence": "high",
+      "impact_scope": "subsystem",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "ec_plot_swallowed",
+      "summary": "benchmark_suite.py swallows all plot generation failures in broad except blocks",
+      "related_files": ["benchmark_suite.py"],
+      "evidence": ["create_performance_plots() line 415: 'except Exception as e: logger.error(f\"Failed to create performance plots: {e}\")'", "create_radar_chart() line 468, create_box_plot() line 511: same pattern — all failures produce only a log warning, no propagation"],
+      "suggestion": "Either propagate exceptions so callers know visualizations were not created, or return a bool/status so the orchestrator can include 'visualization failed' in the report",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "ec_bare_except_metrics",
+      "summary": "test_suite.py uses bare 'except: pass' in metric extraction, discarding all exception information",
+      "related_files": ["test_suite.py"],
+      "evidence": ["_extract_python_metrics() line 269: 'except: pass'", "_extract_rust_metrics() line 281: 'except: pass'", "Both return 0.0 on any failure with no log, making debugging impossible"],
+      "suggestion": "Replace with 'except (ValueError, IndexError) as e: logger.debug(...)' and return Optional[float] to let callers distinguish parse-failure from valid-zero",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "ec_install_inconsistency",
+      "summary": "config_manager.py installer methods mix print-to-stdout with silent return False across languages",
+      "related_files": ["config_manager.py"],
+      "evidence": ["_install_java_deps() prints '❌ Automatic Java installation not supported' then returns False", "_install_erlang_deps() returns False with no message on non-Linux", "_install_python_deps() only returns False on CalledProcessError with no message to caller"],
+      "suggestion": "Standardize all installers to return (bool, str) where the string is a diagnostic message, or raise a typed exception; eliminate inconsistent print-vs-silent distinction",
+      "confidence": "medium",
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "ec_bc_no_error_check",
+      "summary": "Shell/Active_Shellference.sh passes bc output directly to arithmetic without checking bc exit status",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": ["calculate_kl_divergence, calculate_vfe, calculate_efe all use 'echo ... | bc -l' and assign the result without checking $?", "If bc fails (e.g., log of zero), the variable gets an empty string and subsequent arithmetic silently produces incorrect results"],
+      "suggestion": "Capture bc output to a variable, check $? after the pipe, and emit an error message to stderr if bc fails",
+      "confidence": "medium",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "Code was written to satisfy a happy-path demo scenario; error paths were left as stubs (return False, bare except) without a project-wide policy on how errors cross layer boundaries",
+      "Python layer has no consistent error boundary convention — some functions return bool, some return dict-with-error-key, some raise, and some silently log"
+    ],
+    "likely_symptoms": ["ec_bare_except_metrics", "ec_os_system_ignored"],
+    "possible_false_positives": []
+  }
+}

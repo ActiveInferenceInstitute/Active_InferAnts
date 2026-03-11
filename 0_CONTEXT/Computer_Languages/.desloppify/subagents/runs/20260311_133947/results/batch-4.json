@@ -1,0 +1,122 @@
+{
+  "batch": "contract_coherence",
+  "batch_index": 4,
+  "assessments": {
+    "contract_coherence": 70.0
+  },
+  "dimension_notes": {
+    "contract_coherence": {
+      "evidence": [
+        "check_language_status() in status_dashboard.sh is named as a predicate/query but produces all output via printf side-effect and always exits 0 regardless of status found — callers cannot branch on its return code",
+        "run.sh generates a stub config.sh with validate_config() { return 0; } that silently replaces the real validation logic in config.sh — the two versions of validate_config carry incompatible contracts with no indication to callers",
+        "update_beliefs() in Active_Shellference.sh is named as a mutator but returns its result via stdout echo rather than modifying the nameref — the naming convention diverges from the actual calling convention used everywhere in run_simulation()",
+        "show_statistics() computes category counts from hard-coded echo strings (e.g. 'Ada Assembly C...') while show_implementations() computes the same categories from a live associative array — the two can silently diverge, violating the implied contract that statistics reflect actual implementation state",
+        "calculate_kl_divergence() and calculate_efe() consistently echo their result and return 1 on error — this pattern is coherent and honored by callers",
+        "run_language() in run_all.sh has a clear contract (returns 1 on failure) that callers correctly check with if/else"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "sub_axes": {
+        "abstraction_leverage": 65.0,
+        "indirection_cost": 72.0,
+        "interface_honesty": 68.0,
+        "delegation_density": 75.0,
+        "definition_directness": 70.0,
+        "type_discipline": 68.0
+      }
+    }
+  },
+  "dimension_judgment": {
+    "contract_coherence": {
+      "strengths": [
+        "calculate_kl_divergence() and calculate_efe() consistently use stdout-echo for return values and return 1 on error — callers capture stdout and check $? correctly, forming a coherent echo-based return contract",
+        "run_language() in run_all.sh clearly signals failure via return 1 and callers uniformly check this with if/else branches — the contract is stated and honored",
+        "validate_config() in config.sh documents its preconditions (probabilities must sum to 1, ranges must be valid) and the sourcing guard at the bottom ensures it always runs on load",
+        "Function names in Active_Shellference.sh (calculate_kl_divergence, calculate_efe, select_action) accurately predict behavior and match their implementations"
+      ],
+      "issue_character": "The issues are a mix of naming/side-effect contract violations (check_language_status acts as a printer not a predicate), silent data divergence (statistics duplicated from live state with no coupling), and a silent contract override (validate_config stub in run.sh suppresses real validation) — each is local but the pattern reflects insufficient attention to what a function's name promises versus what it delivers.",
+      "score_rationale": "The codebase has a coherent internal convention for echo-based return values that is applied consistently in the computation functions. However, check_language_status() violates its own name by only side-effecting and never returning a checkable status, and the run.sh stub validate_config that silently no-ops the real validation contract is a meaningful hidden surprise. The show_statistics/show_implementations duplication without coupling is a latent silent-divergence risk. These are not isolated style issues — they represent real mismatches between what callers can expect from a name and what they get, placing this in the 70 range (mixed: a developer would encounter enough inconsistency that they cannot fully trust patterns)."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "contract_coherence",
+      "identifier": "check_language_status_not_a_predicate",
+      "summary": "check_language_status() always returns 0 and outputs via printf — its name implies a checkable predicate",
+      "related_files": ["status_dashboard.sh"],
+      "evidence": [
+        "Function is named check_language_status and called from show_implementations() — neither caller nor any other code tests its exit code",
+        "All status logic (Missing, No Docs, No Run, Complete, etc.) is encoded in a local $status string passed to printf — the function never returns a non-zero code to reflect a bad status",
+        "A caller wanting to count failed languages cannot use this function's return value"
+      ],
+      "suggestion": "Either rename to print_language_status to match its side-effecting nature, or add a numeric return code (e.g., return 0 for complete, 1 for warning, 2 for missing) so callers can branch on the result — the show_recommendations function could then reuse it instead of running its own separate find loops",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "name_behavior_mismatch"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "run_sh_stubs_validate_config",
+      "summary": "run.sh generates a config.sh with a no-op validate_config() that silently overrides the real validation contract",
+      "related_files": ["Shell/run.sh", "Shell/config.sh"],
+      "evidence": [
+        "Shell/run.sh lines 24-38: if config.sh does not exist, generates a replacement containing validate_config() { return 0; } — a stub that never fails",
+        "Shell/config.sh lines 29-63: the real validate_config checks that beliefs sum to 1.0, preferences sum to 1.0, time steps in [1,1000], and precision in [1,10000]",
+        "Active_Shellference.sh sources config.sh via SCRIPT_DIR — whichever config.sh is present is sourced, with no indication to the user that the generated version bypasses all constraints",
+        "The generated CONFIG_PREFERENCES='1.0 0.0 0.5' would pass the stub validator even though 1.0+0.0+0.5=1.5 which the real validator would reject"
+      ],
+      "suggestion": "Remove the validate_config stub from the generated config in run.sh and instead source the real config.sh's validation after writing the file, or include the full validation logic in the generated template so both paths enforce the same contract",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "silent_contract_override"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "show_statistics_duplicates_categories",
+      "summary": "show_statistics() computes category member counts from hard-coded strings that can silently diverge from show_implementations()'s live associative array",
+      "related_files": ["status_dashboard.sh"],
+      "evidence": [
+        "Lines 128-140: systems_langs, functional_langs, etc. are computed by echo-ing literal lists through wc -w — the source of truth is a string literal in show_statistics()",
+        "Lines 159-168: show_implementations() defines the same categories in a declare -A categories associative array",
+        "Both are defined independently with no shared source — adding Erlang to Concurrent in one does not update the other; the statistics panel would show the wrong count",
+        "show_statistics() omits Erlang and Elixir from its 'Concurrent' count string but show_implementations does include them — already diverged"
+      ],
+      "suggestion": "Drive show_statistics() from the same categories associative array used by show_implementations() — either extract the array to a shared location or have show_statistics call a helper that iterates the canonical categories array to compute counts",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "silent_contract_override"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "update_beliefs_mutator_name_stdout_return",
+      "summary": "update_beliefs() is named as a mutator but communicates its result via stdout echo, not by modifying its nameref argument",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "Function signature: update_beliefs() takes beliefs_ref, preferences_ref, transition_probs_ref as namerefs — conventionally suggests in-place mutation",
+        "Line 112: function ends with echo \"${updated_beliefs[*]}\" — the caller must capture stdout via command substitution",
+        "run_simulation() line 164: updated_beliefs=$(update_beliefs beliefs preferences transition_probs) — caller correctly captures stdout but the name implies in-place update",
+        "calculate_kl_divergence and calculate_efe use the same stdout-echo pattern and are named as calculators (no mutation implied) — consistent; update_beliefs is the outlier"
+      ],
+      "suggestion": "Rename to compute_updated_beliefs or calculate_updated_beliefs to align the name with its stdout-return convention — this makes the calling pattern self-consistent with the other calculate_* functions",
+      "confidence": "medium",
+      "impact_scope": "local",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "name_behavior_mismatch"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "Bash's lack of true return values forces an echo-based convention that works for calculators but creates naming confusion for functions whose names imply mutation or status-checking",
+      "The run.sh config generation pattern was added as a convenience fallback without ensuring the generated artifact honors the same validation contract as the canonical config.sh"
+    ],
+    "likely_symptoms": [
+      "check_language_status_not_a_predicate",
+      "update_beliefs_mutator_name_stdout_return"
+    ],
+    "possible_false_positives": []
+  }
+}

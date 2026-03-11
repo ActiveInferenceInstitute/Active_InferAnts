@@ -1,0 +1,88 @@
+{
+  "batch": "convention_outlier",
+  "batch_index": 9,
+  "assessments": {"convention_outlier": 72.0},
+  "dimension_notes": {
+    "convention_outlier": {
+      "evidence": [
+        "Most run.sh scripts follow a minimal pattern: check tool, (optional build), run main file, echo success. Rust/run.sh and Cpp/run.sh deviate significantly with nested if/else blocks, optional --test/--docs/--bench flags, and output directory creation — creating style islands within the runner family",
+        "Brainfuck/run.sh and Jock/run.sh are structural outliers: Brainfuck/run.sh checks Python packages and conditionally runs additional analysis scripts; Jock/run.sh does not run any code at all and instead prints documentation — breaking the implicit 'run.sh runs the simulation' contract of all sibling scripts",
+        "SQL/run.sh uses a multi-case DB detection pattern unlike any other run.sh in the collection — necessary for its use case but a notable structural divergence",
+        "Python/run.sh contains inline Python code via python3 -c '...' that instantiates a class and generates visualizations — a pattern not used in any other language runner",
+        "Shell/run.sh creates config.sh via heredoc if absent — a config generation pattern not used by any other language runner",
+        "status_dashboard.sh declares 'Compiled' as a category containing only Golang and 'Esoteric' containing only Brainfuck, while run_all.sh has no such categories — the category taxonomy exists in only one of the two top-level orchestration files",
+        "Naming: status_dashboard.sh uses show_header(), show_system_info(), show_statistics(), show_implementations(), show_recent_activity(), show_recommendations() — consistent show_ prefix convention. run_all.sh uses run_language(), show_usage(), list_languages() — mixed verb prefix convention across sibling orchestrators"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high"
+    }
+  },
+  "dimension_judgment": {
+    "convention_outlier": {
+      "strengths": [
+        "All language runners share the same file name (run.sh) and location pattern, making discovery consistent",
+        "All runners use set -e and the same 'command -v <tool>' guard-clause idiom",
+        "All runners use the same emoji-prefixed echo style for status messages",
+        "The majority of runners (Ada, Erlang, Elixir, Haskell, Golang, Java, JavaScript, TypeScript) follow a compact 3-phase pattern: check, build, run"
+      ],
+      "issue_character": "Convention drift is concentrated in a handful of outlier scripts (Rust, Cpp, Brainfuck, Jock, Python) that add significant structural complexity relative to their siblings, and in the two top-level orchestrators which apply different naming conventions to their functions.",
+      "score_rationale": "The shared file naming, set -e usage, guard-clause idiom, and echo style represent a strong base convention. However, Jock/run.sh breaks the 'run.sh actually runs something' contract held by all 38 other siblings, and Rust/run.sh and Cpp/run.sh introduce nested error-handling structures absent elsewhere. These are not minor style variations — Jock's deviation means a developer running './run.sh' in every language directory will get a documentation printout instead of a simulation for Jock, while the nested if-blocks in Rust and Cpp create a false impression that other runners also handle partial failures. This mixed picture warrants a score in the 70–75 range: mostly consistent with notable outliers that a developer would notice."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "convention_outlier",
+      "identifier": "co_jock_run_sh_does_not_run",
+      "summary": "Jock/run.sh prints documentation instead of running simulation code, breaking the universal 'run.sh executes the implementation' contract of all 38 sibling scripts",
+      "related_files": ["Jock/run.sh"],
+      "evidence": [
+        "Lines 25-48: the script prints instructions and documentation strings, never executing any simulation",
+        "All other run.sh scripts (Ada, Erlang, Elixir, Haskell, Golang, Java, JavaScript, C, Cpp, Rust, Python, etc.) execute the actual language implementation"
+      ],
+      "suggestion": "Either implement a runnable Jock simulation stub that exits with an informative message about Urbit requirements, or rename the file to README_run_instructions.sh and create a proper run.sh that attempts execution and exits with a clear 'Jock requires Urbit' error message.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "runner_contract_violation"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "co_category_taxonomy_in_one_file_only",
+      "summary": "Language category groupings (Systems, Functional, Scripting, etc.) exist only in status_dashboard.sh — run_all.sh uses a flat uncategorized list, creating divergent mental models",
+      "related_files": ["status_dashboard.sh", "run_all.sh"],
+      "evidence": [
+        "status_dashboard.sh lines 150-158: declare -A categories with Systems, Functional, Scripting, Scientific, JVM, Logic, Esoteric, Compiled groupings",
+        "run_all.sh lines 21-61: flat LANGUAGES array with no categorization",
+        "status_dashboard.sh hard-codes numeric category counts (line 127-132) that are not derived from the categories array"
+      ],
+      "suggestion": "Extract the categories associative array into a shared data file (e.g. Shell/language_registry.sh) and source it from both run_all.sh and status_dashboard.sh. Compute numeric counts from the data rather than hard-coding them.",
+      "confidence": "medium",
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "root_cause_cluster": "split_data_model"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "co_orchestrator_naming_convention_drift",
+      "summary": "status_dashboard.sh uses a consistent show_ verb prefix for all functions; run_all.sh uses mixed verbs (run_, show_, list_) with no consistent convention",
+      "related_files": ["run_all.sh", "status_dashboard.sh"],
+      "evidence": [
+        "status_dashboard.sh: show_header(), show_system_info(), show_statistics(), show_implementations(), show_recent_activity(), show_recommendations() — all show_",
+        "run_all.sh: run_language(), show_usage(), list_languages() — three different verb prefixes across three sibling functions in the same file"
+      ],
+      "suggestion": "Standardize run_all.sh function names to use consistent prefixes matching their roles: run_language() is fine, rename show_usage() to print_usage() and list_languages() to print_language_list() for consistency with the action-oriented naming.",
+      "confidence": "medium",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "The runner scripts were likely added incrementally as languages were added to the collection; early entries established a minimal pattern that later, more complex languages (Rust, Cpp) extended without refactoring siblings to match",
+      "The Jock implementation is inherently documentation-only (it requires an Urbit ship) but was placed in a run.sh file that developers would assume follows the execution contract"
+    ],
+    "likely_symptoms": ["co_category_taxonomy_in_one_file_only"],
+    "possible_false_positives": []
+  }
+}

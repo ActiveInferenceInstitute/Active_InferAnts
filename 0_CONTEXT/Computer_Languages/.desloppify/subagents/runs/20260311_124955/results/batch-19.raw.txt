@@ -1,0 +1,110 @@
+{
+  "batch": "api_surface_coherence",
+  "batch_index": 19,
+  "assessments": {"api_surface_coherence": 61.0},
+  "dimension_notes": {
+    "api_surface_coherence": {
+      "evidence": [
+        "Python StudentTeacherPOMDP.get_action(policy) takes a 'policy' parameter but uses np.argmax(policy) — the parameter name is 'policy' but the method selects the action with highest policy value; this is asymmetric with calculate_free_energy(policy) which uses policy as an integer index into B matrix slices",
+        "Python StudentTeacherPOMDP.calculate_free_energy(policy) uses 'policy' as an integer (np.dot(self.B[:, :, policy], self.d)) while get_action(policy) treats 'policy' as an array (np.argmax(policy)) — same parameter name, incompatible expected types across sibling methods",
+        "Python StudentTeacherPOMDP.infer_policy(policies) returns a probability array (softmax), while calculate_free_energy returns a scalar, and get_action returns a scalar — the return shapes are asymmetric and callers must know which returns what",
+        "Shell/Active_Shellference.sh: select_action takes 4 name-ref parameters (beliefs, preferences, transition_probs, environment) but internally calls calculate_efe with only 3 (beliefs, preferences, transition_probs) — the environment parameter is received but never used to differentiate actions, making the parameter list dishonest",
+        "TypeScript ActiveInferenceAgent class: all public methods (updateBeliefs, selectAction, getFreeEnergy, step) return typed values with error types — consistent API shape",
+        "JavaScript ActiveInferenceAgent constructor uses optional config={} with defaults scattered inline, while TypeScript version requires a mandatory AgentConfig — inconsistent initialization contract across sibling implementations",
+        "Python config_manager.py ConfigManager.export_config(format='json') and import_config(config_str, format='json') have format as first/second positional parameter respectively — the format parameter appears in different positions and with different defaults across the two paired methods",
+        "Shell/Active_Shellference.sh: all compute functions (calculate_kl_divergence, calculate_vfe, calculate_efe, update_beliefs, select_action) communicate results via echo to stdout rather than return values — this is consistent within Shell but creates no error contract (failures silently produce empty strings)",
+        "TypeScript/src/types.ts defines BeliefUpdateFunction, PolicySelectionFunction, FreeEnergyCalculationFunction, ActionExecutionFunction as exported type aliases but they are not used anywhere in ActiveInferenceAgent.ts — the declared API surface contains dead type exports"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium"
+    }
+  },
+  "dimension_judgment": {
+    "api_surface_coherence": {
+      "strengths": [
+        "TypeScript implementation has strongly typed, consistent method signatures with explicit error types",
+        "Rust implementation uses Result<T, AgentError> consistently across all fallible methods",
+        "Shell functions use a consistent nameref parameter passing pattern (local -n) for all compute functions"
+      ],
+      "issue_character": "The most significant coherence defect is within Python's StudentTeacherPOMDP: sibling methods share the parameter name 'policy' but treat it as incompatible types (integer index vs probability array), which is a silent API contract violation that will cause runtime errors on incorrect usage.",
+      "score_rationale": "Individual implementations (TypeScript, Rust) have internally coherent APIs. The Shell layer is coherent but has an unused parameter in select_action. Python's POMDP class has a real type-overloading defect in the 'policy' parameter across methods. The cross-language API shapes diverge (optional vs required config, echo-based vs return-based results), but this is partially expected across different language paradigms. The Python defect and Shell's dishonest parameter list are the primary scorable issues."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "python-policy-param-type-mismatch",
+      "summary": "Python StudentTeacherPOMDP uses 'policy' as an integer in calculate_free_energy but as an array in get_action, creating incompatible types under the same name",
+      "related_files": ["Python/Student_Teacher.py"],
+      "evidence": [
+        "calculate_free_energy(self, policy): uses 'np.dot(self.B[:, :, policy], self.d)' — policy must be integer index",
+        "get_action(self, policy): uses 'np.argmax(policy)' — policy must be array/list",
+        "infer_policy(self, policies): calls 'self.calculate_free_energy(p) for p in range(len(policies))' passing integer p — consistent with calculate_free_energy but shows policies is a count, not array",
+        "Callers cannot use the same object to call both methods with the same 'policy' argument"
+      ],
+      "suggestion": "Rename the parameter in get_action to 'policy_distribution' (array) and in calculate_free_energy to 'action_index' (integer) to make the type contract explicit and distinct.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "shell-select-action-unused-env-param",
+      "summary": "Shell select_action receives an environment parameter that is never used to differentiate actions, making the API signature dishonest",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "select_action() signature: beliefs_ref, preferences_ref, transition_probs_ref, environment_ref (4 parameters)",
+        "Loop: 'for action in \"${environment_ref[@]}\"' iterates over environment, but inside the loop calls 'calculate_efe beliefs_ref preferences_ref transition_probs_ref' — the action variable is never passed to calculate_efe",
+        "Each iteration computes the same EFE (no action parameter differentiation), making the action selection logic incorrect: every action receives the same EFE and whichever is last wins"
+      ],
+      "suggestion": "Either pass the current action context to calculate_efe to compute action-specific EFE, or remove the environment_ref parameter if action enumeration is handled elsewhere.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "typescript-dead-type-exports",
+      "summary": "TypeScript types.ts exports four function type aliases (BeliefUpdateFunction, PolicySelectionFunction, etc.) that are not referenced anywhere in the implementation",
+      "related_files": ["TypeScript/src/types.ts", "TypeScript/src/ActiveInferenceAgent.ts"],
+      "evidence": [
+        "types.ts lines 144-147: exports BeliefUpdateFunction, PolicySelectionFunction, FreeEnergyCalculationFunction, ActionExecutionFunction",
+        "ActiveInferenceAgent.ts imports only AgentConfig, GenerativeModel, BeliefState, Action, Observation, FreeEnergy, AgentHistory, BeliefUpdateError, PolicySelectionError, Vector, Matrix from types.ts",
+        "The function type aliases are not imported or used — they are dead API surface"
+      ],
+      "suggestion": "Remove the unused function type aliases from types.ts, or use them as the declared types for the corresponding method signatures in ActiveInferenceAgent.ts to enforce API conformance.",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "js-ts-config-init-contract-divergence",
+      "summary": "JavaScript ActiveInferenceAgent accepts optional config with inline defaults while TypeScript version requires mandatory AgentConfig, making the sibling APIs incompatible in their initialization contract",
+      "related_files": ["JavaScript/active_inference.js", "TypeScript/src/ActiveInferenceAgent.ts"],
+      "evidence": [
+        "JavaScript: 'constructor(config = {})' with 'this.nStates = config.nStates || 3'",
+        "TypeScript: 'constructor(config: AgentConfig)' with immediate validateConfig() that throws if values are missing",
+        "A developer switching from the JS to TS implementation must learn a different initialization contract"
+      ],
+      "suggestion": "Document the intentional difference, or make the JavaScript version validate required parameters consistently with the TypeScript implementation.",
+      "confidence": "medium",
+      "impact_scope": "subsystem",
+      "fix_scope": "single_edit"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "Python POMDP class was likely incrementally developed without a unified type contract for 'policy' across methods",
+      "Shell select_action contains a logic error (same EFE for all actions) that also manifests as an API coherence defect",
+      "JS and TS were authored independently without enforcing parity in initialization contracts"
+    ],
+    "likely_symptoms": [
+      "Python infer_policy callers passing the returned softmax distribution to get_action would work correctly, but passing it to calculate_free_energy would cause a numpy index error"
+    ],
+    "possible_false_positives": [
+      "TypeScript function type aliases may be intended as documentation/contract for external consumers even if not used internally"
+    ]
+  }
+}

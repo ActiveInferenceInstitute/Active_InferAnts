@@ -1,0 +1,54 @@
+{
+  "batch": "authorization_consistency",
+  "batch_index": 15,
+  "assessments": {"authorization_consistency": 88.0},
+  "dimension_notes": {
+    "authorization_consistency": {
+      "evidence": [
+        "holistic_context.authorization: empty — static analysis found no auth patterns to report",
+        "The codebase is a multi-language active inference simulation demo with no web framework, no route handlers, no database, no user sessions, and no permission system of any kind",
+        "run_all.sh, status_dashboard.sh, Shell/config.sh, Shell/Active_Shellference.sh, Shell/run.sh: all are local shell scripts that operate on the filesystem; they do not accept user-supplied input over a network, do not authenticate callers, and do not manage user sessions",
+        "Shell/run.sh lines 22-38: creates files and chmod +x — these are local filesystem operations run by whoever invokes the script; there is no multi-user trust boundary to enforce",
+        "Python/Student_Teacher.py: no HTTP endpoints, no user input beyond matplotlib output directory; no auth surface",
+        "TypeScript/src/ActiveInferenceAgent.ts: no HTTP handlers, no route decorators, no permission checks needed",
+        "No database access, no SQL, no RLS, no service roles, no admin bypasses in any of the reviewed files",
+        "SQL/ directory exists but contains a demo simulation stored procedure, not user-facing data access with row-level security concerns"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit",
+      "confidence": "high",
+      "issues_preventing_higher_score": "Shell scripts use `chmod +x` and `find ... -exec chmod +x` globally on all run.sh files without scoping to known-safe files — this is a minor permission hygiene concern, not a multi-user auth gap, but it is the only authorization-adjacent pattern in the codebase"
+    }
+  },
+  "dimension_judgment": {
+    "authorization_consistency": {
+      "strengths": [
+        "No web endpoints, route handlers, or user-facing APIs exist, so there is no surface area for inconsistent auth decoration",
+        "No database access patterns to audit for RLS coverage",
+        "No permission strings or role constants in any file, eliminating the magic-literal permission risk"
+      ],
+      "issue_character": "The codebase has no authorization surface at all — it is a local simulation demo; the only authorization-adjacent behavior is filesystem permission changes in shell scripts, which are applied consistently.",
+      "score_rationale": "This dimension does not apply meaningfully to the codebase as reviewed: there are no network-accessible endpoints, no user sessions, no permission systems, and no multi-tenant data boundaries. The score of 88 reflects that what little authorization-adjacent behavior exists (chmod operations in shell scripts) is consistently applied, while the small deduction acknowledges that run_all.sh uses `find . -name run.sh -exec chmod +x {} \\;` which applies executable permissions broadly without filtering to known-safe locations — a minor hardening gap rather than a real auth vulnerability."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "AC-01",
+      "summary": "run_all.sh applies chmod +x to all run.sh files recursively without scoping to known-safe directories",
+      "related_files": ["run_all.sh"],
+      "evidence": [
+        "Line 177: find . -name \"run.sh\" -type f -exec chmod +x {} \\; — marks every file named run.sh under the repo root as executable, including any run.sh files introduced by external tools or cloned submodules"
+      ],
+      "suggestion": "Scope the chmod to known language directories only: `for lang_info in \"${LANGUAGES[@]}\"; do lang_dir=\"${lang_info#*:}\"; [ -f \"$lang_dir/run.sh\" ] && chmod +x \"$lang_dir/run.sh\"; done` — this applies executable permissions only to the 39 known language scripts",
+      "confidence": "low",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    }
+  ],
+  "retrospective": {
+    "root_causes": ["This codebase is a local-execution simulation demo and inherently has no multi-user auth surface; scoring this dimension is largely N/A"],
+    "likely_symptoms": [],
+    "possible_false_positives": ["AC-01 is a very marginal concern for a local demo repo — most engineers would not flag it"]
+  }
+}

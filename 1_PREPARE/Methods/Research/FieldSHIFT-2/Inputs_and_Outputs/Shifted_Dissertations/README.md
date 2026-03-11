@@ -1,0 +1,51 @@
+# Shifted Dissertations
+
+Domain-shifted dissertation outputs from the FieldSHIFT-2 pipeline.
+
+## Contents
+
+- 📄 `AGENTS.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_ATM_Transaction.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Biology.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Blockchain.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Bucky_Fuller.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Chemistry.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Cognitive_Security.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Cooking.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Entomology.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Exercise.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_FEP-ActInf.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Fabric.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_HealthCare.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Hospitality.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Hymeoptera.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Intelligent_Soft_Matter.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Logistics.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_MitoBiology.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Negotiation.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Neuroscience.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_NonScience_WaysOfKnowing.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_PredictionMatterExpertise.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Quantum-Computation.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_RxInfer.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Spatial_Web.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_Traditional_Wisdom.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Biology_to_Synthetic_William-Blake.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_ATM_Transaction.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Biology.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Blockchain.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Bucky_Fuller.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Chemistry.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Cognitive_Security.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Cooking.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Entomology.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Exercise.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_FEP-ActInf.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Fabric.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_HealthCare.md`
+- 📄 `Written_Dissertation_Outline_shifted_Synthetic_Chemistry_to_Synthetic_Hospitality.md`
+- _…and 84 more items_
+
+## Related
+
+- Parent: [Inputs_and_Outputs](../README.md)

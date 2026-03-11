@@ -1,0 +1,48 @@
+# SPEC.md — TheBrain Exports
+
+> Technical specification for `9_OTHER/TheBrain/TheBrain_export` within the Active InferAnts framework.
+
+## Overview
+
+Raw TheBrain database exports containing knowledge graph nodes and relationships.
+
+## Structure
+
+- 📁 `13bf6496-0966-423c-805d-b633d5e89f2f/`
+- 📁 `15199dd2-fe05-4f0c-9841-72106f52f556/`
+- 📁 `287d0573-d9b8-4550-b347-580a576be5e0/`
+- 📁 `30001778-7f95-44c5-8f70-1050d9126d32/`
+- 📁 `532501a0-8844-4a2c-b1f0-8af79c432220/`
+- 📁 `626beb76-dacc-4fab-b7be-a9292f0dcc87/`
+- 📁 `6fa9440f-79c3-4c3d-89ee-7829c7df7657/`
+- 📁 `c990c59f-c978-43fe-9385-55aa4d96c966/`
+- 📁 `d7afad74-bba8-4ea1-98aa-9fe1a6c7912a/`
+- 📁 `dc0a1321-4b00-492c-b900-d6df8e8c92dd/`
+- 📁 `ec388d23-b6e1-4975-ad99-a9015e7bb7f6/`
+- 📄 `AGENTS.md`
+- 📄 `GTD_Intro_Dev 2024-07-29.brz`
+- 📄 `README.md`
+- 📄 `access.json`
+- 📄 `attachments.json`
+- 📄 `brainusers.json`
+- 📄 `calendarevents.json`
+- 📄 `fielddefinitions.json`
+- 📄 `fieldinstances.json`
+- 📄 `links.json`
+- 📄 `meta.json`
+- 📄 `modificationlogs.json`
+- 📄 `settings.json`
+- 📄 `syncpoints.json`
+- 📄 `thoughts.json`
+- 📄 `tombstones.json`
+
+## Data Format
+
+- **Input**: Raw data from upstream processing
+- **Output**: Structured data files (markdown, JSON, CSV as applicable)
+- **Encoding**: UTF-8
+
+## Version
+
+- **Framework**: Active InferAnts
+- **License**: CC BY-NC-ND 4.0

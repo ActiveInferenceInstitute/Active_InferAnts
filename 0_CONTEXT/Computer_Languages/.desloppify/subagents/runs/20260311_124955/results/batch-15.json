@@ -1,0 +1,59 @@
+{
+  "batch": "cross_module_architecture",
+  "batch_index": 15,
+  "assessments": {"cross_module_architecture": 62.0},
+  "dimension_notes": {
+    "cross_module_architecture": {
+      "evidence": [
+        "run_all.sh and status_dashboard.sh both independently maintain the full language directory list",
+        "run_all.sh uses cd + cd .. pattern creating shared mutable working-directory state as cross-module contract",
+        "status_dashboard.sh categories hardcode language groupings that drift from run_all.sh LANGUAGES array",
+        "Shell/Active_Shellference.sh sources config.sh via relative path, coupling it to being invoked from Shell/ directory",
+        "Each language module is genuinely hermetic with no cross-language runtime dependencies"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high"
+    }
+  },
+  "dimension_judgment": {
+    "cross_module_architecture": {
+      "strengths": [
+        "Each language directory is a fully self-contained module with no cross-language runtime dependencies",
+        "Orchestration layer coordinates through well-defined contracts: presence of run.sh and return code",
+        "No shared mutable state between language implementations"
+      ],
+      "issue_character": "The main architectural weakness is duplicated registry state: the canonical language list is maintained independently in run_all.sh and status_dashboard.sh, causing drift when new languages are added.",
+      "score_rationale": "This is a flat, loosely-coupled architecture with strong isolation boundaries between language modules. The primary cross-module defect is the duplicated language registry causing observable drift. The working-directory mutation pattern creates a subtle shared-state contract. Score reflects genuinely good isolation with a structural registry coupling problem."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "lang_registry_duplication",
+      "summary": "Language registry maintained independently in run_all.sh and status_dashboard.sh causing drift",
+      "related_files": ["run_all.sh", "status_dashboard.sh"],
+      "evidence": ["run_all.sh LANGUAGES array and status_dashboard.sh categories dict are separate sources of truth for language list"],
+      "suggestion": "Extract language registry to a shared config file sourced by both run_all.sh and status_dashboard.sh, or generate dynamically from directory presence",
+      "confidence": "high",
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "relative_source_coupling",
+      "summary": "Shell/Active_Shellference.sh sources config.sh via relative path breaking when called from outside Shell/",
+      "related_files": ["Shell/Active_Shellference.sh", "Shell/config.sh"],
+      "evidence": ["Line 11: source config.sh uses relative path requiring CWD to be Shell/ at invocation time"],
+      "suggestion": "Use script-relative path: source \"$(dirname \"${BASH_SOURCE[0]}\")/config.sh\" to make sourcing location-independent",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    }
+  ],
+  "retrospective": {
+    "root_causes": ["No single source of truth for the language registry"],
+    "likely_symptoms": [],
+    "possible_false_positives": []
+  }
+}

@@ -1,0 +1,29 @@
+# AGENTS.md — DARPA
+
+> Agent guidance for the `1_PREPARE/Methods/Grant_Methods_1/Grants/DARPA` directory within the Active InferAnts framework.
+
+## Purpose
+
+Grant data from Defense Advanced Research Projects Agency (DARPA).
+
+## Directory Contents
+
+- 📄 `DARPA_Biology_HR001123S0045.md`
+- 📄 `DARPA_PS-24-08.md`
+- 📄 `DARPA_meta.md`
+
+## Agent Instructions
+
+- Maintain accurate grant program data and deadlines.
+- Cross-reference with entity alignment analyses.
+- Document funding requirements and restrictions.
+- Follow the repository's CC BY-NC-ND 4.0 license.
+- Maintain consistency with parent and sibling directory conventions.
+- Keep all documentation synchronized with actual contents.
+
+## Quality Checklist
+
+- [ ] All files documented and up-to-date
+- [ ] Directory structure reflects current organization
+- [ ] Cross-references to related directories verified
+- [ ] README.md and SPEC.md synchronized with this AGENTS.md

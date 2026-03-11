@@ -1,0 +1,101 @@
+{
+  "batch": "api_surface_coherence",
+  "batch_index": 18,
+  "assessments": {"api_surface_coherence": 38.0},
+  "dimension_notes": {
+    "api_surface_coherence": {
+      "evidence": [
+        "config_manager.py (root): check_language_dependencies(language) returns Tuple[bool, List[str], List[str]] — a positional tuple where meaning of index 1 vs 2 is unclear without reading docs; check_all_dependencies() returns Dict[str, Tuple[bool, List[str], List[str]]] — same shape, consistent",
+        "config_manager.py (root): install_language_dependencies(language) -> bool; check_language_dependencies(language) -> Tuple — the install and check are parallel operations with completely different return shapes, making them hard to compose",
+        "master_controller.py: ActiveInferenceController methods all take a single 'args' argparse.Namespace argument — consistent within the controller, but callers outside the CLI cannot call these methods meaningfully without constructing a Namespace",
+        "master_controller.py: run_benchmarks(args) internally spawns reporting_system.py as a subprocess despite being in the same Python process — the API boundary is a subprocess call to a file that happens to exist on disk, not a function import",
+        "reporting_system.py: ActiveInferenceAnalyzer has no public __init__ parameters beyond root_directory — but run_all_benchmarks() mutates self.results as a side effect; callers of create_visualizations() must call run_all_benchmarks() first with no documented contract",
+        "reporting_system.py: generate_comprehensive_report() -> str and generate_summary_report() -> str are both empty/corrupted — they are public API surface that silently returns empty strings",
+        "benchmark_suite.py: AdvancedBenchmarkSuite.run_benchmark_suite() takes no parameters yet internally uses self.languages_dir which is hardcoded to project_root / '0_CONTEXT' / 'Computer_Languages' — the path convention is opaque to callers",
+        "benchmark_suite.py: create_performance_plots() takes (results, report) but report is passed as None at the call site (line 579) — the parameter is unused inside the method, making the signature misleading",
+        "Python/config_manager.py: ConfigManager.load_config(config_file=None) -> bool; save_config(config_file=None) -> bool — symmetrical and consistent; update_config(updates) -> bool; validate_config() -> bool; export_config(format) -> str — these are well-shaped",
+        "Shell scripts: run_language() in run_all.sh takes one string argument (lang_info) and splits it on ':' internally — callers must know the ':' encoding convention; check_language_status() in status_dashboard.sh takes (lang, lang_dir) as two separate arguments — inconsistent convention between the two main orchestration scripts",
+        "status_dashboard.sh: check_language_status() has 5+ case branches that set local variables 'status' and 'details' — it is effectively doing both status computation and display formatting in a single function, mixing concerns in its API"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high"
+    }
+  },
+  "dimension_judgment": {
+    "api_surface_coherence": {
+      "strengths": [
+        "Python/config_manager.py ConfigManager has a coherent CRUD-style API: load, save, update, validate, export, import — all return bool or typed data consistently",
+        "benchmark_suite.py public dataclasses (PerformanceMetrics, BenchmarkConfig, etc.) are well-named and have clear field semantics",
+        "Shell run.sh scripts all follow the same entry-point pattern: check dependencies, then invoke the implementation — consistent within each language directory"
+      ],
+      "issue_character": "Public APIs are incoherent across architectural boundaries: the orchestration layer uses subprocess calls to Python scripts as a substitute for function calls, report-generation methods exist as named APIs but return empty strings, and function signatures carry optional parameters that are passed as None at every call site.",
+      "score_rationale": "The internal ConfigManager API is clean, but the outer orchestration layer (master_controller, reporting_system, benchmark_suite) exposes APIs that are effectively unusable: empty methods, subprocess-as-API, and stateful methods that require a specific call order with no documented preconditions. Shell scripts compound this with two different parameter conventions for similar operations. This sits in the lower third — a developer trying to use any component beyond the ConfigManager would encounter broken or misleading contracts."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc_subprocess_as_api",
+      "summary": "master_controller.py delegates to reporting_system.py and config_manager.py via subprocess rather than function imports",
+      "related_files": ["master_controller.py"],
+      "evidence": ["run_benchmarks() line 67: 'subprocess.run([sys.executable, str(analyzer_script)])'", "generate_report() lines 79-88: same pattern for reporting_system.py and config_manager.py", "All three are Python modules in the same package; subprocess bypasses Python's import system and prevents type checking"],
+      "suggestion": "Import ActiveInferenceAnalyzer and DependencyChecker as modules and call their methods directly; reserve subprocess for shell scripts",
+      "confidence": "high",
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc_dead_public_methods",
+      "summary": "reporting_system.py generate_comprehensive_report() and generate_summary_report() are public methods that return empty strings",
+      "related_files": ["reporting_system.py"],
+      "evidence": ["generate_comprehensive_report() body is corrupted — returns empty string literal", "generate_summary_report() body is corrupted — returns empty string literal", "Both are called from the public main() function and their output is written to files"],
+      "suggestion": "Either implement these methods or mark them as NotImplementedError() so callers get an explicit failure rather than empty output",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc_unused_parameter",
+      "summary": "benchmark_suite.py create_performance_plots(results, report) passes report=None at every call site; parameter is unused",
+      "related_files": ["benchmark_suite.py"],
+      "evidence": ["Line 579: 'self.create_performance_plots(performance_results, None)'", "Inside create_performance_plots(), the 'report' parameter is never referenced", "The signature implies report context is used; callers pass None because no context is available"],
+      "suggestion": "Remove the 'report' parameter from create_performance_plots() to match its actual behavior",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc_stateful_order_dependency",
+      "summary": "ActiveInferenceAnalyzer.create_visualizations() requires run_all_benchmarks() to have been called first, with no documented precondition",
+      "related_files": ["reporting_system.py"],
+      "evidence": ["create_visualizations() checks 'if not self.results' and prints error, but self.results is only populated by run_all_benchmarks()", "No docstring or assertion documents the required call order"],
+      "suggestion": "Either call run_all_benchmarks() inside create_visualizations() if results are absent, or document the precondition with an assertion: 'assert self.results, \"Call run_all_benchmarks() first\"'",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc_shell_param_convention_mismatch",
+      "summary": "run_all.sh and status_dashboard.sh use different parameter conventions for language identification",
+      "related_files": ["run_all.sh", "status_dashboard.sh"],
+      "evidence": ["run_all.sh run_language() takes a single 'lang_info' colon-encoded string ('Ada:Ada') and splits on ':'", "status_dashboard.sh check_language_status() takes two separate arguments: lang name and lang dir", "The two scripts cannot share helper functions and a caller must know which convention each uses"],
+      "suggestion": "Standardize on a single convention (two separate args is clearer) across both scripts; or extract a shared lib.sh with a canonical lang-info structure",
+      "confidence": "medium",
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "Orchestration layer was designed as a CLI wrapper for shell scripts and grew Python logic without migrating to proper function-call APIs — subprocess-as-API is a legacy of this incremental growth",
+      "Report generation methods appear to have been stubbed and the stubs were never filled in — suggests a feature-incomplete codebase where the public API surface was defined before implementation"
+    ],
+    "likely_symptoms": ["asc_dead_public_methods", "asc_unused_parameter"],
+    "possible_false_positives": []
+  }
+}

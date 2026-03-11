@@ -1,0 +1,98 @@
+{
+  "batch": "package_organization",
+  "batch_index": 5,
+  "assessments": {"package_organization": 50.0},
+  "dimension_notes": {
+    "package_organization": {
+      "evidence": [
+        "Root directory structure data from holistic_context: '.' has 2 shell script files (run_all.sh, status_dashboard.sh) with fan_in 0, fan_out 0, role 'peripheral'. Shell/ has 3 files (Active_Shellference.sh, config.sh, run.sh), fan_in 0, avg_fan_out 0. All files are listed as 'orphaned' in scan_evidence.dead_code — no cross-file imports detectable.",
+        "Five Python files live at the root alongside two Shell scripts: benchmark_suite.py, config_manager.py, master_controller.py, reporting_system.py, test_suite.py. These are thematically distinct from the per-language capsule pattern — they form an orchestration/tooling concern that does not belong at root alongside run_all.sh.",
+        "Root-level Python files have fan_in 0 (no importers detected), but unlike run_all.sh/status_dashboard.sh which are genuine entry points, these Python files are more likely called indirectly. Their placement at root rather than in a dedicated 'tools/' or 'orchestration/' directory mixes the 'run this language demo' concern with the 'benchmark/report/test all languages' concern.",
+        "The Rust directory has multiple sub-directories (RustConfig/, RustThings/, src/) and extra files (Rust.README.md, system_spec_RUST.txt, config.json) making it the most structurally non-uniform language capsule. Other languages keep a flat, minimal structure.",
+        "Julia has sub-directories (Category_Theory_Julia/, SideCar/, Visualization/) indicating a larger scope than the other language capsules — not a flat structure concern given the scope difference, but diverges from the one-implementation-per-language convention.",
+        "The directory_profiles show Shell/ has only 3 files (within the <10 threshold), so flat dir overload is not present.",
+        "status_dashboard.sh categories map places Golang under 'Compiled' separately from Systems/Functional/etc. categories, but the directory is just called 'Golang' — its placement in a separate 'Compiled' category is an arbitrary classification artifact rather than an organizational structure defect.",
+        "CSharp/, MATLAB/, Ruby/, PHP/, Swift/, Scala/ directories exist but are unregistered in run_all.sh — they are present in the filesystem but invisible to the project's operational surface. These are stragger directories from a package organization perspective."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high"
+    }
+  },
+  "dimension_judgment": {
+    "package_organization": {
+      "strengths": [
+        "The primary design choice — one directory per language implementation — creates a clear, predictable capsule structure that maps directly to the project domain.",
+        "Each language directory follows a consistent minimal structure (README.md, run.sh, source files) making navigation uniform across capsules.",
+        "Shell/ correctly groups the Shell language implementation's three files together rather than leaving them at root."
+      ],
+      "issue_character": "The root level accumulates five Python orchestration/tooling files alongside shell entry points without a separating container, mixing the 'demonstrate a language' domain concern with the 'operate the project' tooling concern.",
+      "score_rationale": "The per-language capsule layout is well-suited to the domain and navigation within any single language is clean. The structural damage comes from two sources: (1) five Python tooling files at root that belong in a dedicated subdirectory, lowering cohesion at the root level; and (2) six language directories present on disk but unregistered in run_all.sh, creating invisible dead directories from the operational perspective. The holistic_context.structure shows all root files as 'peripheral' with fan_in 0, confirming these are leaf entry points without cross-referencing — which is appropriate for a demo collection, but the mixing of tool scripts and entry scripts at root is a navigability defect."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "package_organization",
+      "identifier": "po-01",
+      "summary": "Five Python tooling files at root mix orchestration/tooling concern with language-demo entry points",
+      "related_files": ["master_controller.py", "config_manager.py", "reporting_system.py", "benchmark_suite.py", "test_suite.py"],
+      "evidence": [
+        "Root directory contains: run_all.sh, status_dashboard.sh (entry points for running demos) alongside master_controller.py, config_manager.py, reporting_system.py, benchmark_suite.py, test_suite.py (tooling/orchestration).",
+        "holistic_context.structure shows all root files as fan_in 0 / fan_out 0 / role 'peripheral' — these are not shared utilities imported by capsules but standalone tools that happen to live at root.",
+        "A developer browsing the root cannot easily distinguish 'run this' (run_all.sh) from 'report on this' (reporting_system.py) from 'manage deps for this' (config_manager.py)."
+      ],
+      "suggestion": "Stage 1: Create a 'tools/' directory at root. Move benchmark_suite.py, config_manager.py, reporting_system.py, test_suite.py, master_controller.py into tools/. Stage 2: Update any cross-file invocation paths (master_controller.py's reference to status_dashboard.sh is relative and will need adjustment). Stage 3: Validate by running python3 tools/master_controller.py and ./run_all.sh to confirm paths still resolve. No import graph updates needed since these files have fan_in 0.",
+      "confidence": "high",
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "root_cause_cluster": "root_accumulation"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "po-02",
+      "summary": "Six language directories on disk are unregistered stragger roots invisible to run_all.sh",
+      "related_files": ["run_all.sh"],
+      "evidence": [
+        "Directories present: CSharp/, MATLAB/, Ruby/, PHP/, Swift/, Scala/.",
+        "None appear in run_all.sh LANGUAGES array.",
+        "From a package organization perspective these directories exist but have no functional registration — they are stragger roots with low operational fan-in (0 callers from the run orchestration layer)."
+      ],
+      "suggestion": "Stage 1: Audit each directory for a working run.sh. Stage 2: For those with run.sh, add the entry to LANGUAGES in run_all.sh. Stage 3: For those without a run.sh, either add a stub run.sh or move the directory to an 'experimental/' or 'wip/' subdirectory to signal their status. Stage 4: Run './run_all.sh --list' to verify all newly added entries show as available or missing rather than silently absent.",
+      "confidence": "high",
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "root_cause_cluster": "fragmented_registry"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "po-03",
+      "summary": "Rust directory has non-uniform structure (multiple sub-directories, extra docs) diverging from the single-capsule convention",
+      "related_files": ["Rust/"],
+      "evidence": [
+        "Rust/ contains: RustConfig/, RustThings/, src/, Cargo.lock, Cargo.toml, README.md, Rust.README.md, config.json, run.sh, system_spec_RUST.txt.",
+        "Other language capsules (e.g., Python/, TypeScript/, Golang/) have flat or minimal src/-only structure.",
+        "Two README files (README.md and Rust.README.md) in the same directory indicate disorganized documentation accumulation.",
+        "RustConfig/ and RustThings/ as subdirectory names are ambiguous: they do not communicate whether they are configuration data, source modules, or auxiliary demos."
+      ],
+      "suggestion": "Consolidate Rust.README.md content into README.md and remove the duplicate. Rename or flatten RustConfig/ and RustThings/ to match purpose-driven names (e.g., 'config/' or 'examples/'). Ensure the final structure matches the minimal capsule pattern used by other languages to reduce navigation overhead.",
+      "confidence": "medium",
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "root_cause_cluster": "capsule_inconsistency"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "Root-level Python tooling files were added incrementally without a dedicated tools/ container, accumulating at root alongside entry points.",
+      "Language directories were added to the filesystem without a convention requiring simultaneous registration in run_all.sh.",
+      "Rust implementation grew beyond the minimal capsule scope without structural cleanup."
+    ],
+    "likely_symptoms": [
+      "po-01: A developer new to the repo cannot immediately identify the canonical entry point vs. reporting tools by looking at the root.",
+      "po-02: './run_all.sh' silently skips six implemented languages."
+    ],
+    "possible_false_positives": [
+      "po-03: Julia also has subdirectories (Category_Theory_Julia/, SideCar/, Visualization/); if Julia is intentionally a multi-demo capsule, the same may apply to Rust. Mark as lower priority if both are intentionally multi-demo."
+    ]
+  }
+}

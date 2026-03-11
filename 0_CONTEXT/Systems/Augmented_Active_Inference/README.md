@@ -1,24 +1,15 @@
-# ActInf-Cursor-Integration
+# Augmented Active Inference
 
-This repository contains the integration of Active Inference principles with Cursor AI for social science simulations.
+Extended Active Inference systems with enhanced capabilities and comprehensive testing.
 
-## Project Structure
+## Structure
 
-- `/scripts`: Contains utility scripts and basic pymdp implementations
-- `/simulations`: Houses simulation scripts, including those generated with Cursor AI
-- `/docs`: Documentation for scripts and Cursor AI integration
-- `/tests`: Unit tests for all scripts
+| Directory | Description |
+|---|---|
+| `docs/` | Documentation, specifications, and design details |
+| `scripts/` | Execution scripts and automation utilities |
+| `tests/` | Test suite for augmented inference modules |
 
-## Current Progress
+## Related
 
-- Initial repository setup complete
-- Basic pymdp script for social science simulation implemented
-- Utility script created
-
-## Next Steps
-
-- Integrate Cursor AI for script analysis and generation
-- Implement more complex simulations
-- Enhance documentation and testing
-
-For more details, see the issues section of this repository.
+- Parent: [Systems](../README.md)

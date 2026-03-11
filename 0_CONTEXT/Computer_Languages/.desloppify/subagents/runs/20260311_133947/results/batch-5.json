@@ -1,0 +1,154 @@
+{
+  "batch": "api_surface_coherence",
+  "batch_index": 5,
+  "assessments": {"api_surface_coherence": 62.0},
+  "dimension_notes": {
+    "api_surface_coherence": {
+      "evidence": [
+        "run_all.sh: run_language() takes a single encoded 'lang_info' string ('Ada:Ada') that it splits internally — callers cannot inspect what was actually parsed (implicit multi-value packing into one param).",
+        "Shell/Active_Shellference.sh: calculate_kl_divergence(beliefs_ref, preferences_ref), calculate_efe(beliefs_ref, preferences_ref, transition_probs_ref), update_beliefs(beliefs_ref, preferences_ref, transition_probs_ref) — parameter ordering is consistent across these three, but select_action() adds a fourth parameter environment_ref in a different semantic position; the arity jumps from 2-3 to 4 without documentation.",
+        "Shell/Active_Shellference.sh: no function has a documented error contract. calculate_kl_divergence and calculate_efe print to stderr and return 1 on bc failure, but update_beliefs silently produces bad output if bc fails (no error path at all).",
+        "status_dashboard.sh: check_language_status(lang, lang_dir) takes 2 positional params but is called with 'lang_name' and 'dir' variables; the distinction between 'lang' (display name) and 'lang_dir' (filesystem path) is conflated — in show_implementations() the same variable serves both roles ('Ada':'Ada'), masking a latent mapping error.",
+        "Shell/run.sh: overwrites config.sh silently if it does not exist, injecting different default values (CONFIG_PREFERENCES='1.0 0.0 0.5', CONFIG_PRECISION=4) than the committed config.sh (CONFIG_PREFERENCES='0.7 0.2 0.1', CONFIG_PRECISION=1000). Two callers of the same config key surface see different data depending on invocation path.",
+        "Rust/run.sh: accepts --test, --docs, --bench as $1 positional flags. Python/run.sh and Golang/run.sh accept no arguments at all. run_all.sh passes zero arguments to each run.sh. The extended flag API in Rust/run.sh is invisible to the orchestrator and undocumented in show_usage().",
+        "run_all.sh: language lookup by SPECIFIC_LANG is case-sensitive (exact match on lang_name), but show_usage() says 'python' works as an example — 'python' would not match 'Python'.",
+        "status_dashboard.sh: check_language_status() uses a case statement to map lang to main_file path; 'Go' is checked but the LANGUAGES array in run_all.sh uses 'Golang', so the check_language_status 'Go' branch is unreachable."
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "sub_axes": {
+        "abstraction_leverage": 55.0,
+        "indirection_cost": 70.0,
+        "interface_honesty": 50.0,
+        "delegation_density": 80.0,
+        "definition_directness": 65.0,
+        "type_discipline": 45.0
+      }
+    }
+  },
+  "dimension_judgment": {
+    "api_surface_coherence": {
+      "strengths": [
+        "The three core math functions (calculate_kl_divergence, calculate_efe, update_beliefs) share a consistent positional parameter order: beliefs first, preferences second, transition_probs third.",
+        "run_language() in run_all.sh presents a single stable call surface to the orchestration loop — one encoded string in, one exit status out.",
+        "Error output is consistently sent to stderr (>&2) across all functions that do report errors."
+      ],
+      "issue_character": "The dominant pattern is undocumented parameter shape divergence: arity inconsistency between sibling functions, silent config shadowing between invocation paths, and per-language run.sh flag APIs that are invisible to the root orchestrator.",
+      "score_rationale": "The Shell module has a narrow but real API surface (five public functions, three entry-point scripts) and that surface carries several coherence breaks: select_action adds an undocumented fourth parameter relative to its siblings, update_beliefs has no error contract while its siblings do, and the config overwrite in run.sh creates two divergent data surfaces for the same config keys. Rust/run.sh exposes a --test/--docs/--bench flag API that the orchestrator (run_all.sh) never passes and show_usage() never advertises. These are not systemic architecture failures but they are consistent, codebase-wide API honesty gaps that would surprise a developer integrating a new language. Score 62: below midpoint because mixed error contracts and silent config shadowing are active correctness risks, not just style issues, but the codebase is small enough that the blast radius is contained."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc-01-select-action-arity",
+      "summary": "select_action() takes 4 parameters while sibling functions take 2-3, with no documentation explaining the shape difference",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "calculate_kl_divergence(beliefs_ref, preferences_ref) — 2 params",
+        "calculate_efe(beliefs_ref, preferences_ref, transition_probs_ref) — 3 params",
+        "update_beliefs(beliefs_ref, preferences_ref, transition_probs_ref) — 3 params",
+        "select_action(beliefs_ref, preferences_ref, transition_probs_ref, environment_ref) — 4 params, 4th is a qualitatively different argument (the action space, not a probability array)"
+      ],
+      "suggestion": "Document why select_action needs environment_ref while EFE and belief-update do not. Consider whether environment should be encapsulated in a simulation-state nameref to align the shape with sibling functions.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "parameter_shape_drift"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc-02-update-beliefs-no-error-contract",
+      "summary": "update_beliefs() has no error handling or error contract while sibling functions explicitly detect and report bc failures",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "calculate_kl_divergence: checks if term is empty and prints ERROR to stderr, returns 1",
+        "calculate_efe: checks efe_term and efe_outer for emptiness, returns 1",
+        "update_beliefs: no emptiness checks on bc output; a bc failure would silently produce a malformed beliefs array that is fed into the next time step"
+      ],
+      "suggestion": "Add the same bc-output emptiness guard used in calculate_kl_divergence and calculate_efe to each bc call in update_beliefs, and return 1 on failure.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "missing_error_contract"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc-03-config-shadow",
+      "summary": "Shell/run.sh silently writes a different config.sh than the committed one, creating two divergent data surfaces for the same CONFIG_* keys",
+      "related_files": ["Shell/run.sh", "Shell/config.sh"],
+      "evidence": [
+        "Shell/config.sh (committed): CONFIG_PREFERENCES='0.7 0.2 0.1', CONFIG_PRECISION=1000, CONFIG_ENVIRONMENT='ShellActiveInference_v1.0'",
+        "Shell/run.sh (generated fallback): CONFIG_PREFERENCES='1.0 0.0 0.5', CONFIG_PRECISION=4, CONFIG_ENVIRONMENT='food danger safe'",
+        "The fallback validate_config is a no-op stub (return 0), bypassing the committed validation logic"
+      ],
+      "suggestion": "Remove the config.sh generation block from run.sh and instead fail with a clear error message if config.sh is missing, or commit run.sh to call validate_config after sourcing the committed config.sh.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "missing_error_contract"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc-04-rust-hidden-flag-api",
+      "summary": "Rust/run.sh exposes --test, --docs, --bench flags that the orchestrator (run_all.sh) never passes and show_usage() never documents",
+      "related_files": ["Rust/run.sh", "run_all.sh"],
+      "evidence": [
+        "Rust/run.sh lines 47-62: if [ \"$1\" = \"--test\" ]; ... if [ \"$1\" = \"--docs\" ]; ... if [ \"$1\" = \"--bench\" ]",
+        "run_all.sh run_language(): invokes each language's run.sh with zero arguments via 'cd $lang_dir && ./run.sh'",
+        "show_usage() in run_all.sh does not mention per-language flags"
+      ],
+      "suggestion": "Either have run_all.sh forward a standardized --test flag to all language runners (defining a cross-language run.sh API), or document in show_usage() that per-language flags must be invoked directly (e.g., 'cd Rust && ./run.sh --test').",
+      "confidence": "high",
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "root_cause_cluster": "parameter_shape_drift"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc-05-lang-key-mismatch",
+      "summary": "status_dashboard.sh maps 'Go' in its case statement but run_all.sh registers the key as 'Golang', making the main-file check unreachable",
+      "related_files": ["status_dashboard.sh", "run_all.sh"],
+      "evidence": [
+        "run_all.sh LANGUAGES array: 'Golang:Golang'",
+        "status_dashboard.sh check_language_status case statement line 54: '\"Go\"') main_file=\"$lang_dir/*.go\" ;;'",
+        "show_implementations() calls check_language_status with lang='Golang', which falls through to the default (*) case, so Go always reports as 'Complete' based on run.sh existence rather than source file existence"
+      ],
+      "suggestion": "Align the case label in status_dashboard.sh with 'Golang' to match the canonical key in run_all.sh, or introduce a shared LANGUAGE_KEYS constant.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "parameter_shape_drift"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "asc-06-case-sensitive-lang-lookup",
+      "summary": "run_all.sh SPECIFIC_LANG matching is case-sensitive but show_usage() advertises lowercase 'python' as valid",
+      "related_files": ["run_all.sh"],
+      "evidence": [
+        "show_usage() line 104: example '$0 python   # Run only Python implementation'",
+        "Language lookup loop: 'if [ \"$lang_name\" = \"$SPECIFIC_LANG\" ]' — exact string match against 'Python'",
+        "'python' will not match 'Python'; the example silently runs nothing and exits without error"
+      ],
+      "suggestion": "Either normalize SPECIFIC_LANG to title-case before matching, or use case-insensitive comparison (bash 4+: shopt -s nocasematch), and update show_usage() to show the canonical casing.",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "missing_error_contract"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "The run.sh contract for each language directory was never formally specified — some accept flags ($1), most do not, and the orchestrator assumes zero arguments.",
+      "Config management was afterthought: run.sh generates a fallback config.sh with different values rather than failing fast or sharing a single source of truth.",
+      "Language key naming was never canonicalized between status_dashboard.sh and run_all.sh, leading to dead case branches."
+    ],
+    "likely_symptoms": [
+      "asc-03-config-shadow: the differing CONFIG_PRECISION (4 vs 1000) and CONFIG_PREFERENCES will cause different numeric outputs depending on whether config.sh existed before run.sh ran.",
+      "asc-06-case-sensitive-lang-lookup: a user following the documented example '$0 python' will see no error and no output — silent no-op."
+    ],
+    "possible_false_positives": [
+      "asc-04-rust-hidden-flag-api: other language run.sh files may also support undiscovered flags; the issue may be broader but was only confirmed for Rust."
+    ]
+  }
+}

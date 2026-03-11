@@ -1,0 +1,98 @@
+{
+  "batch": "contract_coherence",
+  "batch_index": 8,
+  "assessments": {"contract_coherence": 65.0},
+  "dimension_notes": {
+    "contract_coherence": {
+      "evidence": [
+        "Shell/Active_Shellference.sh calculate_kl_divergence(): documented as 'Returns: The calculated KL divergence value' — but the function uses 'echo' to return a value via stdout capture, and the caller must use command substitution. This is a valid Shell pattern but the docstring does not state the return mechanism, which is critical for callers.",
+        "Shell/Active_Shellference.sh calculate_vfe(): documented as 'Returns: The calculated Variational Free Energy' but the implementation simply delegates to calculate_kl_divergence() without adding any free-energy-specific terms — the docstring promises conceptually distinct output but the contract is not honored",
+        "Shell/Active_Shellference.sh select_action(): documented as 'Returns: The selected action with the lowest Expected Free Energy' but the loop computes the same EFE for every action (action variable never passed to calculate_efe) — the contract claims action selection by EFE minimization but the implementation does not perform that",
+        "Shell/run.sh: creates a config.sh if absent, writing a config format (bash arrays: CONFIG_ENVIRONMENT=(\"food\" \"danger\" \"safe\")) that differs from the actual config.sh format (space-delimited strings: CONFIG_ENVIRONMENT=\"ShellActiveInference_v1.0\") — run.sh's inline config would cause Active_Shellference.sh to behave differently than with the real config.sh",
+        "status_dashboard.sh check_language_status(): declared to return status and details for a language, but writes directly to stdout with printf and embedded color codes — callers cannot capture a clean return value; the function's contract is implicit side-effect output rather than a return",
+        "run_all.sh run_language(): documented implicitly (via function name) as running a language and returning success/failure — but on the 'not found' path it echoes a warning and returns no non-zero code (line 81-82), making the caller's success/failure counting incorrect for missing implementations"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high"
+    }
+  },
+  "dimension_judgment": {
+    "contract_coherence": {
+      "strengths": [
+        "Shell/config.sh validate_config() returns a proper non-zero exit code on validation failure and the caller (Active_Shellference.sh) checks and propagates it — the error contract is honored",
+        "Shell/Active_Shellference.sh functions use consistent nameref parameter conventions (local -n beliefs_ref=$1) making parameter passing contracts visible at the call site",
+        "Most run.sh scripts follow a consistent implicit contract: exit 0 on success, exit 1 on tool-not-found or compile failure"
+      ],
+      "issue_character": "The most serious contract violations are semantic: select_action() and calculate_vfe() promise behaviors in their docstrings that the implementation does not deliver, and run.sh writes a config format that contradicts what Active_Shellference.sh expects — these are API contract lies, not just style issues.",
+      "score_rationale": "The codebase has some well-honored contracts (validate_config's error return, nameref parameter conventions) but also contains multiple cases where documented contracts do not match implementation behavior. The select_action() docstring claiming EFE minimization when the implementation is invariant, and run.sh generating a config format incompatible with Active_Shellference.sh, are high-confidence violations. These are not minor mismatches — they would mislead a developer extending or debugging the code. This warrants a score in the 60–70 range, anchored at 65 because the violations are concentrated in the Shell subsystem rather than uniformly distributed."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "contract_coherence",
+      "identifier": "cc_select_action_docstring_lie",
+      "summary": "select_action() docstring claims it selects the action with lowest EFE but the implementation computes identical EFE for every action",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "Lines 150-156: docstring states 'Chooses the action that minimizes the Expected Free Energy'",
+        "Lines 168-175: calculate_efe is called with beliefs_ref, preferences_ref, transition_probs_ref — none of which vary by action; the loop variable 'action' is never used in the EFE calculation"
+      ],
+      "suggestion": "Either update the implementation to compute action-specific EFE (by indexing into transition_probs differently per action) or update the docstring to accurately describe what the function does. The contract and implementation must agree.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "cc_calculate_vfe_docstring_misrepresents_identity",
+      "summary": "calculate_vfe() docstring promises Variational Free Energy but the implementation is identical to KL divergence with no free-energy-specific terms",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "Lines 61-68: docstring: 'Computes the Variational Free Energy based on current beliefs and preferences'",
+        "Lines 70-77: body is solely 'vfe=$(calculate_kl_divergence beliefs_ref preferences_ref); echo \"$vfe\"' — no likelihood term, no additional computation"
+      ],
+      "suggestion": "Add a comment explicitly stating that in this simplified model VFE is approximated by KL divergence, or implement a VFE calculation that adds a log-likelihood term. The current docstring misleads developers about what is actually computed.",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "cc_run_sh_config_format_mismatch",
+      "summary": "Shell/run.sh generates a config.sh using bash array syntax incompatible with the actual config.sh format expected by Active_Shellference.sh",
+      "related_files": ["Shell/run.sh", "Shell/config.sh", "Shell/Active_Shellference.sh"],
+      "evidence": [
+        "Shell/run.sh lines 28-38: generates config.sh with CONFIG_ENVIRONMENT=(\"food\" \"danger\" \"safe\") — bash array assignment",
+        "Shell/config.sh line 9: CONFIG_ENVIRONMENT=\"ShellActiveInference_v1.0\" — space-delimited string; line 12-18 use quoted string format for all CONFIG_ variables",
+        "Active_Shellference.sh sources config.sh and reads simulation[environment]=\"${CONFIG_ENVIRONMENT}\" — expects string format, not array"
+      ],
+      "suggestion": "Align run.sh's fallback config generation with the actual format used in config.sh. Either update run.sh to generate string-format values, or document that the generated config uses a different schema and ensure Active_Shellference.sh can handle both.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "cc_run_language_missing_lang_no_error",
+      "summary": "run_language() in run_all.sh does not return a non-zero exit code when a language directory is missing — callers cannot distinguish 'ran and failed' from 'did not run'",
+      "related_files": ["run_all.sh"],
+      "evidence": [
+        "Lines 72-83: the else-if branch for missing directory prints a warning with echo and falls through — no 'return 1'",
+        "Lines 194-201: caller uses 'if run_language ...' to increment SUCCESS_COUNT or FAILURE_COUNT — missing languages are counted as successes"
+      ],
+      "suggestion": "Add 'return 1' (or 'return 2' for a distinct 'not-found' state) in the missing-directory branch so callers can properly track missing vs. failed implementations.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "The Shell implementation appears to have been written with docstrings and function names that describe intended mathematical behavior, but the implementations were simplified without updating the contracts — resulting in docstrings that promise more than the code delivers",
+      "run.sh was likely written independently of config.sh, resulting in the config format mismatch"
+    ],
+    "likely_symptoms": ["cc_calculate_vfe_docstring_misrepresents_identity", "cc_select_action_docstring_lie"],
+    "possible_false_positives": []
+  }
+}

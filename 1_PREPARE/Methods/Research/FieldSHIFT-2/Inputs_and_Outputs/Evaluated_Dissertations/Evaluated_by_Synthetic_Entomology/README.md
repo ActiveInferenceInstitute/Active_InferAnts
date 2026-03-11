@@ -1,0 +1,21 @@
+# Evaluated by Synthetic Entomology
+
+Evaluated by Synthetic Entomology — component of the Evaluated Dissertations subsystem in the Active InferAnts framework.
+
+## Contents
+
+- 📄 `AGENTS.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_ATM_Transaction_evaluated_by_Synthetic_Entomology.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_Biology_evaluated_by_Synthetic_Entomology.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_Blockchain_evaluated_by_Synthetic_Entomology.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_Chemistry_evaluated_by_Synthetic_Entomology.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_Cognitive_Security_evaluated_by_Synthetic_Entomology.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_Cooking_evaluated_by_Synthetic_Entomology.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_Entomology_evaluated_by_Synthetic_Entomology.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_FEP-ActInf_evaluated_by_Synthetic_Entomology.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_Hospitality_evaluated_by_Synthetic_Entomology.md`
+- 📄 `Improved_Written_Dissertation_Outline_shifted_Synthetic_Neuroscience_to_Synthetic_Neuroscience_evaluated_by_Synthetic_Entomology.md`
+
+## Related
+
+- Parent: [Evaluated_Dissertations](../README.md)

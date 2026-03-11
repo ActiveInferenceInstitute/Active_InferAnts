@@ -1,0 +1,93 @@
+{
+  "batch": "naming_quality",
+  "batch_index": 8,
+  "assessments": {"naming_quality": 70.0},
+  "dimension_notes": {
+    "naming_quality": {
+      "evidence": [
+        "run_all.sh: function 'run_language()' has a generic name but the function does: directory navigation, permission checking, subprocess execution, and result tracking — the name understates the responsibility",
+        "Shell/Active_Shellference.sh: variable name 'precision' in global scope is ambiguous — it stores a numeric scale value for bc arithmetic, but 'precision' in the Active Inference domain refers to inverse variance; these are different concepts with the same name",
+        "Shell/Active_Shellference.sh: 'kl_divergence' local variable starts at 0 and is used as accumulator — the name is correct for the result but the pattern 'kl_divergence=0; kl_divergence = kl_divergence + ...' obscures that it is an accumulator; conventional name would be 'kl_sum' during accumulation",
+        "status_dashboard.sh: function 'check_language_status()' returns nothing (no echo or return value) — it only calls printf to stdout; a function that produces side-effect output rather than returning a value is conventionally named 'print_*' or 'show_*' not 'check_*'",
+        "status_dashboard.sh: local variable 'status' inside check_language_status is set but the function also has side effects via printf — the variable name implies a return value but the function is purely procedural",
+        "config_manager.py: method '_command_exists()' is a clear, accurate name that communicates intent",
+        "config_manager.py: 'generate_dependency_report()' returns a string but its name suggests it generates/writes a file — the actual file write happens in main(), not in this method; the method should be named 'format_dependency_report()' or 'build_dependency_report()'",
+        "reporting_system.py: class 'LanguageImplementation' with method '_check_implementation()' — 'implementation' is used in two different senses (the class represents a language implementation, the method checks if it's properly set up)",
+        "Python/Student_Teacher.py: matrix variable named 'A', 'B', 'C', 'D' follow Active Inference academic convention — acceptable domain-specific abbreviations matching literature norms",
+        "run_all.sh: variables 'SUCCESS_COUNT' and 'FAILURE_COUNT' are clear and accurate"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium"
+    }
+  },
+  "dimension_judgment": {
+    "naming_quality": {
+      "strengths": [
+        "Most shell functions have clear intent-revealing names: show_header, show_system_info, list_languages, show_usage",
+        "Domain-specific mathematical variable names (A, B, C, D matrices) correctly follow Active Inference literature conventions",
+        "Python type annotations and method signatures in config_manager.py and reporting_system.py use accurate descriptive names",
+        "ERROR and SUCCESS status constants/variables follow clear boolean naming conventions"
+      ],
+      "issue_character": "The most frequent naming issue is name/behavior mismatch: functions named 'check_*' that produce output rather than returning values, and 'generate_*' methods that build strings rather than generating files.",
+      "score_rationale": "Naming is generally adequate across the codebase — most names communicate basic intent. The score is reduced by three real mismatches: check_language_status() prints rather than checking, generate_dependency_report() returns a string rather than generating a file, and the 'precision' variable name collision with the Active Inference domain concept. These are genuine naming defects that would mislead a developer reading the code."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "naming_quality",
+      "identifier": "check_language_status_produces_output_not_check",
+      "summary": "status_dashboard.sh check_language_status() name implies a check/return but the function only produces stdout output via printf",
+      "related_files": ["status_dashboard.sh"],
+      "evidence": [
+        "Lines 26-70: function is named 'check_language_status' but its entire body builds status strings and ends with 'printf \"  %-12s %s - %s\\n\"' — it has no return value",
+        "Callers in show_implementations() use it as 'check_language_status \"$lang\" \"$dir\"' without capturing output — consistent with a print function, not a check function"
+      ],
+      "suggestion": "Rename to 'print_language_status' or 'show_language_status' to match actual behavior",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "naming_quality",
+      "identifier": "generate_dependency_report_returns_string_not_file",
+      "summary": "config_manager.py generate_dependency_report() returns a string but 'generate' conventionally implies creating a file or artifact",
+      "related_files": ["config_manager.py"],
+      "evidence": [
+        "Lines 707-735: method builds and returns a string: 'return report'",
+        "The actual file write ('with open(\"dependency_report.txt\", \"w\") as f') happens in main() at line 749-751 — not in this method"
+      ],
+      "suggestion": "Rename to 'format_dependency_report()' or 'build_dependency_report()' to accurately describe that it returns a formatted string",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "naming_quality",
+      "identifier": "precision_variable_domain_collision",
+      "summary": "Shell/Active_Shellference.sh uses 'precision' as a bc scale parameter, conflicting with its domain meaning of inverse variance in Active Inference",
+      "related_files": ["Shell/Active_Shellference.sh", "Shell/config.sh"],
+      "evidence": [
+        "Active_Shellference.sh line 18: 'declare -i precision' and line 33: 'precision=\"${CONFIG_PRECISION}\"'",
+        "config.sh line 26: 'export CONFIG_PRECISION=1000' — used as 'scale=$precision' in bc arithmetic expressions",
+        "In Active Inference literature, 'precision' specifically means the inverse variance weighting beliefs — the use here for arithmetic scale creates a false semantic link"
+      ],
+      "suggestion": "Rename to 'bc_scale' or 'arithmetic_scale' to distinguish from the domain-specific concept of precision as inverse variance",
+      "confidence": "medium",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "Shell function naming convention of 'check_*' used for print-side-effect functions — common shell scripting pattern that conflicts with the codebase's own 'show_*' naming used elsewhere",
+      "Python method naming did not distinguish string-building from file-generating operations"
+    ],
+    "likely_symptoms": [
+      "Developers expecting check_language_status to return a value and capturing its output will get unexpected results"
+    ],
+    "possible_false_positives": [
+      "A, B, C, D matrix names in Student_Teacher.py — these are domain-standard abbreviations in Active Inference literature, not generic abbreviations"
+    ]
+  }
+}

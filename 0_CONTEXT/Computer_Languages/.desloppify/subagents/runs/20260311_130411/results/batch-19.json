@@ -1,0 +1,89 @@
+{
+  "batch": "dependency_health",
+  "batch_index": 19,
+  "assessments": {"dependency_health": 55.0},
+  "dimension_notes": {
+    "dependency_health": {
+      "evidence": [
+        "No requirements.txt anywhere in the codebase — Python dependencies (numpy, scipy, matplotlib, seaborn, pandas, psutil, plotly) are declared only inline in code and in config_manager.py's 'required' lists; no pinned versions",
+        "reporting_system.py: imports matplotlib, seaborn, pandas, numpy, plotly.express, plotly.graph_objects, plotly.subplots — plotly is a heavy dependency (>10MB) brought in for visualization that is never actually executed (generate_comprehensive_report is empty/broken)",
+        "benchmark_suite.py: imports psutil, numpy, matplotlib, seaborn — psutil is used legitimately for process memory monitoring",
+        "JavaScript/package.json: 'plotly.js': '^2.25.2' — plotly.js is ~3.5MB minified, a very heavy browser-targeting library used in a Node.js CLI context where lighter alternatives (d3, vega-lite) or server-side rendering would suffice",
+        "JavaScript/package.json and TypeScript/package.json: both declare 'mathjs': '^11.9.1' — same dependency at the same version in two sibling packages; not a conflict but a duplication that could be centralized in a workspace root",
+        "TypeScript/package.json: '@types/mathjs': '^9.4.2' — types package version 9.x paired with mathjs 11.x; major version mismatch between the library and its type definitions",
+        "Rust/Cargo.toml: serde = '1.0.219' and serde_json = '1.0.143' — unusually specific patch versions for serde; serde_json 1.0.143 is ahead of serde 1.0.219 in typical release cadence, though both are from the same ecosystem and should remain compatible",
+        "Python/config_manager.py: 'import yaml' inside load_config() and save_config() — conditional import at function call time; yaml is also imported at top-level ('import yaml' on line 11); the conditional re-import is redundant but not a circular dependency",
+        "Python/serializer.py: imports gzip, bz2, lzma at module level — all three compression modules loaded regardless of which format is configured; low impact for stdlib but signals over-importing",
+        "No lock files present for any language (no package-lock.json, no yarn.lock, no Pipfile.lock, no poetry.lock) — dependency versions are unpinned across all languages that use package managers"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium"
+    }
+  },
+  "dimension_judgment": {
+    "dependency_health": {
+      "strengths": [
+        "Rust/Cargo.toml is minimal and well-chosen: ndarray, rand, serde, thiserror — all standard, purposeful, no redundancy",
+        "JavaScript/package.json has only 2 runtime dependencies (mathjs, plotly.js) — not bloated for its use case",
+        "benchmark_suite.py uses psutil specifically for process memory monitoring — a targeted, appropriate heavy dependency"
+      ],
+      "issue_character": "The dominant problem is the complete absence of lock files and a requirements.txt across all Python tooling, making the dependency graph non-reproducible; a secondary issue is heavy visualization libraries (plotly.js, plotly Python) pulled in for functionality that does not work.",
+      "score_rationale": "Rust is clean, JS/TS have minimal and reasonable deps though plotly.js is heavy for a CLI context. The critical gap is Python: no requirements.txt, no lock file, and dependencies inferred from code reading alone. The TypeScript @types/mathjs version mismatch (9.x types for 11.x library) is a real defect. The score sits at the midpoint — individual language manifests are not badly organized, but the absence of reproducibility tooling for the primary Python orchestration layer is a significant structural gap."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "dependency_health",
+      "identifier": "dh_no_requirements_txt",
+      "summary": "No requirements.txt or lock file for Python orchestration layer",
+      "related_files": ["reporting_system.py", "benchmark_suite.py", "config_manager.py", "master_controller.py", "test_suite.py"],
+      "evidence": ["reporting_system.py imports: matplotlib, seaborn, pandas, numpy, plotly, psutil — no version pinning anywhere", "benchmark_suite.py imports: psutil, numpy, matplotlib, seaborn — same", "No requirements.txt, Pipfile, pyproject.toml, or poetry.lock found in codebase glob"],
+      "suggestion": "Create a requirements.txt at the Computer_Languages root with pinned versions for all Python dependencies: numpy, scipy, matplotlib, seaborn, pandas, psutil, plotly; add a requirements-dev.txt for dev-only tools",
+      "confidence": "high",
+      "impact_scope": "codebase",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "dependency_health",
+      "identifier": "dh_plotly_dead_code",
+      "summary": "plotly (heavy ~10MB dependency) is imported in reporting_system.py but the methods that use it are empty/broken",
+      "related_files": ["reporting_system.py"],
+      "evidence": ["Lines 22-24: 'import plotly.express as px; import plotly.graph_objects as go; from plotly.subplots import make_subplots'", "generate_comprehensive_report() returns empty string — no plotly calls are reachable", "plotly.js is also declared in JavaScript/package.json as a production dependency for CLI use"],
+      "suggestion": "Either implement the plotly-based reporting or remove the imports until the feature is ready; for CLI use consider a lighter alternative (matplotlib already present for static charts)",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "dependency_health",
+      "identifier": "dh_types_version_mismatch",
+      "summary": "TypeScript @types/mathjs 9.x paired with mathjs 11.x — major version mismatch",
+      "related_files": ["TypeScript/package.json"],
+      "evidence": ["dependencies: 'mathjs': '^11.9.1'", "devDependencies: '@types/mathjs': '^9.4.2'", "mathjs went through breaking API changes between 9.x and 11.x; type definitions may not match the actual API"],
+      "suggestion": "Upgrade @types/mathjs to match mathjs 11.x (check the mathjs changelog and DefinitelyTyped for the correct version pairing)",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "dependency_health",
+      "identifier": "dh_mathjs_duplicated",
+      "summary": "mathjs and plotly.js declared identically in both JavaScript and TypeScript package.json with no workspace root",
+      "related_files": ["JavaScript/package.json", "TypeScript/package.json"],
+      "evidence": ["Both files: 'mathjs': '^11.9.1' and 'plotly.js': '^2.25.2'", "No package.json or yarn/npm workspace root at Computer_Languages level to deduplicate"],
+      "suggestion": "If Node workspaces are appropriate here, add a root package.json with workspaces configuration; otherwise accept the duplication but ensure versions stay in sync",
+      "confidence": "low",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "Python tooling was assembled incrementally with imports added as needed but without a package manifest — no one established requirements.txt as a project norm",
+      "Plotly imported speculatively as the intended visualization backend for reports that were never implemented"
+    ],
+    "likely_symptoms": ["dh_no_requirements_txt", "dh_plotly_dead_code"],
+    "possible_false_positives": ["dh_mathjs_duplicated — workspace deduplication may be intentional given the two packages serve different runtime environments (ESM vs TypeScript compilation)"]
+  }
+}

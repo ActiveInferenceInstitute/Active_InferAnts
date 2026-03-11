@@ -1,0 +1,115 @@
+{
+  "batch": "design_coherence",
+  "batch_index": 6,
+  "assessments": {"design_coherence": 72.0},
+  "dimension_notes": {
+    "design_coherence": {
+      "evidence": [
+        "status_dashboard.sh check_language_status() conflates two distinct responsibilities: filesystem probing (does directory/file exist, is it executable) AND language-specific source-file mapping via a large case statement. These are separable concerns that cause the function to grow when either concern changes.",
+        "status_dashboard.sh show_statistics() hardcodes language-category membership as inline strings passed to wc -w rather than referencing the canonical LANGUAGES array or the categories map already defined in show_implementations(). The same categorization data is maintained in two places: the categories associative array in show_implementations and the echo-string counts in show_statistics.",
+        "run_all.sh run_language() handles both the 'language found' and 'language not found' branches, but success/failure counting (SUCCESS_COUNT, FAILURE_COUNT) is done at the call site, not inside run_language. This splits the outcome-tracking responsibility across the function and all three call sites, making the caller repeat the same if/else pattern three times (sequential loop, parallel loop, single-lang path).",
+        "Shell/run.sh embeds a complete alternative config.sh definition inline as a heredoc, duplicating the configuration schema that already exists in Shell/config.sh. A developer modifying config structure must update both files.",
+        "status_dashboard.sh show_recommendations() mixes three distinct sub-concerns in one function body: missing-README detection, non-executable-run.sh detection, and improvement suggestions. Each triggers a separate find scan and conditional print block. These could each be individual focused functions called from a recommendations orchestrator.",
+        "The LANGUAGES array in run_all.sh and the categories map in status_dashboard.sh:show_implementations() represent the same set of languages in two independent data structures with no shared source of truth. Adding a new language requires edits in both files."
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high"
+    }
+  },
+  "dimension_judgment": {
+    "design_coherence": {
+      "strengths": [
+        "Shell/Active_Shellference.sh has tightly scoped functions: calculate_kl_divergence, calculate_efe, update_beliefs, and select_action each have a single mathematical responsibility and clear inputs/outputs.",
+        "Shell/config.sh cleanly separates configuration data from validation logic and is sourced as a distinct unit, avoiding inline config in the simulation script.",
+        "run_all.sh run_language() correctly uses a subshell to isolate CWD changes, reflecting a design-aware choice that keeps the function side-effect contained.",
+        "The use of a LANGUAGES array in run_all.sh as the single loop target (for listing, sequential run, parallel run, and single-language search) keeps the language set in one place within that file."
+      ],
+      "issue_character": "The issues are structural redundancy at the orchestration layer: the same data (language list, category groupings, config schema) is represented multiple times in independent structures, and multi-concern functions in status_dashboard.sh conflate probe logic with display and recommendation logic in ways that will require coordinated edits on each change.",
+      "score_rationale": "The simulation core (Active_Shellference.sh) is well-decomposed and earns a high sub-score, but the orchestration and dashboard scripts show recurring design problems: duplicated data structures without a shared source of truth, functions with multiple distinct responsibilities, and split outcome-tracking across call sites. These are not isolated rough edges — they are a consistent pattern in the two largest files (run_all.sh at 260 LOC, status_dashboard.sh at 281 LOC). At the 80-anchor, a developer 'regularly encounters functions doing too many things or repeated patterns that should be data-driven'; this codebase is firmly in that range, dragged slightly below 80 by the cross-file duplication of the language/category list."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "design_coherence",
+      "identifier": "dual_language_registry",
+      "summary": "Language list maintained independently in run_all.sh LANGUAGES array and status_dashboard.sh categories map — no shared source of truth",
+      "related_files": ["run_all.sh", "status_dashboard.sh"],
+      "evidence": [
+        "run_all.sh lines 21-62 define a flat LANGUAGES array with 40 entries used for running.",
+        "status_dashboard.sh lines 159-168 define a categories associative array covering the same languages, used for display. Adding a language (e.g., a new Jock entry) requires edits in both files independently."
+      ],
+      "suggestion": "Extract a single canonical language-to-category mapping (e.g., a tab-delimited data file or a shared sourced script) that both run_all.sh and status_dashboard.sh derive their lists from. run_all.sh can iterate all entries; status_dashboard.sh can group by the category field.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "root_cause_cluster": "data_duplication"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "category_count_duplication",
+      "summary": "show_statistics() in status_dashboard.sh recomputes category membership via inline strings instead of reusing the categories map from show_implementations()",
+      "related_files": ["status_dashboard.sh"],
+      "evidence": [
+        "status_dashboard.sh lines 127-140: each category is counted by passing a hardcoded string of names to wc -w, e.g. 'systems_langs=$(echo \"Ada Assembly C CSharp Cpp Rust Zig Nim Crystal Odin V Swift Pascal\" | wc -w | tr -d \" \")'.",
+        "The same category-to-language grouping is already defined in the categories associative array at lines 159-168. Any addition or reclassification of a language requires updating both the categories array and the inline strings in show_statistics()."
+      ],
+      "suggestion": "Derive category counts by iterating the existing categories associative array: for each key, count the space-separated entries in its value. This eliminates the redundant hardcoded lists and ensures counts stay in sync with the display groupings.",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "data_duplication"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "check_language_status_mixed_concerns",
+      "summary": "check_language_status() in status_dashboard.sh conflates generic filesystem checks with language-specific source-file mapping in a single function",
+      "related_files": ["status_dashboard.sh"],
+      "evidence": [
+        "status_dashboard.sh lines 26-70: the function first performs generic probes (directory exists, README exists, run.sh exists, run.sh is executable), then switches on language name to locate a language-specific main source file.",
+        "The case statement (lines 47-58) encodes per-language knowledge (e.g. Python -> Student_Teacher.py, Java -> AntColony.java) mixed into the same function that does generic infrastructure checks. Adding a new language means touching this function's case statement even though the generic checks are unrelated."
+      ],
+      "suggestion": "Extract the language-to-source-file mapping into a separate associative array or lookup function (e.g., get_main_source_file <lang> <dir>). check_language_status() then calls that lookup rather than embedding the case statement, keeping generic probing and language-specific knowledge separate.",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "run_language_outcome_tracking_split",
+      "summary": "run_all.sh splits outcome tracking between run_language() return value and three separate call sites that repeat the same if/else SUCCESS_COUNT/FAILURE_COUNT pattern",
+      "related_files": ["run_all.sh"],
+      "evidence": [
+        "run_all.sh lines 196-203 (single-language path), 210-213 (sequential loop), 231-234 (parallel loop): all three sites repeat 'if run_language; then ((SUCCESS_COUNT++)); else ((FAILURE_COUNT++)); fi'.",
+        "The repeated pattern means adding a third outcome (e.g., skipped) requires editing all three call sites."
+      ],
+      "suggestion": "Introduce a wrapper function, e.g. run_and_track <lang_info>, that calls run_language and updates counters internally. All three dispatch paths call run_and_track, eliminating the repeated if/else and centralizing outcome tracking.",
+      "confidence": "medium",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "shell_run_inline_config_duplication",
+      "summary": "Shell/run.sh embeds a full alternative config.sh definition as a heredoc, duplicating the configuration schema already in Shell/config.sh",
+      "related_files": ["Shell/run.sh", "Shell/config.sh"],
+      "evidence": [
+        "Shell/run.sh lines 24-37: if config.sh does not exist, the script writes a complete alternative config with different values (CONFIG_ENVIRONMENT='food danger safe', CONFIG_PREFERENCES='1.0 0.0 0.5', CONFIG_PRECISION=4) and a stub validate_config.",
+        "Shell/config.sh already defines the full schema with different default values and a real validate_config. The two configs have incompatible dimension counts (beliefs=4 states in both, but preferences=3 in config.sh vs 3 in the inline heredoc, and the transition matrix dimensions differ: 8 entries in config.sh vs 12 in heredoc), meaning the fallback produces a materially different simulation."
+      ],
+      "suggestion": "Remove the inline heredoc from run.sh and instead require config.sh to be present (fail with a clear error if missing), or symlink/copy Shell/config.sh as the canonical default. Document in run.sh that config.sh is required. This eliminates the divergent schema and ensures Active_Shellference.sh always receives a consistent, validated configuration.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "data_duplication"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "data_duplication: The language/category dataset is the canonical organizing concept of this repo but is encoded redundantly across run_all.sh, status_dashboard.sh (display), and status_dashboard.sh (statistics). A shared data source would resolve issues dual_language_registry, category_count_duplication, and partially check_language_status_mixed_concerns.",
+      "orchestration_functions_accumulating_responsibilities: show_recommendations() and check_language_status() grew by accretion — each new check was added inline rather than extracted."
+    ],
+    "likely_symptoms": [],
+    "possible_false_positives": []
+  }
+}

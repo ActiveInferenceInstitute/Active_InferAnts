@@ -1,0 +1,120 @@
+{
+  "batch": "design_coherence",
+  "batch_index": 7,
+  "assessments": {"design_coherence": 62.0},
+  "dimension_notes": {
+    "design_coherence": {
+      "evidence": [
+        "status_dashboard.sh contains 8 distinct functions mixing concerns: show_header (display), show_system_info (OS/hardware introspection), show_statistics (file counting), show_implementations (per-language status), show_recent_activity (git-like file inspection), show_recommendations (analysis+output) — the file blends output formatting, filesystem queries, tool detection, and reporting in a single 253-line script",
+        "run_all.sh: run_language() function is responsible for both cd-based isolation and execution reporting — it mutates global SUCCESS_COUNT/FAILURE_COUNT via (()) arithmetic, mixes directory navigation with process execution, making it hard to test the execution logic in isolation",
+        "Shell/Active_Shellference.sh: select_action() iterates environment_ref but computes calculate_efe() inside the loop without varying inputs per iteration — the loop variable 'action' is never passed to calculate_efe(), making all EFE computations identical; this is simultaneously a design and logic problem",
+        "config_manager.py: DependencyChecker._load_dependency_definitions() hardcodes 26+ language entries as a large dictionary literal with per-language checker/installer method references — a data-driven pattern would be more maintainable but the current approach creates an immovable 174-line initialization block",
+        "config_manager.py has two entirely separate responsibilities: dependency checking (DependencyChecker class) and a CLI main() function. The class itself has 26+ nearly identical _check_*_deps() and _install_*_deps() method pairs that are structural repetition rather than real abstraction",
+        "Brainfuck/run.sh is 66 LOC and does: dependency checking, JSON config file creation, running one Python script, and conditionally running two more Python scripts — four distinct responsibilities in a runner that should only launch the program",
+        "Cpp/run.sh line 17: 'echo \"$(g++) --version | head -1)\"' has an unbalanced parenthesis — the subshell command is syntactically broken, meaning g++ version is not actually printed",
+        "The LANGUAGES array in run_all.sh uses 'Ada:Ada' format (name:dir are identical for all entries) — the colon-split encoding adds complexity without value since name always equals dir"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high"
+    }
+  },
+  "dimension_judgment": {
+    "design_coherence": {
+      "strengths": [
+        "Each language implementation is isolated in its own directory with a standardized run.sh entry point, showing consistent top-level structural decomposition",
+        "run_all.sh cleanly separates sequential vs parallel execution modes",
+        "config_manager.py uses TypedDict-style return types consistently across the public API"
+      ],
+      "issue_character": "The dominant issue is repeated structural patterns that should be data-driven but are instead expressed as dozens of near-identical method pairs, combined with functions that mix multiple distinct responsibilities (display, I/O, analysis, execution) in single bodies.",
+      "score_rationale": "The codebase scores below average for design coherence because the config_manager.py has 26+ structurally identical method pairs that should be table-driven, the status_dashboard.sh merges fundamentally different concerns into one file, and the Brainfuck/run.sh runner does too much. The run_all.sh LANGUAGES array encoding (name:dir with always-equal values) is unnecessary complexity. These are real structural design defects not just style issues. The standardized per-language directory structure is a genuine strength that prevents a lower score."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "design_coherence",
+      "identifier": "config_manager_26_identical_method_pairs",
+      "summary": "config_manager.py contains 26+ near-identical _check_*_deps() and _install_*_deps() method pairs that should be data-driven",
+      "related_files": ["config_manager.py"],
+      "evidence": [
+        "Lines 446-690: _check_lua_deps, _check_perl_deps, _check_r_deps, _check_racket_deps, etc. all follow identical patterns: call _command_exists() on a fixed string, build available/missing lists, return tuple",
+        "The dependency definitions dict already stores the required tool list — the checker methods reimplement the same logic redundantly instead of using the stored required list"
+      ],
+      "suggestion": "Replace per-language _check_*_deps() methods with a generic _check_commands(required: List[str]) method that iterates self.dependencies[lang]['required'], eliminating 20+ nearly identical method bodies",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "status_dashboard_mixed_concerns",
+      "summary": "status_dashboard.sh mixes display formatting, OS introspection, filesystem queries, tool detection, and analysis recommendations in a single 253-line file",
+      "related_files": ["status_dashboard.sh"],
+      "evidence": [
+        "show_system_info() queries lsb_release, /etc/os-release, nproc, free, and iterates 29 tool names — this is system introspection, not dashboard display",
+        "show_statistics() uses find with -printf and wc -l for file counting — data aggregation distinct from display",
+        "show_recommendations() both analyzes and prints — analysis should be separated from rendering"
+      ],
+      "suggestion": "Extract data-gathering functions (collect_system_info, collect_statistics, collect_recommendations) separately from display functions, or split into a data-gathering script and a display script",
+      "confidence": "medium",
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "select_action_loop_ignores_action_variable",
+      "summary": "select_action() in Active_Shellference.sh iterates over environment actions but never passes the current action to calculate_efe(), computing identical EFE for every action",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "Lines 167-175: 'for action in \"${environment_ref[@]}\"; do ... efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref) ...' — the loop variable 'action' is never used in the EFE call",
+        "EFE is action-dependent by definition; the design promises action selection but delivers a constant comparison"
+      ],
+      "suggestion": "Pass the current action as a parameter to calculate_efe() and update calculate_efe() to apply action-specific transition probabilities for that action index",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "cpp_run_sh_broken_subshell_syntax",
+      "summary": "Cpp/run.sh has unbalanced parenthesis in g++ version echo command making compiler version reporting silently broken",
+      "related_files": ["Cpp/run.sh"],
+      "evidence": [
+        "Line 17: 'echo \"✅ G++ found: $(g++) --version | head -1)\"' — the subshell opens with $( but contains the closing paren of g++ before the pipe, producing incorrect output"
+      ],
+      "suggestion": "Fix to: 'echo \"✅ G++ found: $(g++ --version | head -1)\"' — move the closing paren to after head -1",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "brainfuck_run_sh_over_responsibility",
+      "summary": "Brainfuck/run.sh has four distinct responsibilities: dependency checking, config generation, primary execution, and conditional analysis execution",
+      "related_files": ["Brainfuck/run.sh"],
+      "evidence": [
+        "Lines 20-24: checks 7 Python packages",
+        "Lines 28-50: generates a JSON config file if not present",
+        "Line 54: runs the primary simulation",
+        "Lines 57-62: conditionally runs two additional analysis scripts"
+      ],
+      "suggestion": "Move config generation to a setup.sh or init script, and move analysis invocation to a separate analyze.sh; keep run.sh focused on dependency check and primary execution",
+      "confidence": "medium",
+      "impact_scope": "local",
+      "fix_scope": "multi_file_refactor"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "config_manager.py was built by enumerating all 26+ languages explicitly rather than using a data-driven loop over the already-defined dependencies dict",
+      "Shell scripts grew organically to include related utilities without extracting to separate concerns"
+    ],
+    "likely_symptoms": [
+      "select_action always selects the first environment entry regardless of action differences",
+      "Cpp/run.sh prints malformed version string due to broken subshell"
+    ],
+    "possible_false_positives": [
+      "The orphaned file signals for individual run.sh scripts — these are entry points invoked by run_all.sh via shell execution, not imports, so the orphaned detector result is a false positive for these files"
+    ]
+  }
+}

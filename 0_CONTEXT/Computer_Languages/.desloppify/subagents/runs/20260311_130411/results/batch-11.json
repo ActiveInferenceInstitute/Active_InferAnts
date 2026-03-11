@@ -1,0 +1,71 @@
+{
+  "batch": "naming_quality",
+  "batch_index": 11,
+  "assessments": {"naming_quality": 72.0},
+  "dimension_notes": {
+    "naming_quality": {
+      "evidence": [
+        "Shell/Active_Shellference.sh: `run_simulation` is a generic verb that reveals nothing about active inference — it is the file's top-level entry point yet its name could belong to any simulation script",
+        "run_all.sh: `run_language` is a generic verb; the function dispatches to per-language run.sh scripts, but the name communicates only that it 'runs' something",
+        "Shell/Active_Shellference.sh: `calculate_vfe` is a pure pass-through wrapper around `calculate_kl_divergence` — both name and body are misleading because VFE is not identical to KL divergence, yet the implementation just returns KL; name implies distinct semantics that aren't delivered",
+        "Shell/Active_Shellference.sh: `select_action` iterates `environment_ref` array but the EFE value is computed identically on every iteration (same beliefs/preferences/transition_probs regardless of action) — the name promises action selection by EFE minimization but the loop does not vary the policy variable it supposedly selects over",
+        "status_dashboard.sh: `show_system_info`, `show_statistics`, `show_implementations`, `show_recent_activity`, `show_recommendations` — all use the generic verb `show_`; names are consistent with each other and adequately scoped to the dashboard context, so this is a mild concern",
+        "Python/Student_Teacher.py: `F` used as local variable for free-energy array and `pi` for policy distribution — abbreviations are consistent with active inference academic convention, not an issue",
+        "Python/Student_Teacher.py: `infer_policy` — name is domain-appropriate but the function returns a probability distribution over actions rather than a policy index; slight name/behavior tension",
+        "Golang/GoLang_Agent.go: `State` and `Observation` typed as `string` aliases with well-named constants (`StateSearching`, `ObservationFood`) — naming quality is high in that file"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium"
+    }
+  },
+  "dimension_judgment": {
+    "naming_quality": {
+      "strengths": [
+        "Domain terminology (VFE, EFE, KL divergence, beliefs, preferences, transition_probs) is applied consistently across Shell, Python, TypeScript, and Rust implementations",
+        "Golang constants use descriptive typed strings (`StateSearching`, `ObservationFood`) rather than bare string literals, making intent clear at call sites",
+        "Shell config variables all carry the `CONFIG_` prefix, making their provenance unambiguous throughout Active_Shellference.sh",
+        "TypeScript implementation uses precise names: `validateConfig`, `initializeGenerativeModel`, `initializeBeliefState` — each name accurately forecasts what the function does"
+      ],
+      "issue_character": "Issues are mostly generic-verb names and one name/behavior mismatch (calculate_vfe reused for KL divergence), concentrated in the Shell implementation; they are not systemic across all language implementations.",
+      "score_rationale": "Most language implementations use domain-precise names that a developer familiar with active inference can navigate without opening function bodies. The Shell layer pulls the score down: `run_simulation` and `run_language` are generic, and `calculate_vfe` names a pass-through that misrepresents what it computes. These are real friction points but confined to one subsystem. Aligning with the 70-80 anchor: a developer would mostly be well-served but would regularly encounter a name requiring a second look in the Shell module."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "naming_quality",
+      "identifier": "NQ-01",
+      "summary": "calculate_vfe is a misleading pass-through to calculate_kl_divergence without additional computation",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "calculate_vfe (lines 70-77) calls calculate_kl_divergence and immediately returns its result with no additional terms",
+        "VFE in active inference includes both a KL term and a log-likelihood term; naming this function calculate_vfe implies richer computation than is present"
+      ],
+      "suggestion": "Either rename calculate_vfe to calculate_kl_divergence_wrapper and document that this is a simplified VFE approximation, or expand the body to actually compute VFE (adding the likelihood term) so the name matches behavior",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "shell_naming"
+    },
+    {
+      "dimension": "naming_quality",
+      "identifier": "NQ-02",
+      "summary": "select_action loop does not vary the EFE per action — name promises action selection by EFE minimization but implementation does not deliver it",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "select_action (lines 160-178) iterates over environment_ref but calls calculate_efe with the same beliefs_ref, preferences_ref, and transition_probs_ref on every iteration",
+        "Because EFE is identical across all loop iterations, the 'selected' action is always the first environment element — the name implies a meaningful selection that does not happen"
+      ],
+      "suggestion": "If true per-action EFE is not feasible in bash, rename the function to get_first_environment_action or document explicitly that the selection is a placeholder; otherwise pass a per-action policy slice to calculate_efe",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "shell_naming"
+    }
+  ],
+  "retrospective": {
+    "root_causes": ["Shell implementation appears to have been scaffolded with stub functions whose names were not updated after their bodies were simplified or left incomplete"],
+    "likely_symptoms": ["NQ-01 and NQ-02 are both symptoms of the same root cause: function names carried over from a richer design that was not fully implemented"],
+    "possible_false_positives": ["run_simulation and run_language are generic verbs but are standard shell scripting idioms — some engineers would consider them acceptable"]
+  }
+}

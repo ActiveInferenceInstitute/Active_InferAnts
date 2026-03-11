@@ -1,0 +1,144 @@
+{
+  "batch": "convention_outlier",
+  "batch_index": 16,
+  "assessments": {"convention_outlier": 54.0},
+  "dimension_notes": {
+    "convention_outlier": {
+      "evidence": [
+        "run_all.sh uses LANGUAGES array with 'Fortran:Fortran', 'FSharp:FSharp' ordering (alphabetical except 'Prolog' before 'R', and 'Shell'/'SQL'/'TypeScript' trailing after 'Rust') indicating ad-hoc ordering within the list",
+        "status_dashboard.sh categorizes Golang under a separate 'Compiled' category rather than under 'Systems', while all other categories like 'Systems' include Go-like compiled languages (Ada, Assembly, C, Cpp, Rust, Zig, Nim, Crystal, Odin, V) — this is a style island",
+        "Shell/run.sh re-creates config.sh inline as a heredoc with different format (bash arrays vs space-separated strings) than the actual config.sh that already exists — the inline default config uses array syntax (CONFIG_ENVIRONMENT=('food' 'danger' 'safe')) while the actual config.sh uses export with quoted strings",
+        "Python directory has multiple source files with inconsistent naming: Student_Teacher.py (PascalCase with underscore), config_manager.py (snake_case), serializer.py (snake_case), teacher_wrapper.py (snake_case) — main file breaks the convention used by all other files",
+        "JavaScript directory uses camelCase naming (active_inference.js, ant_colony_demo.js, config.js, logger.js, serializer.js, visualizer.js) where config.js exports a class ConfigManager using camelCase properties, while the Python config_manager.py uses snake_case properties for same logical config",
+        "Rust/RustThings/ and Rust/RustConfig/ subdirectories contain loose .rs files (Rust-pseudo-pymdp_Ant_1.rs, RustFerAnt.rs, etc.) that follow no consistent naming convention relative to the src/ subdirectory which has proper module organization",
+        "Julia directory contains multiple root .jl files (Julia_InferAnts.jl, RxInfer.jl, RxInfer_Agent_Model.jl, Clone_Julia_Repo.jl) with no organizing structure, while TypeScript has a proper src/ hierarchy",
+        "Brainfuck/run.sh deviates from the sibling pattern: it installs Python packages (fastdtw, sklearn, networkx) that no other language run.sh installs, treating Brainfuck as a Python-based implementation — the file acts as a Python runner not a Brainfuck runner",
+        "Jock/run.sh is documentation-only (prints instructions) while all other run.sh files actually execute code — this is a behavioral outlier among siblings",
+        "status_dashboard.sh defines check_language_status() using a case statement for only 8 specific languages (Python, JavaScript, Java, C, Cpp, Rust, Go, Haskell, TypeScript) and uses a wildcard fallback '*) main_file=\"$lang_dir/*.$lang_dir\"' that is logically broken for most languages"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high"
+    }
+  },
+  "dimension_judgment": {
+    "convention_outlier": {
+      "strengths": [
+        "Most run.sh files follow a consistent structural pattern: emoji header, tool check, build step, run step, success message",
+        "The top-level LANGUAGES array in run_all.sh uses a consistent 'Name:Dir' format",
+        "TypeScript uses a proper src/ hierarchy with separate types.ts, consistent with JS module conventions"
+      ],
+      "issue_character": "Convention drift manifests both within the shell orchestration layer (inconsistent config format, behavior outliers like Jock and Brainfuck) and across language directories (Julia has a flat file dump while TypeScript has structured src/, Python's main file name breaks from its own snake_case siblings).",
+      "score_rationale": "The run.sh protocol is followed by most siblings but has meaningful outliers (Jock is doc-only, Brainfuck is a Python wrapper, Shell/run.sh generates a config that conflicts with the existing config.sh). The Julia directory is a flat file dump against the grain of the structured language dirs. Naming is inconsistent between and within language directories. These are real navigability defects, not stylistic preferences, placing this in the mid-range."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "convention_outlier",
+      "identifier": "jock-noop-runner",
+      "summary": "Jock/run.sh prints documentation instead of executing code, unlike all other sibling run.sh files",
+      "related_files": ["Jock/run.sh"],
+      "evidence": [
+        "Jock/run.sh only echoes documentation strings and exits with success — no actual execution occurs",
+        "All other sibling run.sh files check for runtime availability, build, and execute code",
+        "run_all.sh invokes all run.sh files uniformly and counts successes, so Jock inflates success counts without verifying executability"
+      ],
+      "suggestion": "Either implement actual Jock execution or mark the runner clearly as a stub with a non-zero exit if the Urbit runtime is absent, consistent with the error-exit pattern of all other runners.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "shell-run-inline-config-mismatch",
+      "summary": "Shell/run.sh generates a config.sh heredoc with array syntax that conflicts with the existing config.sh which uses export+string syntax",
+      "related_files": ["Shell/run.sh", "Shell/config.sh"],
+      "evidence": [
+        "Shell/run.sh creates config.sh with CONFIG_ENVIRONMENT=(\"food\" \"danger\" \"safe\") (bash array syntax)",
+        "Actual Shell/config.sh uses export CONFIG_ENVIRONMENT=\"ShellActiveInference_v1.0\" (exported string)",
+        "Active_Shellference.sh reads simulation[environment]=\"${CONFIG_ENVIRONMENT}\" expecting the exported string form",
+        "If config.sh already exists (normal case), Shell/run.sh skips the heredoc — but if it doesn't, the generated config is structurally different from the expected format"
+      ],
+      "suggestion": "Remove the inline config generation from Shell/run.sh and rely solely on the existing config.sh, or align the heredoc format precisely with what Active_Shellference.sh expects.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "brainfuck-python-wrapper-outlier",
+      "summary": "Brainfuck/run.sh installs and runs Python packages rather than a Brainfuck interpreter, deviating from every other language runner's self-contained model",
+      "related_files": ["Brainfuck/run.sh"],
+      "evidence": [
+        "Brainfuck/run.sh checks for python3 and installs numpy, scipy, matplotlib, seaborn, networkx, fastdtw, sklearn",
+        "Runs python3 Brainfuck_ActiveInference.py — the implementation is Python, not actual Brainfuck",
+        "All other compiled-language runners (Assembly, C, Cpp, Rust) check for their respective compilers",
+        "The language is named 'Brainfuck' but the runner is functionally identical to Python/run.sh"
+      ],
+      "suggestion": "If the Brainfuck implementation is a Python simulation of Brainfuck semantics, add a comment to run.sh clarifying this intent; otherwise restructure to use an actual Brainfuck interpreter for the primary run.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "status-dashboard-golang-miscategorized",
+      "summary": "status_dashboard.sh categorizes Golang in a standalone 'Compiled' category separate from the 'Systems' languages group that includes other compiled systems languages",
+      "related_files": ["status_dashboard.sh"],
+      "evidence": [
+        "categories=(\"Systems\")=\"Ada:Ada Assembly:Assembly C:C Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V\"",
+        "categories=(\"Compiled\")=\"Golang:Golang\" — singleton category",
+        "Go is a compiled systems programming language; its separation creates an asymmetric category with only one member"
+      ],
+      "suggestion": "Move Golang into the 'Systems' category or rename 'Compiled' to something that meaningfully distinguishes Go from the other systems languages.",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "python-main-file-naming-break",
+      "summary": "Python/Student_Teacher.py uses PascalCase with underscore, breaking the snake_case convention of its sibling Python files",
+      "related_files": ["Python/Student_Teacher.py", "Python/config_manager.py", "Python/serializer.py", "Python/teacher_wrapper.py"],
+      "evidence": [
+        "config_manager.py, serializer.py, teacher_wrapper.py all use snake_case",
+        "Student_Teacher.py uses PascalCase_PascalCase hybrid",
+        "Python/run.sh runs 'python3 Student_Teacher.py' referencing the inconsistently named file directly"
+      ],
+      "suggestion": "Rename Student_Teacher.py to student_teacher.py to follow the snake_case convention used by all other Python source files in the directory.",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "julia-flat-directory-vs-structured-peers",
+      "summary": "Julia directory is a flat dump of multiple .jl files while TypeScript and Kotlin/Scala/Haskell use src/ subdirectory structure",
+      "related_files": ["Julia/Julia_InferAnts.jl", "Julia/RxInfer.jl", "Julia/RxInfer_Agent_Model.jl", "Julia/Clone_Julia_Repo.jl"],
+      "evidence": [
+        "Julia/ root contains Julia_InferAnts.jl, RxInfer.jl, RxInfer_Agent_Model.jl, Clone_Julia_Repo.jl as peer files",
+        "TypeScript/ has a proper src/ hierarchy with subdirectories",
+        "Haskell/ has app/ and src/ActiveInference/ organization",
+        "Julia/SideCar/ and Julia/Category_Theory_Julia/ are subdirs but primary .jl files are unorganized at root"
+      ],
+      "suggestion": "Organize Julia source files into a src/ or lib/ subdirectory consistent with Haskell and TypeScript implementations.",
+      "confidence": "medium",
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "Parallel independent authorship of language implementations without a shared template for runner scripts",
+      "Brainfuck and Jock implementations were created as documentation/simulation stubs rather than true language runners, inconsistent with peer expectations",
+      "Python main file name likely inherited from the domain concept (Student-Teacher model) rather than following file naming conventions"
+    ],
+    "likely_symptoms": [
+      "status_dashboard broken wildcard fallback for languages not in the explicit case statement",
+      "Shell/run.sh generates a malformed config if config.sh is absent"
+    ],
+    "possible_false_positives": [
+      "Rust RustThings/ directory may be intentional scratch/experiment space and not production code"
+    ]
+  }
+}

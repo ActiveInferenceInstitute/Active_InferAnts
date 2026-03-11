@@ -1,0 +1,66 @@
+{
+  "created_at": "2026-03-11T13:39:47+00:00",
+  "run_stamp": "20260311_133947",
+  "runner": "dry-run",
+  "parallel": false,
+  "selected_batches": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "successful_batches": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "failed_batches": [],
+  "immutable_packet": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/review_packets/holistic_packet_20260311_133947.json",
+  "blind_packet": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/review_packet_blind.json",
+  "run_dir": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947",
+  "logs_dir": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/logs",
+  "batches": {
+    "1": {
+      "status": "pending",
+      "prompt_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/prompts/batch-1.md",
+      "result_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/results/batch-1.raw.txt"
+    },
+    "2": {
+      "status": "pending",
+      "prompt_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/prompts/batch-2.md",
+      "result_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/results/batch-2.raw.txt"
+    },
+    "3": {
+      "status": "pending",
+      "prompt_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/prompts/batch-3.md",
+      "result_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/results/batch-3.raw.txt"
+    },
+    "4": {
+      "status": "pending",
+      "prompt_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/prompts/batch-4.md",
+      "result_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/results/batch-4.raw.txt"
+    },
+    "5": {
+      "status": "pending",
+      "prompt_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/prompts/batch-5.md",
+      "result_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/results/batch-5.raw.txt"
+    },
+    "6": {
+      "status": "pending",
+      "prompt_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/prompts/batch-6.md",
+      "result_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/results/batch-6.raw.txt"
+    },
+    "7": {
+      "status": "pending",
+      "prompt_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/prompts/batch-7.md",
+      "result_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/subagents/runs/20260311_133947/results/batch-7.raw.txt"
+    }
+  }
+}

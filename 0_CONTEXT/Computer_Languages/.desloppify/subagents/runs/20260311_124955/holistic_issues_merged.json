@@ -1,0 +1,1996 @@
+{
+  "assessments": {
+    "abstraction_fitness": {
+      "score": 37.8,
+      "components": [
+        "Abstraction Leverage",
+        "Indirection Cost",
+        "Interface Honesty",
+        "Delegation Density",
+        "Definition Directness",
+        "Type Discipline"
+      ],
+      "component_scores": {
+        "Abstraction Leverage": 45.0,
+        "Indirection Cost": 55.0,
+        "Interface Honesty": 50.0,
+        "Delegation Density": 60.0,
+        "Definition Directness": 65.0,
+        "Type Discipline": 40.0
+      }
+    },
+    "ai_generated_debt": 33.9,
+    "api_surface_coherence": 45.6,
+    "authorization_consistency": 76.4,
+    "contract_coherence": 35.6,
+    "convention_outlier": 30.7,
+    "cross_module_architecture": 52.3,
+    "dependency_health": 51.3,
+    "design_coherence": 41.7,
+    "error_consistency": 25.0,
+    "high_level_elegance": 28.0,
+    "incomplete_migration": 67.5,
+    "initialization_coupling": 51.1,
+    "logic_clarity": 41.2,
+    "low_level_elegance": 32.0,
+    "mid_level_elegance": 27.6,
+    "naming_quality": 60.9,
+    "package_organization": 31.0,
+    "test_strategy": 8.9,
+    "type_safety": 38.0
+  },
+  "dimension_notes": {
+    "high_level_elegance": {
+      "evidence": [
+        "Top-level directory layout groups languages by name (Ada/, Python/, Rust/, etc.) which maps cleanly to the domain: each language is a self-contained active inference implementation with its own run.sh entry point.",
+        "run_all.sh defines the LANGUAGES array as the canonical registry of supported implementations, but this list is inconsistent with the actual directories present: MATLAB, Ruby, PHP, Swift, CSharp, and Scala directories all exist on disk but are absent from LANGUAGES in run_all.sh.",
+        "status_dashboard.sh defines its own separate language categories map using declare -A categories, duplicating the language list from run_all.sh without a shared source of truth.",
+        "Five root-level Python files (master_controller.py, config_manager.py, reporting_system.py, benchmark_suite.py, test_suite.py) live alongside run_all.sh and status_dashboard.sh at the root, creating a mixed orchestration surface with no clear ownership boundary between Shell and Python orchestration layers.",
+        "master_controller.py invokes status_dashboard.sh via os.system(), creating a bidirectional dependency: the root Shell scripts are entry points but also called from the Python layer, blurring which is primary.",
+        "The Golang directory is named 'Golang' on disk but status_dashboard.sh categories map includes it under 'Compiled' with key 'Golang:Golang', while run_all.sh also uses 'Golang:Golang' \u2014 consistent internally but diverges from the conventional 'Go' directory name used in its own files (GoLang_Agent.go, GoLang_Description.md).",
+        "No shared constants file or single source of truth for the language list \u2014 any addition must be reflected in run_all.sh LANGUAGES array, status_dashboard.sh categories map, and potentially master_controller.py independently."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "mid_level_elegance": {
+      "evidence": [
+        "Shell/run.sh conditionally generates a config.sh using bash array syntax (CONFIG_INITIAL_BELIEFS=(\"0.25\" \"0.25\" \"0.25\" \"0.25\")) but the existing Shell/config.sh uses export with space-separated scalar strings (CONFIG_INITIAL_BELIEFS=\"0.25 0.25 0.25 0.25\"). Active_Shellference.sh expects the scalar string format via 'read -ra beliefs <<< \"${simulation[beliefs]}\"'. The generated config would produce incompatible variable shapes.",
+        "Shell/config.sh line 90: 'echo \"Configuration loaded and validated successfully\"' emits output to stdout at source-time, which pollutes the output of any script that sources it, including Active_Shellference.sh.",
+        "run_all.sh's run_language() function uses 'cd \"$lang_dir\"' (line 67) and 'cd ..' (line 74). When run in parallel mode (lines 218-231), all background subprocesses share the parent's working directory. The cd calls in concurrent subshells do not affect each other, but if any invocation fails after cd-ing but before the cd .., the subsequent parallel run_language call in the same subshell process (if reused) would operate from the wrong directory. More critically, the function assumes relative path addressing for lang_dir, which breaks if the caller's cwd changes.",
+        "master_controller.py's show_status() invokes status_dashboard.sh via os.system() (line 47), which produces no structured return value. The Python layer has no way to inspect or act on dashboard output; the boundary between Python and Shell is opaque.",
+        "Active_Shellference.sh's select_action() (lines 159-177) calls calculate_efe with the same beliefs/preferences/transition_probs in every loop iteration over environment actions (line 169). The action variable is never passed into calculate_efe \u2014 the EFE calculation does not vary by action. This means the first action always gets selected (since no subsequent EFE is lower). The handoff contract between select_action and calculate_efe is broken.",
+        "calculate_vfe() (lines 69-76) is a pure pass-through wrapper around calculate_kl_divergence \u2014 it takes the same parameters and calls it directly with no transformation. This adds an indirection layer with no boundary value.",
+        "config.sh calls exit 1 (line 87) if validate_config fails. When sourced inside Active_Shellference.sh with '! source config.sh', the exit 1 in the sourced file will exit the parent script directly, bypassing Active_Shellference.sh's own error handling path."
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "ai_generated_debt": {
+      "evidence": [
+        "Shell/Active_Shellference.sh has a comment_ratio of 0.36 vs codebase average of 0.155 \u2014 more than double the average, flagged in ai_debt_signals.",
+        "Every function in Active_Shellference.sh has a multi-line block comment (lines 21-25, 37-45, 60-69, 79-89, 108-119, 148-158, 179-188) using the same ###### delimiter format. Most restate the function name and parameters already visible in the signature.",
+        "Lines 60-68: calculate_kl_divergence docblock says 'Returns: The calculated KL divergence value' \u2014 restates the function name verbatim. Same pattern in calculate_vfe (lines 69-76) and calculate_efe (lines 89-106).",
+        "Lines 108-119: update_beliefs docblock says 'Updates the agent's beliefs based on current beliefs, preferences, and transition probabilities' \u2014 directly restates the parameter list.",
+        "Lines 69-76: calculate_vfe() is a pass-through wrapper (domain logic issue, but also a classic AI-generated boilerplate pattern: add a named stub that delegates immediately with no added behavior).",
+        "Shell/config.sh: Lines 44-46 have a section header '#########...# Validation Functions ########' with no code between header and function definition \u2014 structural boilerplate.",
+        "config.sh also exports CONFIG_OUTPUT_FILE, CONFIG_LOG_LEVEL, CONFIG_LEARNING_RATE, CONFIG_DISCOUNT_FACTOR, CONFIG_RANDOM_SEED, CONFIG_ENABLE_DEBUG, CONFIG_SAVE_INTERMEDIATE \u2014 none of these variables are referenced anywhere in Active_Shellference.sh. Likely generated to fill out a configuration template.",
+        "run_all.sh tip section (lines 255-256): two echo lines at the end with usage tips repeat information already in show_usage() earlier in the same file.",
+        "status_dashboard.sh show_recommendations() lines 226-232: hardcoded generic suggestions ('Add more language implementations', 'Create comprehensive testing suite', 'Add performance benchmarking', 'Add continuous integration') that are static text irrelevant to actual repo state, providing no actionable information."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "incomplete_migration": {
+      "evidence": [
+        "Two TODO comments in Active_Shellference.sh mark incomplete work: line 215 '# TODO: Implement action effects on environment' and line 226 '# TODO: Add error handling, logging, and command-line argument parsing for more robustness'. These are not migration TODOs but incomplete feature stubs.",
+        "run.sh (Shell/run.sh) generates a fallback config.sh with different variable formats and different default values than the existing config.sh. The fallback config is only written if config.sh is missing, so this is not an active coexistence issue \u2014 but the divergent formats indicate the fallback was not kept in sync with the real config.",
+        "No deprecated symbols, DEPRECATED markers, or explicit migration shims found in the Shell subsystem seed files.",
+        "No mixed JS/TS pattern exists in Shell files.",
+        "The codebase has JavaScript (active_inference.js) and TypeScript (TypeScript/src/) as separate, independent language directories \u2014 these represent separate implementations, not an incomplete JS\u2192TS migration within a single module.",
+        "No 'legacy', 'migrate', 'old api', or 'remove after' markers found in the Shell seed files.",
+        "migration_signals in blind packet is empty \u2014 scanner found no migration signals.",
+        "run_all.sh LANGUAGES array does not include CSharp, which has a .csproj file (ActiveInference.csproj), suggesting the C# implementation was added without completing registration \u2014 a straggler addition rather than a migration issue."
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit",
+      "confidence": "high",
+      "issues_preventing_higher_score": "The Shell subsystem has two stale TODO stubs marking incomplete implementation (not migration) that leave the simulation logically incomplete. The run.sh fallback config diverges from config.sh. These are not migration issues per the dimension rubric but the score is capped because the TODO items are genuine incomplete-work markers even if not migration-labeled."
+    },
+    "package_organization": {
+      "evidence": [
+        "Root directory structure data from holistic_context: '.' has 2 shell script files (run_all.sh, status_dashboard.sh) with fan_in 0, fan_out 0, role 'peripheral'. Shell/ has 3 files (Active_Shellference.sh, config.sh, run.sh), fan_in 0, avg_fan_out 0. All files are listed as 'orphaned' in scan_evidence.dead_code \u2014 no cross-file imports detectable.",
+        "Five Python files live at the root alongside two Shell scripts: benchmark_suite.py, config_manager.py, master_controller.py, reporting_system.py, test_suite.py. These are thematically distinct from the per-language capsule pattern \u2014 they form an orchestration/tooling concern that does not belong at root alongside run_all.sh.",
+        "Root-level Python files have fan_in 0 (no importers detected), but unlike run_all.sh/status_dashboard.sh which are genuine entry points, these Python files are more likely called indirectly. Their placement at root rather than in a dedicated 'tools/' or 'orchestration/' directory mixes the 'run this language demo' concern with the 'benchmark/report/test all languages' concern.",
+        "The Rust directory has multiple sub-directories (RustConfig/, RustThings/, src/) and extra files (Rust.README.md, system_spec_RUST.txt, config.json) making it the most structurally non-uniform language capsule. Other languages keep a flat, minimal structure.",
+        "Julia has sub-directories (Category_Theory_Julia/, SideCar/, Visualization/) indicating a larger scope than the other language capsules \u2014 not a flat structure concern given the scope difference, but diverges from the one-implementation-per-language convention.",
+        "The directory_profiles show Shell/ has only 3 files (within the <10 threshold), so flat dir overload is not present.",
+        "status_dashboard.sh categories map places Golang under 'Compiled' separately from Systems/Functional/etc. categories, but the directory is just called 'Golang' \u2014 its placement in a separate 'Compiled' category is an arbitrary classification artifact rather than an organizational structure defect.",
+        "CSharp/, MATLAB/, Ruby/, PHP/, Swift/, Scala/ directories exist but are unregistered in run_all.sh \u2014 they are present in the filesystem but invisible to the project's operational surface. These are stragger directories from a package organization perspective."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "initialization_coupling": {
+      "evidence": [
+        "Shell/config.sh exports CONFIG_* variables globally and runs validate_config() at source-time \u2014 sourcing this file triggers validation and exits the sourcing shell on failure (exit 1 at module scope)",
+        "Shell/run.sh calls 'source config.sh' implicitly expecting the config file to either exist or be created by run.sh itself; run.sh also rewrites config.sh with inline heredoc content, meaning two different config formats exist depending on which entry point was used",
+        "Shell/Active_Shellference.sh uses 'source config.sh' at the top scope, with module-level side effects: prints 'Configuration loaded and validated successfully' to stdout unconditionally",
+        "reporting_system.py executes 'plt.style.use()' and 'sns.set_palette()' at module import scope \u2014 these are global matplotlib/seaborn state mutations that affect all plots globally when the module is imported",
+        "Student_Teacher.py: module-level code (lines 159-179) instantiates StudentTeacherPOMDP and calls plot_matrices(), run simulation, etc. at import time \u2014 importing this module from run.sh inline python -c triggers the full simulation as a side effect of import",
+        "Python/run.sh invokes 'python3 -c \"from Student_Teacher import StudentTeacherPOMDP ...\"' \u2014 but Student_Teacher.py executes a full simulation at module scope before the import completes, causing double-execution: once from the prior 'python3 Student_Teacher.py' and once from the import",
+        "benchmark_suite.py configures logging at module scope with logging.basicConfig() \u2014 this is a global state mutation affecting any other module sharing the same Python process",
+        "run_all.sh uses 'cd $lang_dir' followed by 'cd ..' for isolation, but this creates boot-order coupling: if run_language() is called from a directory other than the repo root, the relative cd will silently target a wrong directory"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "design_coherence": {
+      "evidence": [
+        "status_dashboard.sh contains 8 distinct functions mixing concerns: show_header (display), show_system_info (OS/hardware introspection), show_statistics (file counting), show_implementations (per-language status), show_recent_activity (git-like file inspection), show_recommendations (analysis+output) \u2014 the file blends output formatting, filesystem queries, tool detection, and reporting in a single 253-line script",
+        "run_all.sh: run_language() function is responsible for both cd-based isolation and execution reporting \u2014 it mutates global SUCCESS_COUNT/FAILURE_COUNT via (()) arithmetic, mixes directory navigation with process execution, making it hard to test the execution logic in isolation",
+        "Shell/Active_Shellference.sh: select_action() iterates environment_ref but computes calculate_efe() inside the loop without varying inputs per iteration \u2014 the loop variable 'action' is never passed to calculate_efe(), making all EFE computations identical; this is simultaneously a design and logic problem",
+        "config_manager.py: DependencyChecker._load_dependency_definitions() hardcodes 26+ language entries as a large dictionary literal with per-language checker/installer method references \u2014 a data-driven pattern would be more maintainable but the current approach creates an immovable 174-line initialization block",
+        "config_manager.py has two entirely separate responsibilities: dependency checking (DependencyChecker class) and a CLI main() function. The class itself has 26+ nearly identical _check_*_deps() and _install_*_deps() method pairs that are structural repetition rather than real abstraction",
+        "Brainfuck/run.sh is 66 LOC and does: dependency checking, JSON config file creation, running one Python script, and conditionally running two more Python scripts \u2014 four distinct responsibilities in a runner that should only launch the program",
+        "Cpp/run.sh line 17: 'echo \"$(g++) --version | head -1)\"' has an unbalanced parenthesis \u2014 the subshell command is syntactically broken, meaning g++ version is not actually printed",
+        "The LANGUAGES array in run_all.sh uses 'Ada:Ada' format (name:dir are identical for all entries) \u2014 the colon-split encoding adds complexity without value since name always equals dir"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "naming_quality": {
+      "evidence": [
+        "run_all.sh: function 'run_language()' has a generic name but the function does: directory navigation, permission checking, subprocess execution, and result tracking \u2014 the name understates the responsibility",
+        "Shell/Active_Shellference.sh: variable name 'precision' in global scope is ambiguous \u2014 it stores a numeric scale value for bc arithmetic, but 'precision' in the Active Inference domain refers to inverse variance; these are different concepts with the same name",
+        "Shell/Active_Shellference.sh: 'kl_divergence' local variable starts at 0 and is used as accumulator \u2014 the name is correct for the result but the pattern 'kl_divergence=0; kl_divergence = kl_divergence + ...' obscures that it is an accumulator; conventional name would be 'kl_sum' during accumulation",
+        "status_dashboard.sh: function 'check_language_status()' returns nothing (no echo or return value) \u2014 it only calls printf to stdout; a function that produces side-effect output rather than returning a value is conventionally named 'print_*' or 'show_*' not 'check_*'",
+        "status_dashboard.sh: local variable 'status' inside check_language_status is set but the function also has side effects via printf \u2014 the variable name implies a return value but the function is purely procedural",
+        "config_manager.py: method '_command_exists()' is a clear, accurate name that communicates intent",
+        "config_manager.py: 'generate_dependency_report()' returns a string but its name suggests it generates/writes a file \u2014 the actual file write happens in main(), not in this method; the method should be named 'format_dependency_report()' or 'build_dependency_report()'",
+        "reporting_system.py: class 'LanguageImplementation' with method '_check_implementation()' \u2014 'implementation' is used in two different senses (the class represents a language implementation, the method checks if it's properly set up)",
+        "Python/Student_Teacher.py: matrix variable named 'A', 'B', 'C', 'D' follow Active Inference academic convention \u2014 acceptable domain-specific abbreviations matching literature norms",
+        "run_all.sh: variables 'SUCCESS_COUNT' and 'FAILURE_COUNT' are clear and accurate"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium",
+      "issues_preventing_higher_score": ""
+    },
+    "logic_clarity": {
+      "evidence": [
+        "Shell/Active_Shellference.sh select_action(): the for loop iterates over environment_ref with variable 'action' but calls calculate_efe(beliefs_ref preferences_ref transition_probs_ref) without using 'action' \u2014 all EFE computations are identical, meaning the selection logic always assigns selected_action to the last environment element (since min_efe is updated every iteration with the same value)",
+        "Rust/run.sh lines 38-44 and 43-46: nested if [ $? -eq 0 ] checks after 'cargo build --release' and 'cargo run --release' \u2014 with 'set -e' active at top of script, non-zero exit codes would already abort the script before these checks run, making the if/else branches unreachable dead code",
+        "Rust/run.sh lines 38 and 43: the 'if [ $? -eq 0 ]' pattern is redundant with 'set -e' \u2014 the else branches (echo '\u274c ... failed'; exit 1) are dead code paths that can never execute",
+        "Cpp/run.sh lines 40-62: same dead code pattern \u2014 'if [ $? -eq 0 ]' check after make under set -e; the failure branch is unreachable",
+        "run_all.sh line 245: 'TOTAL_IMPLEMENTATIONS=$(echo \"${LANGUAGES[@]}\" | wc -w)' \u2014 this counts whitespace-separated words in the array when converted to a string, but array elements contain no spaces, so wc -w gives the element count; however 'echo \"${LANGUAGES[@]}\"' concatenates all elements with spaces, so the word count actually equals the number of elements \u2014 the logic works but is indirect and misleading",
+        "run_all.sh lines 248-252: 'if [ $SUCCESS_COUNT -eq $TOTAL_IMPLEMENTATIONS ]' \u2014 TOTAL_IMPLEMENTATIONS counts array elements using word count, SUCCESS_COUNT counts successes; if SPECIFIC_LANG is set, only 1 language runs but TOTAL_IMPLEMENTATIONS is still 34, so this condition can never be true in single-language mode",
+        "Shell/Active_Shellference.sh calculate_vfe(): function body is 'vfe=$(calculate_kl_divergence ...) ; echo \"$vfe\"' \u2014 this is an identity wrapper that adds no computation, creating unnecessary indirection with no behavioral distinction from calling calculate_kl_divergence directly",
+        "status_dashboard.sh show_recent_activity() line 184-185: uses '-printf' flag with find but macOS does not support -printf by default \u2014 always-false condition on macOS silently produces no output without error"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "type_safety": {
+      "evidence": [
+        "Python/serializer.py line 426: module-level 'serializer = Serializer()' creates a default instance \u2014 the type is inferred correctly but there are no annotations on public methods like serialize(), deserialize(), save_to_file()",
+        "Python/serializer.py serialize() method line 33: return type is 'Union[str, bytes]' and the declared type is correct, but deserialize() line 76 returns 'Union[str, bytes, Any]' implicitly \u2014 when agent_class is provided it returns the agent object (any type), when not it returns a dict; the declared return type on line 76 is missing entirely",
+        "Python/serializer.py deserialize() line 76: no return type annotation \u2014 the function returns either a dict or an agent object depending on the agent_class parameter; the missing annotation means callers cannot know what they will receive",
+        "config_manager.py check_language_dependencies() line 176: return type is 'Tuple[bool, List[str], List[str]]' \u2014 correctly annotated; but install_language_dependencies() line 185: returns 'bool' from installer() but installer() is stored as a dict value of type Any (the _load_dependency_definitions dict uses Dict[str, Dict[str, Any]] where 'installer' is Any)",
+        "config_manager.py _load_dependency_definitions() line 26: return type declared as 'Dict[str, Dict[str, Any]]' \u2014 the 'Any' type for nested dict values erases type information; the actual structure is always {'checker': Callable, 'installer': Callable, 'required': List[str]} which could be typed as a TypedDict",
+        "reporting_system.py line 86: ActiveInferenceAnalyzer.__init__ parameter 'root_directory: str = \".\"; internally assigned as 'self.root_directory = Path(root_directory)' \u2014 the parameter is typed str but always immediately converted to Path, creating a type mismatch at the boundary",
+        "Python/Student_Teacher.py: no type annotations on any public methods (update_beliefs, get_action, step, calculate_free_energy, infer_policy, plot_matrices, plot_student_beliefs, plot_teacher_knowledge) \u2014 all public API is untyped",
+        "Python/teacher_wrapper.py: TeacherModel class has no type annotations at all; ctypes-heavy code makes inference hard, annotations would prevent misuse",
+        "reporting_system.py run_benchmark() line 48: return type is 'Dict[str, Any]' \u2014 the actual keys and value types are known ({success: bool, execution_time: float, ...}) but Any is used throughout, preventing downstream type checking",
+        "benchmark_suite.py line 52 BenchmarkConfig: 'parameters: Dict[str, Any] = None' \u2014 the type declares Dict[str, Any] but the default is None; the post_init sets parameters to {} when None; the type annotation should be 'Optional[Dict[str, Any]] = None'"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "contract_coherence": {
+      "evidence": [
+        "Shell/Active_Shellference.sh: calculate_vfe() docstring says 'Returns: The calculated Variational Free Energy' but the function body is solely a passthrough wrapper calling calculate_kl_divergence \u2014 VFE and KL divergence are mathematically distinct; the function's contract is wrong",
+        "Shell/Active_Shellference.sh: select_action() docstring says 'Chooses the action that minimizes the Expected Free Energy' and iterates over environment_ref, but calls calculate_efe with the SAME arguments on every loop iteration \u2014 EFE does not vary with the action being evaluated, so the selection logic does not match the documented contract",
+        "Shell/Active_Shellference.sh: calculate_efe() docstring lists 3 arguments ($1 beliefs, $2 preferences, $3 transition_probs) and the signature takes 3 nameref arguments \u2014 the API is consistent, but the body ignores any action dimension, making the 'Expected' label misleading relative to standard active inference formulation",
+        "Shell/run.sh: creates a config.sh inline with different CONFIG_INITIAL_BELIEFS array syntax ('0.25' '0.25' '0.25' '0.25') than the existing Shell/config.sh (space-separated string '0.25 0.25 0.25 0.25'), creating a config contract mismatch depending on which file is present",
+        "run_all.sh: run_language() function sets 'set -e' at script level but run_language uses 'return 1' on failure \u2014 the outer script counts failures via FAILURE_COUNT but under set -e the script would exit on the first failure before counting could complete; the error propagation contract between the function and caller is broken in the parallel path",
+        "run_all.sh: TOTAL_IMPLEMENTATIONS computed with 'wc -w' on LANGUAGES[@] (counting colon-separated entries as words each) \u2014 when LANGUAGES has format 'Ada:Ada', each entry is 1 word, so the count equals the language count; but the comparison 'if [ $SUCCESS_COUNT -eq $TOTAL_IMPLEMENTATIONS ]' can never be true because SUCCESS_COUNT counts language runs while TOTAL_IMPLEMENTATIONS counts array words, producing identical numbers only by accident",
+        "status_dashboard.sh: check_language_status() performs a wildcard glob for main_file using 'ls $main_file' unquoted \u2014 for the default case '*) main_file=\"$lang_dir/*.$lang_dir\"' the extension is the directory name (e.g. '*.Julia'), which is a nonsensical pattern; the function's documented contract to 'check if main source file exists' fails silently for most languages",
+        "Rust/run.sh: uses 'if [ $? -eq 0 ]' after 'cargo build --release' even though 'set -e' is active \u2014 under set -e a non-zero exit from cargo build would have already terminated the script, making the if-branch dead code; the error handling contract is partially duplicated and partially void"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "error_consistency": {
+      "evidence": [
+        "run_all.sh: uses 'set -e' at the top but then wraps run_language calls in 'if run_language; then ((SUCCESS_COUNT++)); else ((FAILURE_COUNT++)); fi' \u2014 the set -e means any failure in run_language subshell exits the parent before the else branch runs; mixed error strategy (exit-on-error flag vs. explicit return-code inspection)",
+        "Rust/run.sh, Cpp/run.sh: post-hoc '[ $? -eq 0 ]' checks after commands under set -e \u2014 the failure branches ('echo \u274c ... exit 1') are dead code; error messages documented for the user can never be printed",
+        "Scala/run.sh: checks '$? -eq 0' after sbt and scalac runs under set -e with the same dead-branch pattern",
+        "SQL/run.sh: sqlite3 call uses '2>/dev/null || echo \"Note: SQLite stored procedures have limited support\"' \u2014 silently swallows errors that would indicate a genuine failure rather than a supported-feature limitation; no exit code check follows",
+        "Shell/run.sh: falls back to writing a new config.sh without preserving error context if something has already partially failed \u2014 no error propagation from the config-creation step",
+        "Shell/Active_Shellference.sh: all math functions (calculate_kl_divergence, calculate_efe, update_beliefs) delegate to bc without any check for bc errors or NaN/empty output; a division-by-zero or empty beliefs array would produce silent empty string output that propagates silently through subsequent calculations",
+        "Brainfuck/run.sh: python3 dependency check uses 'python3 -c \"import numpy, scipy...\" 2>/dev/null || { echo ... exit 1 }' \u2014 correct pattern; but the main 'python3 Brainfuck_ActiveInference.py' call has no error check beyond set -e, so any Python error is reported only as a generic shell exit",
+        "Python/run.sh: pip3 install uses '|| { ... pip3 install --user ... }' \u2014 the fallback does not check if the user-install also failed, so it silently continues even if no packages were installed",
+        "MATLAB/run.sh: both MATLAB and Octave execution branches use '[ $? -eq 0 ]' under set -e with the same dead-branch issue as Rust/Scala",
+        "Julia/run.sh: 'cd SideCar/MC_AI' and 'julia run.jl' with no error handling \u2014 a missing subdirectory would trigger set -e exit with no diagnostic message beyond the shell default",
+        "Most run.sh scripts use 'exit 1' on missing tools \u2014 this is consistent across the codebase as a first-level error strategy",
+        "No run.sh uses a trap ERR handler to provide consistent error reporting \u2014 error messages are ad-hoc per script"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "abstraction_fitness": {
+      "evidence": [
+        "Shell/Active_Shellference.sh: calculate_vfe() is a zero-value pass-through wrapper \u2014 its body is exactly one line delegating to calculate_kl_divergence with no translation, policy, or transformation added; it exists as a named abstraction that adds indirection without leverage",
+        "run_all.sh: run_language() is a thin wrapper over cd + ./run.sh with minimal added value \u2014 it adds success/failure printing and directory navigation, which is genuinely useful, but provides no abstraction over the diversity of language environments",
+        "status_dashboard.sh: each category in show_implementations() is a hardcoded inline string rather than a structured data type \u2014 the 'declare -A categories' map stores space-delimited 'lang:dir' tokens that must be manually parsed on each use, duplicating the same parsing logic used in run_all.sh's LANGUAGES array; no shared abstraction captures the language-directory contract",
+        "run_all.sh: LANGUAGES array and status_dashboard.sh categories map are parallel data structures defining the same language set in different formats \u2014 no single source of truth abstraction",
+        "Shell/Active_Shellference.sh: all three math functions (calculate_kl_divergence, calculate_efe, update_beliefs) receive name-reference arguments and emit results via echo to stdout \u2014 this is a uniform shell 'return value' pattern that provides consistent interface honesty but forces callers into command substitution for every call, creating unavoidable subprocess overhead that scales poorly",
+        "status_dashboard.sh: show_system_info(), show_statistics(), show_implementations(), show_recent_activity(), show_recommendations() are all void functions with no inputs and no return values \u2014 they are all pure side-effect (print) procedures bundled into a main() orchestrator; this is flat, not layered, and the abstraction level is consistent if shallow",
+        "Shell/config.sh: validate_config() is a standalone validation function exported alongside configuration variables \u2014 this is appropriate separation that pays for itself; callers can source config.sh and get validation automatically",
+        "Brainfuck/run.sh: creates config.json inline in the script using a heredoc \u2014 the config schema is defined once here and never abstracted, which is appropriate for a single-consumer config"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium",
+      "issues_preventing_higher_score": "",
+      "sub_axes": {
+        "abstraction_leverage": 45.0,
+        "indirection_cost": 55.0,
+        "interface_honesty": 50.0,
+        "delegation_density": 60.0,
+        "definition_directness": 65.0,
+        "type_discipline": 40.0
+      }
+    },
+    "low_level_elegance": {
+      "evidence": [
+        "Cpp/run.sh line 17: 'echo \"\u2705 G++ found: $(g++) --version | head -1)\"' \u2014 syntax error: the command substitution closes before --version, so this runs g++ with no args (prints usage/error) and then has literal ' --version | head -1)' in the output string; the closing paren is mismatched",
+        "Rust/run.sh: nested if-blocks for build success and run success under set -e create unnecessary indentation depth (3 levels deep) when set -e already handles exit on failure; the nesting adds visual complexity without behavioral value",
+        "run_all.sh: TOTAL_IMPLEMENTATIONS computed as 'echo \"${LANGUAGES[@]}\" | wc -w' \u2014 LANGUAGES entries contain no spaces (e.g., 'Ada:Ada'), so wc -w counts 33 words for 33 entries; this works correctly but the implementation is indirect; a cleaner expression is '${#LANGUAGES[@]}'",
+        "run_all.sh parallel mode: 'results=()' array is populated with 'success'/'failure' strings but never used after the wait loop \u2014 the array is dead state",
+        "status_dashboard.sh: show_recent_activity() uses a pipeline 'find ... | xargs ls -lt | head -5 | while read -r line; do echo ...' with an embedded awk call inside the echo \u2014 the awk call reformats the ls output but the column indices ($6 $7 $8 $9) depend on ls -lt output format which varies by OS; fragile implicit coupling between output format and parser",
+        "status_dashboard.sh: show_statistics() computes category counts via 'echo \"Ada Assembly C Cpp...\" | wc -w' for hardcoded strings \u2014 these are constants, not computations; the result is always the same fixed number regardless of what directories actually exist; the computation is theater",
+        "Shell/Active_Shellference.sh: update_beliefs() line 139: 'total_belief=$(IFS=+; echo \"scale=$precision; ${updated_beliefs[*]}\" | bc -l)' \u2014 IFS modification inside command substitution with array expansion is a subtle shell idiom that relies on IFS affecting word joining in ${array[*]}; this is correct but non-obvious and inconsistent with the rest of the file which uses explicit string concatenation",
+        "Shell/Active_Shellference.sh: select_action() initializes 'min_efe=1000000' as a magic number \u2014 no comment explains why 1000000 is a valid initialization value; if EFE exceeds this value the function returns empty string silently",
+        "status_dashboard.sh: show_implementations() iterates over '${!categories[@]}' which in bash gives associative array keys in undefined order \u2014 the category display order is non-deterministic across runs",
+        "Julia/run.sh: 'cd SideCar/MC_AI; julia run.jl; cd ../..' \u2014 uses relative path navigation for cd return rather than capturing the original PWD; if run.jl changes the working directory, 'cd ../..' would navigate to the wrong location"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "cross_module_architecture": {
+      "evidence": [
+        "run_all.sh and status_dashboard.sh both independently maintain the full language directory list",
+        "run_all.sh uses cd + cd .. pattern creating shared mutable working-directory state as cross-module contract",
+        "status_dashboard.sh categories hardcode language groupings that drift from run_all.sh LANGUAGES array",
+        "Shell/Active_Shellference.sh sources config.sh via relative path, coupling it to being invoked from Shell/ directory",
+        "Each language module is genuinely hermetic with no cross-language runtime dependencies"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "convention_outlier": {
+      "evidence": [
+        "run_all.sh uses LANGUAGES array with 'Fortran:Fortran', 'FSharp:FSharp' ordering (alphabetical except 'Prolog' before 'R', and 'Shell'/'SQL'/'TypeScript' trailing after 'Rust') indicating ad-hoc ordering within the list",
+        "status_dashboard.sh categorizes Golang under a separate 'Compiled' category rather than under 'Systems', while all other categories like 'Systems' include Go-like compiled languages (Ada, Assembly, C, Cpp, Rust, Zig, Nim, Crystal, Odin, V) \u2014 this is a style island",
+        "Shell/run.sh re-creates config.sh inline as a heredoc with different format (bash arrays vs space-separated strings) than the actual config.sh that already exists \u2014 the inline default config uses array syntax (CONFIG_ENVIRONMENT=('food' 'danger' 'safe')) while the actual config.sh uses export with quoted strings",
+        "Python directory has multiple source files with inconsistent naming: Student_Teacher.py (PascalCase with underscore), config_manager.py (snake_case), serializer.py (snake_case), teacher_wrapper.py (snake_case) \u2014 main file breaks the convention used by all other files",
+        "JavaScript directory uses camelCase naming (active_inference.js, ant_colony_demo.js, config.js, logger.js, serializer.js, visualizer.js) where config.js exports a class ConfigManager using camelCase properties, while the Python config_manager.py uses snake_case properties for same logical config",
+        "Rust/RustThings/ and Rust/RustConfig/ subdirectories contain loose .rs files (Rust-pseudo-pymdp_Ant_1.rs, RustFerAnt.rs, etc.) that follow no consistent naming convention relative to the src/ subdirectory which has proper module organization",
+        "Julia directory contains multiple root .jl files (Julia_InferAnts.jl, RxInfer.jl, RxInfer_Agent_Model.jl, Clone_Julia_Repo.jl) with no organizing structure, while TypeScript has a proper src/ hierarchy",
+        "Brainfuck/run.sh deviates from the sibling pattern: it installs Python packages (fastdtw, sklearn, networkx) that no other language run.sh installs, treating Brainfuck as a Python-based implementation \u2014 the file acts as a Python runner not a Brainfuck runner",
+        "Jock/run.sh is documentation-only (prints instructions) while all other run.sh files actually execute code \u2014 this is a behavioral outlier among siblings",
+        "status_dashboard.sh defines check_language_status() using a case statement for only 8 specific languages (Python, JavaScript, Java, C, Cpp, Rust, Go, Haskell, TypeScript) and uses a wildcard fallback '*) main_file=\"$lang_dir/*.$lang_dir\"' that is logically broken for most languages"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "dependency_health": {
+      "evidence": [
+        "JavaScript/package.json and TypeScript/package.json both declare 'mathjs': '^11.9.1' and 'plotly.js': '^2.25.2' as production dependencies \u2014 identical dependency sets across two sibling implementations",
+        "TypeScript/package.json lists '@types/mathjs': '^9.4.2' as a devDependency; mathjs 11.x includes its own bundled type definitions, making this an unnecessary/redundant dependency",
+        "Python/run.sh installs numpy, scipy, matplotlib, seaborn, pandas at runtime via pip3 with no requirements.txt file pinning versions \u2014 no lock file visible",
+        "Python/config_manager.py imports 'yaml' (PyYAML) at module level (import yaml on line 11) and also imports it conditionally inside methods \u2014 dual import pattern; yaml is not declared in any requirements file",
+        "Brainfuck/run.sh checks for python3 -c 'import numpy, scipy, matplotlib, seaborn, networkx, fastdtw, sklearn' \u2014 fastdtw and networkx are heavier dependencies not needed by Python/run.sh, suggesting dependency sprawl between sibling Python-based implementations",
+        "Rust/run.sh attempts 'cargo add ndarray thiserror serde serde_json rand ndarray-rand' at runtime rather than relying solely on Cargo.toml \u2014 Cargo.toml already has all these listed, making the cargo add call a redundant operation that may fail or cause version drift",
+        "Rust/Cargo.toml pins serde='1.0.219' and serde_json='1.0.143' with exact patch versions rather than caret ranges, which is unusual for library dependencies and can cause resolver conflicts",
+        "No lock files are checked in for JavaScript or TypeScript (package-lock.json exists in JavaScript/ based on directory listing, but not visible in TypeScript/)",
+        "TypeScript/src/types.ts references 'import * as math from mathjs' placed at line 150 AFTER type usage of 'math.Matrix' at lines 6-7 \u2014 the import appears after the type it provides, relying on declaration merging which is an unconventional dependency pattern within the file"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium",
+      "issues_preventing_higher_score": ""
+    },
+    "test_strategy": {
+      "evidence": [
+        "A single test_suite.py exists at the repository root \u2014 it is the only test file in the entire codebase of 43 tracked files",
+        "test_suite.py operates as an orchestration wrapper that runs each language's run.sh via subprocess and captures exit codes \u2014 it does not test the active inference algorithm logic itself",
+        "The test_suite discovers implementations and validates structure (README.md presence, run.sh executability, source file existence) but performs no assertion on computational outputs like belief updates, free energy values, or action selection correctness",
+        "test_results/test_report_1756211801.json exists as output from the test suite, confirming the test suite has been run, but its contents are not behavioral assertions \u2014 they are execution reports",
+        "Python/run.sh contains 'python3 -c \"from Student_Teacher import StudentTeacherPOMDP...pomdp.plot_matrices()\"' as an inline integration check \u2014 the closest thing to an integration test \u2014 but it only checks that plots are generated without asserting values",
+        "TypeScript/package.json lists 'jest' as a devDependency and has a 'test' script, but no test files are present in TypeScript/src/ or anywhere in the TypeScript directory",
+        "JavaScript/package.json lists 'jest' as a devDependency and has a 'test': 'node test_active_inference.js' script \u2014 however no test_active_inference.js file was found in the directory listing",
+        "Rust/run.sh includes '--test' flag support ('if [ \"$1\" = \"--test\" ]; then cargo test; fi') suggesting test infrastructure exists but the primary execution path never runs tests",
+        "The holistic_context.testing.critical_untested array is empty in the blind packet \u2014 the scanner found no files that are critically untested \u2014 but this is because the scanner can only identify files imported by other files, and this codebase has near-zero inter-file imports",
+        "Core algorithmic paths \u2014 belief updating (Bayesian posterior computation), expected free energy calculation, policy softmax selection \u2014 are implemented in Shell/Active_Shellference.sh with no test coverage whatsoever"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "architectural_change",
+      "confidence": "high",
+      "issues_preventing_higher_score": ""
+    },
+    "api_surface_coherence": {
+      "evidence": [
+        "Python StudentTeacherPOMDP.get_action(policy) takes a 'policy' parameter but uses np.argmax(policy) \u2014 the parameter name is 'policy' but the method selects the action with highest policy value; this is asymmetric with calculate_free_energy(policy) which uses policy as an integer index into B matrix slices",
+        "Python StudentTeacherPOMDP.calculate_free_energy(policy) uses 'policy' as an integer (np.dot(self.B[:, :, policy], self.d)) while get_action(policy) treats 'policy' as an array (np.argmax(policy)) \u2014 same parameter name, incompatible expected types across sibling methods",
+        "Python StudentTeacherPOMDP.infer_policy(policies) returns a probability array (softmax), while calculate_free_energy returns a scalar, and get_action returns a scalar \u2014 the return shapes are asymmetric and callers must know which returns what",
+        "Shell/Active_Shellference.sh: select_action takes 4 name-ref parameters (beliefs, preferences, transition_probs, environment) but internally calls calculate_efe with only 3 (beliefs, preferences, transition_probs) \u2014 the environment parameter is received but never used to differentiate actions, making the parameter list dishonest",
+        "TypeScript ActiveInferenceAgent class: all public methods (updateBeliefs, selectAction, getFreeEnergy, step) return typed values with error types \u2014 consistent API shape",
+        "JavaScript ActiveInferenceAgent constructor uses optional config={} with defaults scattered inline, while TypeScript version requires a mandatory AgentConfig \u2014 inconsistent initialization contract across sibling implementations",
+        "Python config_manager.py ConfigManager.export_config(format='json') and import_config(config_str, format='json') have format as first/second positional parameter respectively \u2014 the format parameter appears in different positions and with different defaults across the two paired methods",
+        "Shell/Active_Shellference.sh: all compute functions (calculate_kl_divergence, calculate_vfe, calculate_efe, update_beliefs, select_action) communicate results via echo to stdout rather than return values \u2014 this is consistent within Shell but creates no error contract (failures silently produce empty strings)",
+        "TypeScript/src/types.ts defines BeliefUpdateFunction, PolicySelectionFunction, FreeEnergyCalculationFunction, ActionExecutionFunction as exported type aliases but they are not used anywhere in ActiveInferenceAgent.ts \u2014 the declared API surface contains dead type exports"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium",
+      "issues_preventing_higher_score": ""
+    },
+    "authorization_consistency": {
+      "evidence": [
+        "This codebase is a collection of standalone language implementations and runner scripts \u2014 it has no web routes, no database schema, no RLS policies, and no authentication middleware",
+        "SQL/run.sh executes 'sudo -u postgres createdb active_inference' using sudo without any audit logging \u2014 this is an implicit privilege escalation in a shell script",
+        "SQL/run.sh runs 'psql -d active_inference -f SQL.sql' as the current user with no authentication parameters specified \u2014 relies entirely on ambient pg_hba.conf trust authentication or the invoking user's pg credentials",
+        "Shell/config.sh executes 'validate_config' and immediately calls 'exit 1' on failure \u2014 this is a safe fail-closed pattern",
+        "Python/teacher_wrapper.py loads a shared library via ctypes from a relative path '../C/teacher_model.so' \u2014 no verification that the library is from a trusted source (no hash check, no signature verification)",
+        "JavaScript/config.js ConfigManager.saveToFile() uses 'document.createElement(a)' and 'document.body.appendChild' \u2014 browser DOM manipulation in a Node.js module context suggests this code may be invoked in a browser context without any CSP or origin validation",
+        "run_all.sh uses 'find . -name run.sh -type f -exec chmod +x {} ;' \u2014 bulk chmod of all found run.sh files makes any file named run.sh executable, including potentially untrusted ones added to subdirectories",
+        "No password handling, no secrets management, no auth tokens, no permission strings, and no RLS patterns exist anywhere in the codebase \u2014 the dimension's primary defect categories are not applicable",
+        "test_suite.py runs subprocess.run with shell=False style invocations (implied by the structure) against language run.sh files \u2014 no privilege escalation beyond ambient user"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit",
+      "confidence": "high",
+      "issues_preventing_higher_score": "SQL runner uses sudo without audit logging; JavaScript config.js contains browser DOM manipulation that is unsafe in mixed-context deployments; relative shared library path in teacher_wrapper.py is unverified"
+    }
+  },
+  "dimension_judgment": {
+    "high_level_elegance": {
+      "strengths": [
+        "Per-language directory layout with a uniform run.sh entry point convention gives each language a predictable, self-contained capsule.",
+        "run_all.sh clearly expresses the orchestration intent (dispatch to per-language run.sh) without hidden coupling to language internals.",
+        "The domain is visible in structure: language directories name the implementation domain explicitly."
+      ],
+      "issue_character": "The primary issue is a fractured registry: the canonical language list is duplicated across multiple files (run_all.sh, status_dashboard.sh, master_controller.py) with no shared source of truth, causing stale entries and silently omitted languages.",
+      "score_rationale": "The per-language capsule pattern is well-conceived and consistently applied, which is a genuine high-level strength. However, the orchestration surface is split across two paradigms (Shell and Python) with no clear primary layer, six language directories are silently absent from the runner's registry, and the root accumulates unrelated Python modules alongside Shell scripts without a coherent ownership story. These gaps materially reduce navigability and predictability for a new engineer. Score reflects a partially realized architecture undermined by registry fragmentation and dual-layer orchestration confusion."
+    },
+    "mid_level_elegance": {
+      "strengths": [
+        "The source-based config loading pattern in Active_Shellference.sh (lines 11-14) uses a proper guard ('if ! source config.sh') rather than blind sourcing.",
+        "The parallel execution path in run_all.sh correctly collects PIDs and waits for them in order, preserving result tracking."
+      ],
+      "issue_character": "Integration seams consistently fail to validate that data shapes match at boundaries: the run.sh-generated config is structurally incompatible with the config.sh that Active_Shellference.sh expects, and the select_action/calculate_efe boundary is broken by missing action parameterization.",
+      "score_rationale": "The Shell subsystem has multiple concrete handoff failures: config format mismatch between the fallback generator and the real config, a domain-logic bug where EFE is computed independently of the action being evaluated, and a pass-through VFE wrapper that adds a misleading seam. The Python-Shell boundary is an opaque os.system() call with no structured handoff. These are not style issues \u2014 several cause silent wrong behavior or runtime failure. Score is in the lower range, reflecting that the architectural intent (modular per-language capsules with a shared runner) is sound but the actual seams are unreliable."
+    },
+    "ai_generated_debt": {
+      "strengths": [
+        "The core algorithmic functions (calculate_kl_divergence, calculate_efe, update_beliefs) have comments that at least attempt to document arguments and return values, which is better than nothing.",
+        "Some comments in Active_Shellference.sh do reference domain concepts (Free Energy Principle, KL divergence) rather than purely echoing variable names."
+      ],
+      "issue_character": "The codebase exhibits a consistent pattern of AI-generated structural padding: uniform section-header comments that restate function signatures, exported config variables that no caller uses, and hardcoded generic recommendations that produce no real signal.",
+      "score_rationale": "Active_Shellference.sh's comment ratio is 2.3x the codebase average and almost every function header is a docblock that restates its own name and parameter list. config.sh exports 7 variables unused by any sibling file. status_dashboard.sh's recommendations section is static boilerplate. These patterns together indicate systematic AI generation debt that adds noise without insight. Score is in the lower-middle range: the code is functional and comments don't cause runtime bugs, but the signal-to-noise ratio is poor and the unused config exports represent real dead weight."
+    },
+    "incomplete_migration": {
+      "strengths": [
+        "No deprecated symbols are present and called by active code.",
+        "No compatibility shims exist that are no longer needed.",
+        "JavaScript and TypeScript are implemented as independent language capsules, not as a mixed-paradigm migration artifact.",
+        "The scan found no migration_signals in the blind packet."
+      ],
+      "issue_character": "The dimension shows minimal migration debt; the primary incomplete-work markers are feature-level TODO stubs within the Shell simulation rather than migration artifacts.",
+      "score_rationale": "The codebase does not exhibit the canonical incomplete migration patterns: no deprecated-but-called symbols, no old+new API coexistence within a single module, no migration-labeled TODOs. The score is modestly below perfect because the Shell simulation has two TODO stubs that mark incomplete features (missing action effects, missing CLI arg parsing) and the run.sh fallback config quietly diverges from the actual config.sh. These are not migration issues by the dimension definition, but they do indicate the implementation was shipped in an incomplete state without cleanup."
+    },
+    "package_organization": {
+      "strengths": [
+        "The primary design choice \u2014 one directory per language implementation \u2014 creates a clear, predictable capsule structure that maps directly to the project domain.",
+        "Each language directory follows a consistent minimal structure (README.md, run.sh, source files) making navigation uniform across capsules.",
+        "Shell/ correctly groups the Shell language implementation's three files together rather than leaving them at root."
+      ],
+      "issue_character": "The root level accumulates five Python orchestration/tooling files alongside shell entry points without a separating container, mixing the 'demonstrate a language' domain concern with the 'operate the project' tooling concern.",
+      "score_rationale": "The per-language capsule layout is well-suited to the domain and navigation within any single language is clean. The structural damage comes from two sources: (1) five Python tooling files at root that belong in a dedicated subdirectory, lowering cohesion at the root level; and (2) six language directories present on disk but unregistered in run_all.sh, creating invisible dead directories from the operational perspective. The holistic_context.structure shows all root files as 'peripheral' with fan_in 0, confirming these are leaf entry points without cross-referencing \u2014 which is appropriate for a demo collection, but the mixing of tool scripts and entry scripts at root is a navigability defect."
+    },
+    "initialization_coupling": {
+      "strengths": [
+        "Shell scripts generally check for dependencies before importing or running, providing guard clauses at entry points",
+        "config.sh is clearly separated from Active_Shellference.sh, showing some intent to separate configuration from logic",
+        "Most run.sh scripts are designed as isolated entry points rather than modules to be sourced"
+      ],
+      "issue_character": "The dominant issue is module-level side effects: the Python Student_Teacher.py executes a full simulation at import scope, config.sh mutates global shell environment and validates+exits at source time, and reporting_system.py mutates global matplotlib/seaborn state at module scope.",
+      "score_rationale": "The codebase scores moderately because most shell run scripts are properly isolated entry points, but three significant initialization coupling defects exist: Student_Teacher.py running a simulation at import scope (causing double-execution when Python's -c import idiom is used), config.sh producing side effects on source, and Shell/run.sh creating conflicting config formats depending on invocation path. These are real defects that would cause surprising failures in testing or composition contexts."
+    },
+    "design_coherence": {
+      "strengths": [
+        "Each language implementation is isolated in its own directory with a standardized run.sh entry point, showing consistent top-level structural decomposition",
+        "run_all.sh cleanly separates sequential vs parallel execution modes",
+        "config_manager.py uses TypedDict-style return types consistently across the public API"
+      ],
+      "issue_character": "The dominant issue is repeated structural patterns that should be data-driven but are instead expressed as dozens of near-identical method pairs, combined with functions that mix multiple distinct responsibilities (display, I/O, analysis, execution) in single bodies.",
+      "score_rationale": "The codebase scores below average for design coherence because the config_manager.py has 26+ structurally identical method pairs that should be table-driven, the status_dashboard.sh merges fundamentally different concerns into one file, and the Brainfuck/run.sh runner does too much. The run_all.sh LANGUAGES array encoding (name:dir with always-equal values) is unnecessary complexity. These are real structural design defects not just style issues. The standardized per-language directory structure is a genuine strength that prevents a lower score."
+    },
+    "naming_quality": {
+      "strengths": [
+        "Most shell functions have clear intent-revealing names: show_header, show_system_info, list_languages, show_usage",
+        "Domain-specific mathematical variable names (A, B, C, D matrices) correctly follow Active Inference literature conventions",
+        "Python type annotations and method signatures in config_manager.py and reporting_system.py use accurate descriptive names",
+        "ERROR and SUCCESS status constants/variables follow clear boolean naming conventions"
+      ],
+      "issue_character": "The most frequent naming issue is name/behavior mismatch: functions named 'check_*' that produce output rather than returning values, and 'generate_*' methods that build strings rather than generating files.",
+      "score_rationale": "Naming is generally adequate across the codebase \u2014 most names communicate basic intent. The score is reduced by three real mismatches: check_language_status() prints rather than checking, generate_dependency_report() returns a string rather than generating a file, and the 'precision' variable name collision with the Active Inference domain concept. These are genuine naming defects that would mislead a developer reading the code."
+    },
+    "logic_clarity": {
+      "strengths": [
+        "Most shell scripts use 'set -e' consistently, providing predictable early-exit behavior",
+        "Command existence checks ('command -v ... &> /dev/null') are a consistent pattern across all run.sh files",
+        "Python code in Student_Teacher.py uses clear, direct conditional structures without redundant branches"
+      ],
+      "issue_character": "The dominant pattern is dead code from 'if [ $? -eq 0 ]' checks placed after commands under 'set -e', and one significant logical defect where select_action() iterates over actions without ever varying its computation per action.",
+      "score_rationale": "The score is significantly reduced by the select_action() logic defect (it never actually differentiates actions \u2014 the entire action-selection purpose of the function is broken) and the pervasive dead code pattern in Rust/run.sh and Cpp/run.sh where post-command $? checks under set -e can never reach their failure branches. The TOTAL_IMPLEMENTATIONS counting bug in single-language mode is a further clarity failure. These are real logic defects, not style issues."
+    },
+    "type_safety": {
+      "strengths": [
+        "config_manager.py imports and uses typing module (Dict, List, Tuple, Optional, Any) consistently on public API methods",
+        "benchmark_suite.py uses @dataclass with typed fields for PerformanceMetrics and BenchmarkConfig",
+        "serializer.py uses Union[str, bytes] correctly for the serialize() return type",
+        "reporting_system.py uses typed return annotations on most public methods"
+      ],
+      "issue_character": "The primary issue is systematic use of Dict[str, Any] for known-structure dictionaries that should be TypedDicts or dataclasses, combined with completely absent annotations on the most frequently used public API (Student_Teacher.py methods).",
+      "score_rationale": "The score is substantially reduced because the most domain-central file (Student_Teacher.py) has zero type annotations on all public methods, BenchmarkConfig uses 'parameters: Dict[str, Any] = None' where the type annotation lies (None is not a Dict), and config_manager.py erases type information for the checker/installer registry with Dict[str, Any] when a TypedDict would capture the known structure. The reporting_system.py root_directory parameter typed as str but immediately converted to Path is a genuine type mismatch at the boundary. The codebase's Python files started with good intentions (typing imports present) but apply types inconsistently."
+    },
+    "contract_coherence": {
+      "strengths": [
+        "Shell/config.sh exports all configuration variables with a validate_config() function that actively checks probability sums \u2014 the config contract is explicitly enforced rather than assumed",
+        "Shell/Active_Shellference.sh uses bash nameref parameters (-n) consistently across all math functions, making parameter passing contracts uniform",
+        "Most run.sh scripts have consistent tool-check then build then run structure \u2014 the orchestration contract is predictable across languages"
+      ],
+      "issue_character": "The dominant issue pattern is function implementations that diverge from their documented purpose: passthrough wrappers mislabeled as computing distinct quantities, selection loops that don't vary inputs across iterations, and error propagation sequences that are voided by set -e before the handler runs.",
+      "score_rationale": "The codebase has several functions where the name and docstring promise one computation but the body delivers a different or degenerate one (calculate_vfe is just calculate_kl_divergence; select_action loops but never varies the EFE input). These are not type annotation issues but true behavioral contract violations. The status dashboard's check_language_status function uses a wildcard glob pattern that is nonsensical for most languages, silently breaking its own stated contract. These issues span the primary orchestration and simulation files, meriting a score well below average."
+    },
+    "error_consistency": {
+      "strengths": [
+        "All run.sh scripts consistently use 'exit 1' with a user-facing error message on missing tool dependencies \u2014 the first-level error contract is uniform",
+        "Shell/config.sh performs explicit probability-sum validation with error messages to stderr and returns 1 on failure \u2014 this is a well-formed error strategy for its scope",
+        "Shell/Active_Shellference.sh's initialize_simulation sources config.sh with 'if ! source config.sh; then ... exit 1; fi' \u2014 proper I/O error handling at the config boundary"
+      ],
+      "issue_character": "The dominant failure pattern is a structural contradiction: scripts declare 'set -e' to exit on error but then add explicit '$? -eq 0' conditional branches whose failure paths can never execute, creating an illusion of error handling while producing zero diagnostic output on actual failures.",
+      "score_rationale": "The codebase has one consistent error strategy (exit 1 on missing tools) but immediately undermines it with set -e / explicit-check contradictions repeated across at least 6 run.sh files. Silent error swallowing in SQL's sqlite3 call and Python's pip fallback, combined with bc output not being checked in the core simulation math, means failures propagate as empty strings or zero exit codes without any context. This is a codebase-wide pattern rather than isolated incidents, placing the score below the midpoint."
+    },
+    "abstraction_fitness": {
+      "strengths": [
+        "Shell/config.sh's validate_config() is a focused, self-contained abstraction that pays for itself by actively enforcing config contracts",
+        "The run.sh pattern across language directories is a consistent, intentional abstraction that isolates language-specific build details from the orchestrator",
+        "status_dashboard.sh's flat chain of void display functions is internally consistent \u2014 each function has one clear output responsibility"
+      ],
+      "issue_character": "The most consequential abstraction defect is the parallel, format-divergent language registry \u2014 the LANGUAGES array in run_all.sh and the categories map in status_dashboard.sh define the same domain entity twice in different formats, with no shared source of truth, causing maintenance burden whenever a language is added or renamed.",
+      "score_rationale": "The abstraction layer for individual language execution (run.sh per directory, run_language() dispatcher) pays for itself and is well-leveraged. However, the codebase has a clear duplication antipattern at the registry level \u2014 two parallel language-list definitions with incompatible formats \u2014 and a zero-value wrapper (calculate_vfe) that adds indirection without any computation. Shell's lack of typed returns forces all math functions into stdout-capture patterns, which is unavoidable in the language but creates consistent indirection cost. The score reflects functional but unlevered abstractions with one notable duplication defect."
+    },
+    "low_level_elegance": {
+      "strengths": [
+        "Shell/config.sh's validate_config() has clean, direct control flow: validate beliefs sum, validate preferences sum, validate integer ranges \u2014 each check is self-contained and returns early on failure",
+        "Shell/Active_Shellference.sh uses bash nameref parameters (-n) uniformly across all math functions \u2014 consistent parameter passing idiom throughout the file",
+        "Most run.sh scripts follow a clean linear structure: check tool, build, run \u2014 minimal branching, intention-revealing flow"
+      ],
+      "issue_character": "The dominant low-level issue pattern is silent dead state and incorrect side-effects: an array allocated but never read, constants masquerading as computations, a syntax error in a command substitution, and fragile implicit coupling to external tool output format.",
+      "score_rationale": "The simulation logic in Active_Shellference.sh is reasonably direct and the run.sh scripts have clean linear flow for the happy path. However, there are multiple instances of dead state (unused results array, constant-expression statistics), a genuine syntax error (Cpp/run.sh G++ version detection), and fragile parsing patterns (status dashboard ls output parsing). The magic initialization value in select_action() with no bounds commentary and the non-deterministic iteration order in show_implementations() further reduce confidence in the control flow being fully intention-revealing."
+    },
+    "cross_module_architecture": {
+      "strengths": [
+        "Each language directory is a fully self-contained module with no cross-language runtime dependencies",
+        "Orchestration layer coordinates through well-defined contracts: presence of run.sh and return code",
+        "No shared mutable state between language implementations"
+      ],
+      "issue_character": "The main architectural weakness is duplicated registry state: the canonical language list is maintained independently in run_all.sh and status_dashboard.sh, causing drift when new languages are added.",
+      "score_rationale": "This is a flat, loosely-coupled architecture with strong isolation boundaries between language modules. The primary cross-module defect is the duplicated language registry causing observable drift. The working-directory mutation pattern creates a subtle shared-state contract. Score reflects genuinely good isolation with a structural registry coupling problem."
+    },
+    "convention_outlier": {
+      "strengths": [
+        "Most run.sh files follow a consistent structural pattern: emoji header, tool check, build step, run step, success message",
+        "The top-level LANGUAGES array in run_all.sh uses a consistent 'Name:Dir' format",
+        "TypeScript uses a proper src/ hierarchy with separate types.ts, consistent with JS module conventions"
+      ],
+      "issue_character": "Convention drift manifests both within the shell orchestration layer (inconsistent config format, behavior outliers like Jock and Brainfuck) and across language directories (Julia has a flat file dump while TypeScript has structured src/, Python's main file name breaks from its own snake_case siblings).",
+      "score_rationale": "The run.sh protocol is followed by most siblings but has meaningful outliers (Jock is doc-only, Brainfuck is a Python wrapper, Shell/run.sh generates a config that conflicts with the existing config.sh). The Julia directory is a flat file dump against the grain of the structured language dirs. Naming is inconsistent between and within language directories. These are real navigability defects, not stylistic preferences, placing this in the mid-range."
+    },
+    "dependency_health": {
+      "strengths": [
+        "Rust/Cargo.toml is minimal and well-structured \u2014 only 6 dependencies, all purposeful for numerical computing and serialization",
+        "JavaScript and TypeScript both use mathjs consistently as their only math library, avoiding the moment+dayjs type of duplication",
+        "Most language implementations have no package manifest at all, relying on the system toolchain \u2014 appropriate for compiled languages like Assembly, C, Ada, Fortran"
+      ],
+      "issue_character": "Dependencies are largely appropriate in kind but suffer from version imprecision (no requirements.txt for Python), cross-implementation duplication (JS and TS share identical deps), and a redundant @types package for a library that bundles its own types.",
+      "score_rationale": "The codebase has a small surface area with only two package.json files and one Cargo.toml, limiting the blast radius of dependency issues. The Python module has the most acute problem \u2014 runtime pip installs with no pinning, a hidden yaml dependency, and Brainfuck extending Python's dep set with heavier packages like fastdtw. The @types/mathjs redundancy and Rust's runtime cargo add are real but low-severity issues. This scores in the mid-range: not broken, but missing hygiene that would matter in CI/CD."
+    },
+    "test_strategy": {
+      "strengths": [
+        "test_suite.py exists as a codebase-wide orchestration harness covering all 40+ language implementations",
+        "The test suite's structure validation (README, run.sh, source file checks) catches infrastructure-level regressions",
+        "Rust runner explicitly supports '--test' flag to invoke cargo test"
+      ],
+      "issue_character": "The entire test strategy is execution-level smoke testing (does it run without error?) with zero algorithmic assertion \u2014 no test verifies that belief updates converge correctly, free energy decreases, or action selection is consistent across equivalent inputs.",
+      "score_rationale": "A single integration harness that validates run.sh exits with code 0 is better than nothing, but it provides no confidence in computational correctness. The TypeScript 'jest' devDependency and JavaScript 'test_active_inference.js' reference both appear to be stubs with no actual test content. The Python inline plot-generation check is not an assertion. For a codebase implementing a mathematical algorithm across 40+ languages, the absence of any behavioral assertion on a single implementation is a severe test strategy gap. Scores low but above zero because the structural validation suite genuinely exists and runs."
+    },
+    "api_surface_coherence": {
+      "strengths": [
+        "TypeScript implementation has strongly typed, consistent method signatures with explicit error types",
+        "Rust implementation uses Result<T, AgentError> consistently across all fallible methods",
+        "Shell functions use a consistent nameref parameter passing pattern (local -n) for all compute functions"
+      ],
+      "issue_character": "The most significant coherence defect is within Python's StudentTeacherPOMDP: sibling methods share the parameter name 'policy' but treat it as incompatible types (integer index vs probability array), which is a silent API contract violation that will cause runtime errors on incorrect usage.",
+      "score_rationale": "Individual implementations (TypeScript, Rust) have internally coherent APIs. The Shell layer is coherent but has an unused parameter in select_action. Python's POMDP class has a real type-overloading defect in the 'policy' parameter across methods. The cross-language API shapes diverge (optional vs required config, echo-based vs return-based results), but this is partially expected across different language paradigms. The Python defect and Shell's dishonest parameter list are the primary scorable issues."
+    },
+    "authorization_consistency": {
+      "strengths": [
+        "No authentication middleware, route handlers, or RLS policies exist \u2014 the dimension's core defect surface (mixed auth coverage across siblings) is absent",
+        "Shell/config.sh uses a fail-closed validation pattern that exits on any config error",
+        "No hardcoded passwords, API keys, or secret literals found in any source file"
+      ],
+      "issue_character": "The codebase has negligible authorization surface by design (it is a collection of simulation runners, not a multi-user system), but the SQL runner introduces an unaudited sudo invocation and the Python C library wrapper loads a shared object from a relative path without integrity verification.",
+      "score_rationale": "Because this is a simulation/demonstration codebase with no access control surface (no HTTP endpoints, no DB with user data, no permission system), most authorization_consistency criteria simply do not apply. The score is not 100 because the SQL runner's sudo usage is a real escalation pattern without any audit trail, and the shared library loading in teacher_wrapper.py has an integrity gap. These are local issues without codebase-wide authorization inconsistency patterns."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "hle-01",
+      "summary": "Six language directories exist on disk but are absent from run_all.sh LANGUAGES registry",
+      "confidence": "high",
+      "suggestion": "Add the missing languages to the LANGUAGES array in run_all.sh. Longer term, derive the language list from a single canonical source (e.g., a languages.txt or JSON manifest) that both run_all.sh and status_dashboard.sh read.",
+      "related_files": [
+        "run_all.sh"
+      ],
+      "evidence": [
+        "MATLAB, Ruby, PHP, Swift, CSharp, and Scala directories all exist under the repo root but are not listed in the LANGUAGES array in run_all.sh.",
+        "run_all.sh line 66: 'if [ -d \"$lang_dir\" ] && [ -f \"$lang_dir/run.sh\" ]' \u2014 these directories would never be reached because they are never iterated."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "hle-02",
+      "summary": "Language registry is duplicated across run_all.sh, status_dashboard.sh, and master_controller.py with no shared source of truth",
+      "confidence": "high",
+      "suggestion": "Introduce a single canonical languages manifest (e.g., languages.json at root listing name and directory). Both run_all.sh and status_dashboard.sh should source/parse this file. master_controller.py should read the same file.",
+      "related_files": [
+        "run_all.sh",
+        "status_dashboard.sh",
+        "master_controller.py"
+      ],
+      "evidence": [
+        "run_all.sh lines 21-55: LANGUAGES array defines 33 entries.",
+        "status_dashboard.sh lines 150-158: declare -A categories defines its own language-to-directory mapping independently.",
+        "master_controller.py defines language handling logic separately via _run_all_languages().",
+        "Adding a new language requires edits in all three files."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "hle-03",
+      "summary": "Dual orchestration layers (Shell and Python) with no clear primary entry point create ambiguous ownership",
+      "confidence": "high",
+      "suggestion": "Designate one layer as primary (likely Shell for simplicity, or Python for richer features). Demote the other to a utility called by the primary, or merge them. Document the intended entry point clearly in the root README.",
+      "related_files": [
+        "run_all.sh",
+        "status_dashboard.sh",
+        "master_controller.py",
+        "reporting_system.py",
+        "benchmark_suite.py",
+        "config_manager.py",
+        "test_suite.py"
+      ],
+      "evidence": [
+        "run_all.sh and status_dashboard.sh are shell-based orchestrators at root.",
+        "master_controller.py is a Python orchestrator that calls os.system(str(dashboard_script)) on status_dashboard.sh \u2014 the Python layer delegates back to Shell.",
+        "Five Python files live at root alongside two shell scripts; no README or structural signal indicates which layer is primary.",
+        "A new engineer cannot determine whether to use './run_all.sh' or 'python3 master_controller.py' as the canonical entry point."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "architectural_change"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "mle-01",
+      "summary": "run.sh generates a config.sh using bash array syntax incompatible with Active_Shellference.sh's expected scalar string format",
+      "confidence": "high",
+      "suggestion": "Align the fallback config generated by run.sh with the format expected by Active_Shellference.sh: use 'export CONFIG_INITIAL_BELIEFS=\"0.25 0.25 0.25 0.25\"' (scalar string). Alternatively, define a single authoritative config.sh template and have run.sh copy it rather than generating inline.",
+      "related_files": [
+        "Shell/run.sh",
+        "Shell/config.sh",
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Shell/run.sh lines 28-31 generate: CONFIG_INITIAL_BELIEFS=(\"0.25\" \"0.25\" \"0.25\" \"0.25\") \u2014 bash array assignment without export.",
+        "Shell/config.sh line 12: export CONFIG_INITIAL_BELIEFS=\"0.25 0.25 0.25 0.25\" \u2014 exported scalar string.",
+        "Shell/Active_Shellference.sh line 195: read -ra beliefs <<< \"${simulation[beliefs]}\" \u2014 expects space-separated scalar, not a bash array variable.",
+        "If run.sh generates the fallback config and Active_Shellference.sh sources it, CONFIG_INITIAL_BELIEFS would be a bash array; ${CONFIG_INITIAL_BELIEFS} would expand to just the first element."
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "mle-02",
+      "summary": "select_action passes the same EFE inputs on every action iteration \u2014 action identity is never threaded into EFE calculation",
+      "confidence": "high",
+      "suggestion": "calculate_efe should accept an action index or action-specific transition slice. Pass the current 'action' to calculate_efe inside the loop so each action's EFE is computed using the transition probabilities that correspond to that action.",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Lines 167-174: 'for action in \"${environment_ref[@]}\"; do ... efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref); done'",
+        "The loop variable 'action' is never passed to calculate_efe. All iterations compute identical EFE values.",
+        "The first action always satisfies '< $min_efe' and is selected; subsequent actions never beat the minimum. Selection is not action-dependent."
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "mle-03",
+      "summary": "config.sh emits stdout text on source, polluting any script that sources it",
+      "confidence": "high",
+      "suggestion": "Remove the success echo from config.sh, or redirect it to stderr (>&2) so it does not pollute stdout of the sourcing script.",
+      "related_files": [
+        "Shell/config.sh",
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Shell/config.sh line 90: echo \"Configuration loaded and validated successfully\" \u2014 unconditional stdout write at module scope.",
+        "Active_Shellference.sh line 11 sources config.sh; the echo output appears mixed into the simulation's output without any signal that it is a config side effect.",
+        "If Active_Shellference.sh output is piped or parsed downstream, the config message introduces unexpected noise."
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "mle-04",
+      "summary": "calculate_vfe is a pass-through wrapper over calculate_kl_divergence with no added boundary value",
+      "confidence": "high",
+      "suggestion": "Either remove calculate_vfe and call calculate_kl_divergence directly (with a comment explaining VFE = KL divergence under this simplified model), or implement the full VFE formula so the function earns its boundary.",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Lines 69-76: calculate_vfe() takes beliefs_ref and preferences_ref, calls calculate_kl_divergence with identical args, and echoes the result.",
+        "No transformation, clamping, weighting, or policy difference between VFE and KL divergence at this abstraction level.",
+        "Callers must understand that VFE == KL divergence here, which is either a domain simplification not documented or an incomplete implementation."
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "aid-01",
+      "summary": "Every function in Active_Shellference.sh has a multi-line docblock that restates the function signature without domain insight",
+      "confidence": "high",
+      "suggestion": "Replace the restating docblocks with inline comments that explain non-obvious constraints, e.g., why bc -l is needed for the logarithm, or why beliefs must be normalized before this calculation. Remove parameter documentation that simply echoes the variable names.",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Lines 37-45: '# Computes the KL divergence between the agent's current beliefs and its preferences. Arguments: $1 - Name reference to the beliefs array ...' \u2014 these are the parameter names already visible in lines 47-48.",
+        "Lines 60-68: '# Returns: The calculated Variational Free Energy' \u2014 the return statement on line 75 already conveys this.",
+        "All 7 function headers follow identical ###### delimiter format with 'Arguments:' and 'Returns:' sections that mirror the function signature."
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "aid-02",
+      "summary": "config.sh exports 7 variables that are never referenced by any file in the Shell subsystem",
+      "confidence": "high",
+      "suggestion": "Remove the unused exported variables from config.sh. If CONFIG_OUTPUT_FILE or CONFIG_LOG_LEVEL are intended for future use, add a comment explaining the intended consumer; otherwise delete them.",
+      "related_files": [
+        "Shell/config.sh",
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "config.sh exports: CONFIG_OUTPUT_FILE, CONFIG_LOG_LEVEL, CONFIG_LEARNING_RATE, CONFIG_DISCOUNT_FACTOR, CONFIG_RANDOM_SEED, CONFIG_ENABLE_DEBUG, CONFIG_SAVE_INTERMEDIATE.",
+        "Active_Shellference.sh references only: CONFIG_ENVIRONMENT, CONFIG_INITIAL_BELIEFS, CONFIG_PREFERENCES, CONFIG_TRANSITION_PROBS, CONFIG_TIME_STEPS, CONFIG_PRECISION.",
+        "grep for CONFIG_OUTPUT_FILE, CONFIG_LOG_LEVEL, CONFIG_LEARNING_RATE in Shell/ returns no hits outside config.sh itself."
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "aid-03",
+      "summary": "status_dashboard.sh show_recommendations() outputs static hardcoded generic suggestions unrelated to actual repo state",
+      "confidence": "high",
+      "suggestion": "Remove the static 'Suggested Improvements' block, or replace it with dynamic checks (e.g., detect missing test files, count languages with no source file, detect non-passing runs from a cache).",
+      "related_files": [
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "Lines 226-231: echo lines output 'Add more language implementations', 'Create comprehensive testing suite', 'Add performance benchmarking', 'Implement language comparison tools', 'Add continuous integration' \u2014 these are boilerplate suggestions that appear regardless of what is or isn't present.",
+        "The same function (show_recommendations) does dynamically check for missing READMEs and non-executable scripts (lines 202-223), making the static suggestions section a visible contrast: dynamic checks then static boilerplate."
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "im-01",
+      "summary": "Shell simulation has two stale TODO stubs marking permanently deferred features",
+      "confidence": "high",
+      "suggestion": "Either implement the missing action-environment feedback loop (required for the simulation to be meaningful), or document explicitly in a comment why action effects are intentionally omitted in this simplified model. Remove the trailing robustness TODO or convert to a tracked issue.",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Line 215: '# TODO: Implement action effects on environment' \u2014 the simulation loop never modifies the environment state after action selection, making the simulation non-interactive.",
+        "Line 226: '# TODO: Add error handling, logging, and command-line argument parsing for more robustness' \u2014 at end of file with no tracking issue."
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "po-01",
+      "summary": "Five Python tooling files at root mix orchestration/tooling concern with language-demo entry points",
+      "confidence": "high",
+      "suggestion": "Stage 1: Create a 'tools/' directory at root. Move benchmark_suite.py, config_manager.py, reporting_system.py, test_suite.py, master_controller.py into tools/. Stage 2: Update any cross-file invocation paths (master_controller.py's reference to status_dashboard.sh is relative and will need adjustment). Stage 3: Validate by running python3 tools/master_controller.py and ./run_all.sh to confirm paths still resolve. No import graph updates needed since these files have fan_in 0.",
+      "related_files": [
+        "master_controller.py",
+        "config_manager.py",
+        "reporting_system.py",
+        "benchmark_suite.py",
+        "test_suite.py"
+      ],
+      "evidence": [
+        "Root directory contains: run_all.sh, status_dashboard.sh (entry points for running demos) alongside master_controller.py, config_manager.py, reporting_system.py, benchmark_suite.py, test_suite.py (tooling/orchestration).",
+        "holistic_context.structure shows all root files as fan_in 0 / fan_out 0 / role 'peripheral' \u2014 these are not shared utilities imported by capsules but standalone tools that happen to live at root.",
+        "A developer browsing the root cannot easily distinguish 'run this' (run_all.sh) from 'report on this' (reporting_system.py) from 'manage deps for this' (config_manager.py)."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "po-02",
+      "summary": "Six language directories on disk are unregistered stragger roots invisible to run_all.sh",
+      "confidence": "high",
+      "suggestion": "Stage 1: Audit each directory for a working run.sh. Stage 2: For those with run.sh, add the entry to LANGUAGES in run_all.sh. Stage 3: For those without a run.sh, either add a stub run.sh or move the directory to an 'experimental/' or 'wip/' subdirectory to signal their status. Stage 4: Run './run_all.sh --list' to verify all newly added entries show as available or missing rather than silently absent.",
+      "related_files": [
+        "run_all.sh"
+      ],
+      "evidence": [
+        "Directories present: CSharp/, MATLAB/, Ruby/, PHP/, Swift/, Scala/.",
+        "None appear in run_all.sh LANGUAGES array.",
+        "From a package organization perspective these directories exist but have no functional registration \u2014 they are stragger roots with low operational fan-in (0 callers from the run orchestration layer)."
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "po-03",
+      "summary": "Rust directory has non-uniform structure (multiple sub-directories, extra docs) diverging from the single-capsule convention",
+      "confidence": "medium",
+      "suggestion": "Consolidate Rust.README.md content into README.md and remove the duplicate. Rename or flatten RustConfig/ and RustThings/ to match purpose-driven names (e.g., 'config/' or 'examples/'). Ensure the final structure matches the minimal capsule pattern used by other languages to reduce navigation overhead.",
+      "related_files": [
+        "Rust/"
+      ],
+      "evidence": [
+        "Rust/ contains: RustConfig/, RustThings/, src/, Cargo.lock, Cargo.toml, README.md, Rust.README.md, config.json, run.sh, system_spec_RUST.txt.",
+        "Other language capsules (e.g., Python/, TypeScript/, Golang/) have flat or minimal src/-only structure.",
+        "Two README files (README.md and Rust.README.md) in the same directory indicate disorganized documentation accumulation.",
+        "RustConfig/ and RustThings/ as subdirectory names are ambiguous: they do not communicate whether they are configuration data, source modules, or auxiliary demos."
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "initialization_coupling",
+      "identifier": "student_teacher_module_scope_execution",
+      "summary": "Student_Teacher.py runs a full 20-step simulation and generates plots at module import scope",
+      "confidence": "high",
+      "suggestion": "Wrap all module-level execution in 'if __name__ == \"__main__\":' guard so that importing the module does not trigger side effects",
+      "related_files": [
+        "Python/Student_Teacher.py",
+        "Python/run.sh"
+      ],
+      "evidence": [
+        "Lines 159-179 of Student_Teacher.py: 'pomdp = StudentTeacherPOMDP(...)' and the simulation loop execute unconditionally at module scope",
+        "Python/run.sh imports Student_Teacher via 'from Student_Teacher import StudentTeacherPOMDP' \u2014 this triggers the full simulation as a side effect of the import, causing double execution"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "initialization_coupling",
+      "identifier": "config_sh_exit_on_source",
+      "summary": "config.sh calls exit 1 at module scope inside validate_config, killing the sourcing shell process on validation failure",
+      "confidence": "high",
+      "suggestion": "Replace 'exit 1' inside config.sh with 'return 1' so that sourcing scripts can handle validation failure without killing the parent shell",
+      "related_files": [
+        "Shell/config.sh",
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Shell/config.sh lines 85-88: 'if ! validate_config; then ... exit 1 ... fi' executes at source time",
+        "Active_Shellference.sh line 11-13: 'if ! source config.sh; then echo Error; exit 1; fi' \u2014 but config.sh's own 'exit 1' will kill the parent shell before this check can run"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "initialization_coupling",
+      "identifier": "shell_run_conflicting_config_formats",
+      "summary": "Shell/run.sh creates config.sh with array syntax while Shell/config.sh uses scalar export syntax \u2014 the two formats are incompatible",
+      "confidence": "high",
+      "suggestion": "Unify config format: either use only scalar exports or only arrays, and remove the conflicting inline config generation from run.sh",
+      "related_files": [
+        "Shell/run.sh",
+        "Shell/config.sh"
+      ],
+      "evidence": [
+        "Shell/run.sh lines 22-38: creates config.sh with 'CONFIG_ENVIRONMENT=(\"food\" \"danger\" \"safe\")' using bash array syntax",
+        "Shell/config.sh line 9: 'export CONFIG_ENVIRONMENT=\"ShellActiveInference_v1.0\"' uses scalar string syntax",
+        "Active_Shellference.sh uses '${simulation[environment]}' from CONFIG_ENVIRONMENT \u2014 behavior differs based on which config.sh is active"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "initialization_coupling",
+      "identifier": "reporting_system_global_state_mutation",
+      "summary": "reporting_system.py mutates global matplotlib and seaborn state at module import scope",
+      "confidence": "medium",
+      "suggestion": "Move global style configuration into the main() function or an explicit initialize_plots() function called at entrypoint rather than at import scope",
+      "related_files": [
+        "reporting_system.py"
+      ],
+      "evidence": [
+        "Lines 27-28: 'plt.style.use(\"seaborn-v0_8-darkgrid\")' and 'sns.set_palette(\"husl\")' execute at import scope",
+        "These calls permanently affect plot style for any module sharing the same Python process"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "initialization_coupling",
+      "identifier": "run_all_relative_cd_boot_order",
+      "summary": "run_all.sh uses relative 'cd $lang_dir / cd ..' pattern that breaks if not invoked from the repo root",
+      "confidence": "medium",
+      "suggestion": "Capture the script's directory at startup with 'SCRIPT_DIR=$(cd -- \"$(dirname -- \"${BASH_SOURCE[0]}\")\" && pwd)' and use absolute paths for all cd operations",
+      "related_files": [
+        "run_all.sh"
+      ],
+      "evidence": [
+        "run_all.sh line 68: 'cd \"$lang_dir\"' followed by line 74: 'cd ..' \u2014 assumes cwd is always the repo root",
+        "run_language() has no cwd guard; calling it from a subdirectory would navigate to a wrong directory silently"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "config_manager_26_identical_method_pairs",
+      "summary": "config_manager.py contains 26+ near-identical _check_*_deps() and _install_*_deps() method pairs that should be data-driven",
+      "confidence": "high",
+      "suggestion": "Replace per-language _check_*_deps() methods with a generic _check_commands(required: List[str]) method that iterates self.dependencies[lang]['required'], eliminating 20+ nearly identical method bodies",
+      "related_files": [
+        "config_manager.py"
+      ],
+      "evidence": [
+        "Lines 446-690: _check_lua_deps, _check_perl_deps, _check_r_deps, _check_racket_deps, etc. all follow identical patterns: call _command_exists() on a fixed string, build available/missing lists, return tuple",
+        "The dependency definitions dict already stores the required tool list \u2014 the checker methods reimplement the same logic redundantly instead of using the stored required list"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "status_dashboard_mixed_concerns",
+      "summary": "status_dashboard.sh mixes display formatting, OS introspection, filesystem queries, tool detection, and analysis recommendations in a single 253-line file",
+      "confidence": "medium",
+      "suggestion": "Extract data-gathering functions (collect_system_info, collect_statistics, collect_recommendations) separately from display functions, or split into a data-gathering script and a display script",
+      "related_files": [
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "show_system_info() queries lsb_release, /etc/os-release, nproc, free, and iterates 29 tool names \u2014 this is system introspection, not dashboard display",
+        "show_statistics() uses find with -printf and wc -l for file counting \u2014 data aggregation distinct from display",
+        "show_recommendations() both analyzes and prints \u2014 analysis should be separated from rendering"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "select_action_loop_ignores_action_variable",
+      "summary": "select_action() in Active_Shellference.sh iterates over environment actions but never passes the current action to calculate_efe(), computing identical EFE for every action",
+      "confidence": "high",
+      "suggestion": "Pass the current action as a parameter to calculate_efe() and update calculate_efe() to apply action-specific transition probabilities for that action index",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Lines 167-175: 'for action in \"${environment_ref[@]}\"; do ... efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref) ...' \u2014 the loop variable 'action' is never used in the EFE call",
+        "EFE is action-dependent by definition; the design promises action selection but delivers a constant comparison"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "cpp_run_sh_broken_subshell_syntax",
+      "summary": "Cpp/run.sh has unbalanced parenthesis in g++ version echo command making compiler version reporting silently broken",
+      "confidence": "high",
+      "suggestion": "Fix to: 'echo \"\u2705 G++ found: $(g++ --version | head -1)\"' \u2014 move the closing paren to after head -1",
+      "related_files": [
+        "Cpp/run.sh"
+      ],
+      "evidence": [
+        "Line 17: 'echo \"\u2705 G++ found: $(g++) --version | head -1)\"' \u2014 the subshell opens with $( but contains the closing paren of g++ before the pipe, producing incorrect output"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "brainfuck_run_sh_over_responsibility",
+      "summary": "Brainfuck/run.sh has four distinct responsibilities: dependency checking, config generation, primary execution, and conditional analysis execution",
+      "confidence": "medium",
+      "suggestion": "Move config generation to a setup.sh or init script, and move analysis invocation to a separate analyze.sh; keep run.sh focused on dependency check and primary execution",
+      "related_files": [
+        "Brainfuck/run.sh"
+      ],
+      "evidence": [
+        "Lines 20-24: checks 7 Python packages",
+        "Lines 28-50: generates a JSON config file if not present",
+        "Line 54: runs the primary simulation",
+        "Lines 57-62: conditionally runs two additional analysis scripts"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "naming_quality",
+      "identifier": "check_language_status_produces_output_not_check",
+      "summary": "status_dashboard.sh check_language_status() name implies a check/return but the function only produces stdout output via printf",
+      "confidence": "high",
+      "suggestion": "Rename to 'print_language_status' or 'show_language_status' to match actual behavior",
+      "related_files": [
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "Lines 26-70: function is named 'check_language_status' but its entire body builds status strings and ends with 'printf \"  %-12s %s - %s\\n\"' \u2014 it has no return value",
+        "Callers in show_implementations() use it as 'check_language_status \"$lang\" \"$dir\"' without capturing output \u2014 consistent with a print function, not a check function"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "naming_quality",
+      "identifier": "generate_dependency_report_returns_string_not_file",
+      "summary": "config_manager.py generate_dependency_report() returns a string but 'generate' conventionally implies creating a file or artifact",
+      "confidence": "high",
+      "suggestion": "Rename to 'format_dependency_report()' or 'build_dependency_report()' to accurately describe that it returns a formatted string",
+      "related_files": [
+        "config_manager.py"
+      ],
+      "evidence": [
+        "Lines 707-735: method builds and returns a string: 'return report'",
+        "The actual file write ('with open(\"dependency_report.txt\", \"w\") as f') happens in main() at line 749-751 \u2014 not in this method"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "naming_quality",
+      "identifier": "precision_variable_domain_collision",
+      "summary": "Shell/Active_Shellference.sh uses 'precision' as a bc scale parameter, conflicting with its domain meaning of inverse variance in Active Inference",
+      "confidence": "medium",
+      "suggestion": "Rename to 'bc_scale' or 'arithmetic_scale' to distinguish from the domain-specific concept of precision as inverse variance",
+      "related_files": [
+        "Shell/Active_Shellference.sh",
+        "Shell/config.sh"
+      ],
+      "evidence": [
+        "Active_Shellference.sh line 18: 'declare -i precision' and line 33: 'precision=\"${CONFIG_PRECISION}\"'",
+        "config.sh line 26: 'export CONFIG_PRECISION=1000' \u2014 used as 'scale=$precision' in bc arithmetic expressions",
+        "In Active Inference literature, 'precision' specifically means the inverse variance weighting beliefs \u2014 the use here for arithmetic scale creates a false semantic link"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "logic_clarity",
+      "identifier": "select_action_constant_efe_computation",
+      "summary": "Active_Shellference.sh select_action() computes identical EFE for every action because the action variable is never passed to calculate_efe()",
+      "confidence": "high",
+      "suggestion": "Pass the action index to calculate_efe() so that transition probabilities for that specific action are used; update calculate_efe() to accept an action index parameter and apply action-specific transition probabilities",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Lines 167-175: 'for action in \"${environment_ref[@]}\"; do ... efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref) ...'",
+        "The variable 'action' from the loop is not passed to calculate_efe()",
+        "Since min_efe starts at 1000000 and all EFE values are identical, selected_action is set on the first iteration and then unchanged only if subsequent EFEs are never lower \u2014 or may update spuriously based on floating point equality"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "logic_clarity",
+      "identifier": "rust_run_dead_code_set_e_check",
+      "summary": "Rust/run.sh checks $? after cargo build and cargo run under set -e, making the failure branches unreachable dead code",
+      "confidence": "high",
+      "suggestion": "Remove the 'if [ $? -eq 0 ]' wrapper and run the success-path code directly, relying on set -e for failure handling; or remove set -e and keep the explicit checks consistently",
+      "related_files": [
+        "Rust/run.sh"
+      ],
+      "evidence": [
+        "Line 6: 'set -e' makes any failing command abort the script immediately",
+        "Line 36: 'cargo build --release'",
+        "Line 38: 'if [ $? -eq 0 ]; then' \u2014 if cargo build fails, set -e has already aborted; this check can only be true",
+        "Lines 71-78 (else branch): 'echo \"\u274c Rust build failed.\"' is dead code that can never execute"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "logic_clarity",
+      "identifier": "cpp_run_dead_code_set_e_check",
+      "summary": "Cpp/run.sh has same dead code pattern as Rust/run.sh: $? checks after make and ./ActiveInferenceDemo under set -e",
+      "confidence": "high",
+      "suggestion": "Same fix as rust_run: remove the $? wrappers and rely on set -e, or remove set -e and use explicit checks consistently",
+      "related_files": [
+        "Cpp/run.sh"
+      ],
+      "evidence": [
+        "Line 6: 'set -e'",
+        "Line 38: 'make'",
+        "Line 40: 'if [ $? -eq 0 ]; then' \u2014 failure branch at lines 60-62 is dead code under set -e"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "logic_clarity",
+      "identifier": "run_all_total_count_wrong_in_specific_lang_mode",
+      "summary": "run_all.sh compares SUCCESS_COUNT to TOTAL_IMPLEMENTATIONS after running a specific language, but TOTAL_IMPLEMENTATIONS is always 34 regardless of how many were actually run",
+      "confidence": "high",
+      "suggestion": "Track TOTAL_RUN separately from TOTAL_IMPLEMENTATIONS, incrementing it only for languages actually attempted, and compare SUCCESS_COUNT against TOTAL_RUN",
+      "related_files": [
+        "run_all.sh"
+      ],
+      "evidence": [
+        "Line 245: 'TOTAL_IMPLEMENTATIONS=$(echo \"${LANGUAGES[@]}\" | wc -w)' \u2014 always counts all 34 languages",
+        "Lines 184-196: when SPECIFIC_LANG is set, only 1 language runs incrementing SUCCESS_COUNT to at most 1",
+        "Lines 248-252: 'if [ $SUCCESS_COUNT -eq $TOTAL_IMPLEMENTATIONS ]' \u2014 condition 1 -eq 34 is always false in single-language mode; 'All implementations completed' message never displays"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "logic_clarity",
+      "identifier": "calculate_vfe_identity_wrapper",
+      "summary": "Active_Shellference.sh calculate_vfe() is an identity wrapper over calculate_kl_divergence() with no additional computation",
+      "confidence": "medium",
+      "suggestion": "Either remove calculate_vfe() and call calculate_kl_divergence() directly at the call site, or add the actual VFE computation that distinguishes it from KL divergence (accuracy + complexity terms)",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Lines 69-76: calculate_vfe() calls calculate_kl_divergence() with the same arguments and immediately echoes the result",
+        "The function adds no logic \u2014 VFE and KL divergence are treated as identical, which may be intentionally simplified but the wrapper adds indirection without behavior"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "student_teacher_missing_all_public_annotations",
+      "summary": "Student_Teacher.py has zero type annotations on any public methods in its core domain classes",
+      "confidence": "high",
+      "suggestion": "Add numpy type annotations using numpy.typing.NDArray; annotate return types: get_knowledge() -> NDArray[float64], step(action: int) -> int, calculate_free_energy(policy: int) -> float, infer_policy(policies: NDArray) -> NDArray[float64]",
+      "related_files": [
+        "Python/Student_Teacher.py"
+      ],
+      "evidence": [
+        "TeacherModel methods (update_knowledge, get_knowledge, suggest_resource) have no parameter or return type annotations",
+        "StudentTeacherPOMDP methods (update_beliefs, get_action, step, calculate_free_energy, infer_policy, plot_matrices) have no annotations",
+        "This is the primary domain class used by the entire Python subsystem"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "benchmark_config_parameters_type_lies",
+      "summary": "BenchmarkConfig.parameters annotated as Dict[str, Any] but default is None \u2014 the annotation promises a non-None dict that cannot exist at construction time",
+      "confidence": "high",
+      "suggestion": "Change annotation to 'parameters: Optional[Dict[str, Any]] = None' or use 'parameters: Dict[str, Any] = field(default_factory=dict)' to eliminate the None default entirely",
+      "related_files": [
+        "benchmark_suite.py"
+      ],
+      "evidence": [
+        "Line 56: 'parameters: Dict[str, Any] = None' \u2014 dataclass field has non-Optional type but None default",
+        "Line 58-60: __post_init__ corrects this with 'if self.parameters is None: self.parameters = {}' \u2014 but the annotation is still wrong at the field declaration level"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "reporting_system_str_vs_path_boundary",
+      "summary": "ActiveInferenceAnalyzer.__init__ parameter typed as str but immediately converted to Path, creating a type mismatch at the public API boundary",
+      "confidence": "high",
+      "suggestion": "Accept 'Union[str, Path]' as the parameter type: 'root_directory: Union[str, Path] = \".\"' and convert at assignment; or type as Path and use Path('.') as default",
+      "related_files": [
+        "reporting_system.py"
+      ],
+      "evidence": [
+        "Line 86: 'def __init__(self, root_directory: str = \".\"):'",
+        "Line 87: 'self.root_directory = Path(root_directory)' \u2014 type of self.root_directory is Path, not str"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "serializer_deserialize_missing_return_annotation",
+      "summary": "serializer.py deserialize() has no return type annotation despite returning either a dict or an agent object depending on arguments",
+      "confidence": "medium",
+      "suggestion": "Use typing.overload to provide separate signatures: one for agent_class=None returning Dict[str, Any], one for agent_class provided returning the agent type; or annotate return as 'Union[Dict[str, Any], Any]' as a minimum",
+      "related_files": [
+        "Python/serializer.py"
+      ],
+      "evidence": [
+        "Line 76: 'def deserialize(self, data: Union[str, bytes], agent_class=None):' \u2014 no return annotation",
+        "Lines 106-112: returns 'agent' (of agent_class type) when agent_class is provided, returns 'state' (dict) otherwise",
+        "The overloaded return type should be expressed with @overload or a Union annotation"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "config_manager_dependency_dict_erases_types",
+      "summary": "config_manager.py _load_dependency_definitions() uses Dict[str, Any] for the inner dict, erasing type information for the known checker/installer/required structure",
+      "confidence": "medium",
+      "suggestion": "Define a TypedDict: 'class LanguageDeps(TypedDict): checker: Callable[[], Tuple[bool, List[str], List[str]]]; installer: Callable[[], bool]; required: List[str]' and use 'Dict[str, LanguageDeps]' as return type",
+      "related_files": [
+        "config_manager.py"
+      ],
+      "evidence": [
+        "Line 26: 'def _load_dependency_definitions(self) -> Dict[str, Dict[str, Any]]:'",
+        "Each inner dict has consistent shape: {'checker': Callable, 'installer': Callable, 'required': List[str]}",
+        "Line 181: 'checker = dep_info[\"checker\"]' \u2014 checker is Any type, losing callable type information; calling checker() without type checking"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "CC-01",
+      "summary": "calculate_vfe() is a mislabeled passthrough \u2014 it returns KL divergence, not Variational Free Energy",
+      "confidence": "high",
+      "suggestion": "Either implement the correct VFE formula (expected log-likelihood minus KL divergence) or rename the function to calculate_kl_divergence_alias with a comment explaining the simplification",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "calculate_vfe() body: 'vfe=$(calculate_kl_divergence beliefs_ref preferences_ref)'",
+        "Docstring says 'Computes the Variational Free Energy based on current beliefs and preferences' \u2014 VFE in active inference includes additional terms beyond KL divergence (e.g., accuracy minus complexity), making this label a behavioral contract lie"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "CC-02",
+      "summary": "select_action() never varies EFE input across actions \u2014 the selection loop does not match its documented contract",
+      "confidence": "high",
+      "suggestion": "Pass the current action to calculate_efe so EFE varies per action, or document that this is a degenerate single-policy approximation",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Loop: 'for action in \"${environment_ref[@]}\"; do local efe; efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref)'",
+        "calculate_efe is called with identical arguments on every iteration \u2014 the $action variable is never passed or used, so EFE is always the same value and min_efe is updated on the first action and never changes",
+        "Docstring: 'Chooses the action that minimizes the Expected Free Energy' \u2014 but no action-specific EFE is computed"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "CC-03",
+      "summary": "Shell/run.sh generates a config.sh with array syntax incompatible with the existing config.sh format",
+      "confidence": "high",
+      "suggestion": "Remove the config.sh generation block from Shell/run.sh since a valid config.sh already exists, or align the generated format to match the expected string format",
+      "related_files": [
+        "Shell/run.sh",
+        "Shell/config.sh"
+      ],
+      "evidence": [
+        "Shell/run.sh generates: 'CONFIG_INITIAL_BELIEFS=(\"0.25\" \"0.25\" \"0.25\" \"0.25\")' \u2014 bash array assignment",
+        "Shell/config.sh uses: 'export CONFIG_INITIAL_BELIEFS=\"0.25 0.25 0.25 0.25\"' \u2014 space-separated string export",
+        "Active_Shellference.sh reads CONFIG_INITIAL_BELIEFS as a space-separated string via 'read -ra beliefs <<< \"${simulation[beliefs]}\"' \u2014 only the string format is compatible"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "CC-04",
+      "summary": "status_dashboard.sh check_language_status() uses nonsensical glob pattern for unlisted languages",
+      "confidence": "high",
+      "suggestion": "Replace the default glob with a check for any source file: 'main_file=\"$lang_dir\"' and use 'ls \"$main_file\"/*.* 2>/dev/null' or specifically list extensions per language",
+      "related_files": [
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "Default case: 'main_file=\"$lang_dir/*.$lang_dir\"' \u2014 the extension becomes the directory name (e.g., '*.Julia', '*.Haskell', '*.Python')",
+        "No source files in any language directory use the directory name as their extension",
+        "The ls $main_file glob always fails for unlisted languages, silently marking them as 'No Code' regardless of actual content"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "CC-05",
+      "summary": "Rust/run.sh uses post-condition $? checks voided by active set -e, creating dead error-handling branches",
+      "confidence": "high",
+      "suggestion": "Either remove set -e and rely on the if/else chains, or remove the redundant if/else blocks and let set -e handle failures, then add an ERR trap for the diagnostic messages",
+      "related_files": [
+        "Rust/run.sh"
+      ],
+      "evidence": [
+        "Line 1: 'set -e' \u2014 script exits on any non-zero return",
+        "Lines 38-43: 'if [ $? -eq 0 ]; then ... else echo \"\u274c Rust build failed.\"; exit 1; fi'",
+        "Under set -e, if cargo build fails, the script already exited \u2014 the else branch can never execute; same pattern on lines 43-73 for cargo run",
+        "The error message contract ('\u274c Rust build failed. \ud83d\udca1 Try running cargo clean') is documented but unreachable"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "contract_coherence",
+      "identifier": "CC-06",
+      "summary": "run_all.sh parallel mode does not honor set -e error contract \u2014 failure tracking may be skipped on early exit",
+      "confidence": "medium",
+      "suggestion": "Wrap run_language calls with 'set +e; run_language \"$lang_info\"; result=$?; set -e' to prevent premature exit while still capturing failures",
+      "related_files": [
+        "run_all.sh"
+      ],
+      "evidence": [
+        "set -e is active at script level",
+        "In parallel mode, run_language is backgrounded \u2014 background process failures do not trigger set -e in the parent",
+        "In sequential mode, run_language failure causes ((FAILURE_COUNT++)) via 'else ((FAILURE_COUNT++))' but with set -e active, a subshell failure causes the outer 'if run_language' to evaluate false without exiting \u2014 however if run_language itself exits non-zero and set -e applies, the parent also exits before the counter increments",
+        "The stated contract is to count successes and failures; set -e breaks this contract for the sequential path"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "EC-01",
+      "summary": "set -e combined with explicit if/else error checks creates dead failure branches across multiple run.sh files",
+      "confidence": "high",
+      "suggestion": "Standardize on one strategy per script: either use 'set -e' with a trap ERR for diagnostic messages, or remove 'set -e' and rely on the existing if/else chains. Using 'trap ... ERR' allows both early-exit and meaningful error messages.",
+      "related_files": [
+        "Rust/run.sh",
+        "Cpp/run.sh",
+        "Scala/run.sh",
+        "MATLAB/run.sh",
+        "run_all.sh"
+      ],
+      "evidence": [
+        "Rust/run.sh line 1: 'set -e'; lines 38-43: 'if [ $? -eq 0 ]; then ... else echo \"\u274c Rust build failed.\"; exit 1; fi' \u2014 the else branch is unreachable",
+        "Cpp/run.sh same pattern for make and ./ActiveInferenceDemo",
+        "Scala/run.sh same pattern for sbt and scalac invocations",
+        "MATLAB/run.sh same pattern for both matlab and octave execution paths",
+        "run_all.sh: failure counter increments in else branches that set -e prevents from reaching"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "EC-02",
+      "summary": "SQL/run.sh silently swallows sqlite3 stored-procedure failures without propagating error context",
+      "confidence": "high",
+      "suggestion": "Capture stderr separately: run the command, if it fails check whether the error message contains 'not recognized'/'unsupported' to distinguish capability limitations from real failures, and propagate real failures with exit 1",
+      "related_files": [
+        "SQL/run.sh"
+      ],
+      "evidence": [
+        "Line 67: 'sqlite3 active_inference.db \"CALL run_simulation();\" 2>/dev/null || echo \"Note: SQLite stored procedures have limited support\"'",
+        "Both stderr and exit code are suppressed; an actual schema error, syntax error, or missing table would print the same 'Note:' message as an unsupported feature",
+        "The script then prints '\u2705 SQL simulation completed successfully!' regardless"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "EC-03",
+      "summary": "Python/run.sh pip fallback does not check whether fallback install succeeded",
+      "confidence": "high",
+      "suggestion": "Change the fallback block to: 'pip3 install --user numpy scipy matplotlib seaborn pandas || { echo \"\u274c Error: Could not install Python dependencies\"; exit 1; }'",
+      "related_files": [
+        "Python/run.sh"
+      ],
+      "evidence": [
+        "Lines 21-24: 'pip3 install numpy scipy matplotlib seaborn pandas || { echo \"\u26a0\ufe0f Warning...\"; pip3 install --user numpy scipy matplotlib seaborn pandas }'",
+        "The fallback 'pip3 install --user' has no error check \u2014 if both global and user installs fail, the script continues and 'python3 Student_Teacher.py' will fail with an ImportError rather than a clear diagnostic"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "EC-04",
+      "summary": "Shell/Active_Shellference.sh: bc math calls have no error handling \u2014 empty or NaN output propagates silently",
+      "confidence": "high",
+      "suggestion": "After each bc call, check: 'if [ -z \"$result\" ]; then echo \"ERROR: Math computation failed at step X\" >&2; exit 1; fi'",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "calculate_kl_divergence: 'kl_divergence=$(echo \"scale=$precision; $kl_divergence + $belief * (l($belief) - l($preference))\" | bc -l)' \u2014 if belief=0, bc l(0) is undefined and outputs an error to stderr, leaving kl_divergence empty",
+        "update_beliefs: 'total_belief=$(IFS=+; echo \"scale=$precision; ${updated_beliefs[*]}\" | bc -l)' \u2014 if updated_beliefs is empty, bc gets an empty expression and returns nothing; subsequent division produces further empty values",
+        "No checks for empty output from any bc call throughout the file"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "EC-05",
+      "summary": "Julia/run.sh subdirectory cd with no error handling produces no diagnostic on missing SideCar/MC_AI",
+      "confidence": "medium",
+      "suggestion": "Add 'if [ -f \"SideCar/MC_AI/run.jl\" ]; then ... fi' guard before entering the subdirectory",
+      "related_files": [
+        "Julia/run.sh"
+      ],
+      "evidence": [
+        "Lines 32-34: 'cd SideCar/MC_AI; julia run.jl; cd ../..'",
+        "If SideCar/MC_AI does not exist or run.jl is missing, set -e would exit on the cd failure with no message beyond the shell default 'No such file or directory'",
+        "The outer 'if [ -d \"SideCar\" ]' only checks that the SideCar directory exists, not that MC_AI or run.jl exist within it"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "AF-01",
+      "summary": "calculate_vfe() is a pass-through wrapper with no added behavior \u2014 pure indirection cost",
+      "confidence": "high",
+      "suggestion": "Either implement the correct VFE computation in calculate_vfe() (making the abstraction earn its existence), or remove calculate_vfe() and have run_simulation() call calculate_kl_divergence() directly with a comment explaining the simplification",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "calculate_vfe body: 'vfe=$(calculate_kl_divergence beliefs_ref preferences_ref); echo \"$vfe\"'",
+        "No transformation, policy, or additional computation is applied",
+        "Callers could call calculate_kl_divergence directly; the wrapper exists only as a naming artifact"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "AF-02",
+      "summary": "Duplicate language registry: run_all.sh LANGUAGES array and status_dashboard.sh categories map define the same language set in incompatible formats",
+      "confidence": "high",
+      "suggestion": "Extract a single language registry file (e.g., languages.sh) that defines all lang:dir:category triples and is sourced by both run_all.sh and status_dashboard.sh",
+      "related_files": [
+        "run_all.sh",
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "run_all.sh: 'LANGUAGES=(\"Ada:Ada\" \"Assembly:Assembly\" ...)' \u2014 flat list of 33 colon-delimited lang:dir pairs",
+        "status_dashboard.sh: 'declare -A categories=([\"Systems\"]=\"Ada:Ada Assembly:Assembly ...\" ...)' \u2014 associative array grouping the same languages by category",
+        "Adding 'PHP' to run_all.sh (present in LANGUAGES) requires a separate manual update to status_dashboard.sh categories",
+        "The two structures must be kept in sync manually; no shared source of truth exists"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "AF-03",
+      "summary": "status_dashboard.sh categories map omits languages present in run_all.sh (PHP, Perl, Ruby, etc.), creating silently incomplete coverage",
+      "confidence": "high",
+      "suggestion": "Align both registries as part of AF-02 \u2014 a single source of truth would prevent coverage drift",
+      "related_files": [
+        "status_dashboard.sh",
+        "run_all.sh"
+      ],
+      "evidence": [
+        "run_all.sh LANGUAGES includes: PHP, Perl, Ruby, Swift, V, Zig, Nim, OCaml, Crystal, Odin, FSharp, Fortran, Clojure, Erlang, Racket, Kotlin, Lua",
+        "status_dashboard.sh Scripting category includes only: Python, JavaScript, TypeScript, Lua, Perl, Shell",
+        "Missing from dashboard: PHP, Ruby, Swift among others \u2014 the status abstraction does not cover the full language set"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "LL-01",
+      "summary": "Cpp/run.sh has a syntax error in the G++ version detection command substitution",
+      "confidence": "high",
+      "suggestion": "Fix to: 'echo \"\u2705 G++ found: $(g++ --version | head -1)\"'",
+      "related_files": [
+        "Cpp/run.sh"
+      ],
+      "evidence": [
+        "Line 17: 'echo \"\u2705 G++ found: $(g++) --version | head -1)\"'",
+        "The '$(' opens at 'g++' and closes at the first ')' after g++ \u2014 so the substitution is just '$( g++ )' which runs g++ with no arguments",
+        "The text ' --version | head -1)' is literal string output, and the trailing ')' is an unmatched paren in the echo string",
+        "Correct form: '$(g++ --version | head -1)'"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "LL-02",
+      "summary": "run_all.sh allocates a results[] array in parallel mode that is never read after population",
+      "confidence": "high",
+      "suggestion": "Remove the 'results=()' declaration and all 'results[$i]=' assignments \u2014 they add noise without value",
+      "related_files": [
+        "run_all.sh"
+      ],
+      "evidence": [
+        "Line 216: 'results=()'",
+        "Lines 228-231: 'results[$i]=\"success\"' and 'results[$i]=\"failure\"' are assigned",
+        "After the wait loop there is no reference to 'results' \u2014 the array is dead state",
+        "Failure counting via FAILURE_COUNT is done correctly in the same loop block; results[] is redundant"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "LL-03",
+      "summary": "status_dashboard.sh show_statistics() computes hardcoded word counts as if they reflect actual filesystem state",
+      "confidence": "high",
+      "suggestion": "Either compute actual counts by scanning directories, or replace with plain numeric literals with a comment explaining they are static definitions",
+      "related_files": [
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "Lines 127-132: 'local systems_langs=$(echo \"Ada Assembly C Cpp Rust Zig Go Nim Crystal\" | wc -w)'",
+        "These strings are compile-time constants \u2014 the result is always 9, 9, 8, 5, 4, 3 respectively",
+        "The variable names imply dynamic counts ('systems_langs', 'functional_langs') but the values are fixed regardless of what is actually implemented",
+        "This creates false precision: the dashboard displays category sizes that do not reflect actual directory contents"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "LL-04",
+      "summary": "status_dashboard.sh show_implementations() iterates associative array keys in undefined order",
+      "confidence": "high",
+      "suggestion": "Define an explicit ordered list: 'CATEGORY_ORDER=(Systems Functional Scripting Scientific JVM Logic Esoteric Compiled)' and iterate over that instead of '${!categories[@]}'",
+      "related_files": [
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "Line 161: 'for category in \"${!categories[@]}\"; do'",
+        "In bash, associative array key iteration order is undefined and implementation-dependent",
+        "The display order of language categories will vary across runs and bash versions \u2014 not reproducible"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "LL-05",
+      "summary": "select_action() uses magic number 1000000 as EFE initialization bound with no documented assumption",
+      "confidence": "medium",
+      "suggestion": "Initialize min_efe to empty string and handle the first iteration specially ('if [ -z \"$min_efe\" ] || ...')  or add a comment with the reasoning for the bound and an assertion check",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "Line 164: 'local min_efe=1000000'",
+        "No comment explains why 1000000 is a safe upper bound for EFE in this simulation",
+        "If bc computes an EFE > 1000000, the comparison will never update min_efe and selected_action will remain empty string, silently producing an empty action selection"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "LL-06",
+      "summary": "status_dashboard.sh show_recent_activity() has fragile OS-dependent ls output parsing",
+      "confidence": "medium",
+      "suggestion": "Replace ls-based parsing with 'stat' or use 'find -printf' with explicit format tokens which are OS-independent for date and name extraction",
+      "related_files": [
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "Line 190: 'find ... | xargs ls -lt | head -5 | while read -r line; do echo \"$line\" | awk \"{print \\\"    \\\" \\$6 \\\" \\\" \\$7 \\\" \\\" \\$8 \\\" \\\" \\$9}\"'",
+        "ls -lt output column positions vary between GNU coreutils (Linux) and BSD ls (macOS): macOS ls -lt has date in columns 5-7 and filename in column 8; GNU ls -lt may have year in column 8",
+        "The hardcoded $6 $7 $8 $9 awk indices produce garbled or empty output on macOS"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "lang_registry_duplication",
+      "summary": "Language registry maintained independently in run_all.sh and status_dashboard.sh causing drift",
+      "confidence": "high",
+      "suggestion": "Extract language registry to a shared config file sourced by both run_all.sh and status_dashboard.sh, or generate dynamically from directory presence",
+      "related_files": [
+        "run_all.sh",
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "run_all.sh LANGUAGES array and status_dashboard.sh categories dict are separate sources of truth for language list"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "relative_source_coupling",
+      "summary": "Shell/Active_Shellference.sh sources config.sh via relative path breaking when called from outside Shell/",
+      "confidence": "high",
+      "suggestion": "Use script-relative path: source \"$(dirname \"${BASH_SOURCE[0]}\")/config.sh\" to make sourcing location-independent",
+      "related_files": [
+        "Shell/Active_Shellference.sh",
+        "Shell/config.sh"
+      ],
+      "evidence": [
+        "Line 11: source config.sh uses relative path requiring CWD to be Shell/ at invocation time"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "jock-noop-runner",
+      "summary": "Jock/run.sh prints documentation instead of executing code, unlike all other sibling run.sh files",
+      "confidence": "high",
+      "suggestion": "Either implement actual Jock execution or mark the runner clearly as a stub with a non-zero exit if the Urbit runtime is absent, consistent with the error-exit pattern of all other runners.",
+      "related_files": [
+        "Jock/run.sh"
+      ],
+      "evidence": [
+        "Jock/run.sh only echoes documentation strings and exits with success \u2014 no actual execution occurs",
+        "All other sibling run.sh files check for runtime availability, build, and execute code",
+        "run_all.sh invokes all run.sh files uniformly and counts successes, so Jock inflates success counts without verifying executability"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "shell-run-inline-config-mismatch",
+      "summary": "Shell/run.sh generates a config.sh heredoc with array syntax that conflicts with the existing config.sh which uses export+string syntax",
+      "confidence": "high",
+      "suggestion": "Remove the inline config generation from Shell/run.sh and rely solely on the existing config.sh, or align the heredoc format precisely with what Active_Shellference.sh expects.",
+      "related_files": [
+        "Shell/run.sh",
+        "Shell/config.sh"
+      ],
+      "evidence": [
+        "Shell/run.sh creates config.sh with CONFIG_ENVIRONMENT=(\"food\" \"danger\" \"safe\") (bash array syntax)",
+        "Actual Shell/config.sh uses export CONFIG_ENVIRONMENT=\"ShellActiveInference_v1.0\" (exported string)",
+        "Active_Shellference.sh reads simulation[environment]=\"${CONFIG_ENVIRONMENT}\" expecting the exported string form",
+        "If config.sh already exists (normal case), Shell/run.sh skips the heredoc \u2014 but if it doesn't, the generated config is structurally different from the expected format"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "brainfuck-python-wrapper-outlier",
+      "summary": "Brainfuck/run.sh installs and runs Python packages rather than a Brainfuck interpreter, deviating from every other language runner's self-contained model",
+      "confidence": "high",
+      "suggestion": "If the Brainfuck implementation is a Python simulation of Brainfuck semantics, add a comment to run.sh clarifying this intent; otherwise restructure to use an actual Brainfuck interpreter for the primary run.",
+      "related_files": [
+        "Brainfuck/run.sh"
+      ],
+      "evidence": [
+        "Brainfuck/run.sh checks for python3 and installs numpy, scipy, matplotlib, seaborn, networkx, fastdtw, sklearn",
+        "Runs python3 Brainfuck_ActiveInference.py \u2014 the implementation is Python, not actual Brainfuck",
+        "All other compiled-language runners (Assembly, C, Cpp, Rust) check for their respective compilers",
+        "The language is named 'Brainfuck' but the runner is functionally identical to Python/run.sh"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "status-dashboard-golang-miscategorized",
+      "summary": "status_dashboard.sh categorizes Golang in a standalone 'Compiled' category separate from the 'Systems' languages group that includes other compiled systems languages",
+      "confidence": "high",
+      "suggestion": "Move Golang into the 'Systems' category or rename 'Compiled' to something that meaningfully distinguishes Go from the other systems languages.",
+      "related_files": [
+        "status_dashboard.sh"
+      ],
+      "evidence": [
+        "categories=(\"Systems\")=\"Ada:Ada Assembly:Assembly C:C Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V\"",
+        "categories=(\"Compiled\")=\"Golang:Golang\" \u2014 singleton category",
+        "Go is a compiled systems programming language; its separation creates an asymmetric category with only one member"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "python-main-file-naming-break",
+      "summary": "Python/Student_Teacher.py uses PascalCase with underscore, breaking the snake_case convention of its sibling Python files",
+      "confidence": "high",
+      "suggestion": "Rename Student_Teacher.py to student_teacher.py to follow the snake_case convention used by all other Python source files in the directory.",
+      "related_files": [
+        "Python/Student_Teacher.py",
+        "Python/config_manager.py",
+        "Python/serializer.py",
+        "Python/teacher_wrapper.py"
+      ],
+      "evidence": [
+        "config_manager.py, serializer.py, teacher_wrapper.py all use snake_case",
+        "Student_Teacher.py uses PascalCase_PascalCase hybrid",
+        "Python/run.sh runs 'python3 Student_Teacher.py' referencing the inconsistently named file directly"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "julia-flat-directory-vs-structured-peers",
+      "summary": "Julia directory is a flat dump of multiple .jl files while TypeScript and Kotlin/Scala/Haskell use src/ subdirectory structure",
+      "confidence": "medium",
+      "suggestion": "Organize Julia source files into a src/ or lib/ subdirectory consistent with Haskell and TypeScript implementations.",
+      "related_files": [
+        "Julia/Julia_InferAnts.jl",
+        "Julia/RxInfer.jl",
+        "Julia/RxInfer_Agent_Model.jl",
+        "Julia/Clone_Julia_Repo.jl"
+      ],
+      "evidence": [
+        "Julia/ root contains Julia_InferAnts.jl, RxInfer.jl, RxInfer_Agent_Model.jl, Clone_Julia_Repo.jl as peer files",
+        "TypeScript/ has a proper src/ hierarchy with subdirectories",
+        "Haskell/ has app/ and src/ActiveInference/ organization",
+        "Julia/SideCar/ and Julia/Category_Theory_Julia/ are subdirs but primary .jl files are unorganized at root"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "dependency_health",
+      "identifier": "python-no-requirements-file",
+      "summary": "Python implementation installs dependencies at runtime via pip3 with no requirements.txt, making builds unreproducible",
+      "confidence": "high",
+      "suggestion": "Add a requirements.txt pinning all dependencies (numpy, scipy, matplotlib, seaborn, pandas, pyyaml) and update run.sh to use 'pip3 install -r requirements.txt'.",
+      "related_files": [
+        "Python/run.sh"
+      ],
+      "evidence": [
+        "Python/run.sh: 'pip3 install numpy scipy matplotlib seaborn pandas' with no version pins",
+        "No requirements.txt or pyproject.toml found in the Python/ directory",
+        "config_manager.py imports yaml (PyYAML) which is not in the runtime pip install list"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "dependency_health",
+      "identifier": "types-mathjs-redundant",
+      "summary": "TypeScript devDependency @types/mathjs is redundant because mathjs 11.x ships its own TypeScript types",
+      "confidence": "high",
+      "suggestion": "Remove @types/mathjs from devDependencies in TypeScript/package.json \u2014 the bundled types are sufficient and @types/mathjs may conflict with them.",
+      "related_files": [
+        "TypeScript/package.json"
+      ],
+      "evidence": [
+        "TypeScript/package.json devDependencies includes \"@types/mathjs\": \"^9.4.2\"",
+        "mathjs ^11.9.1 bundles its own type definitions in the package",
+        "TypeScript/src/types.ts augments 'mathjs' module via 'declare module mathjs', showing types are already being used from the bundled types"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "dependency_health",
+      "identifier": "rust-runtime-cargo-add",
+      "summary": "Rust/run.sh runs 'cargo add' at execution time to add dependencies that are already declared in Cargo.toml",
+      "confidence": "high",
+      "suggestion": "Remove the 'cargo add' call from run.sh \u2014 cargo build/run already resolves Cargo.toml dependencies automatically.",
+      "related_files": [
+        "Rust/run.sh",
+        "Rust/Cargo.toml"
+      ],
+      "evidence": [
+        "Rust/run.sh line 30: 'cargo add ndarray thiserror serde serde_json rand ndarray-rand'",
+        "Cargo.toml already lists all six of these dependencies with pinned versions",
+        "'cargo add' at runtime may overwrite Cargo.toml pinned versions with latest, breaking reproducibility"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "dependency_health",
+      "identifier": "js-ts-duplicate-production-deps",
+      "summary": "JavaScript and TypeScript implementations declare identical production dependencies (mathjs, plotly.js), duplicating dependency management across sibling implementations",
+      "confidence": "medium",
+      "suggestion": "Verify plotly.js is actually used in both implementations; if it is unused in either, remove it. Consider whether the two implementations share enough to benefit from a shared workspace root.",
+      "related_files": [
+        "JavaScript/package.json",
+        "TypeScript/package.json"
+      ],
+      "evidence": [
+        "Both package.json files list \"mathjs\": \"^11.9.1\" and \"plotly.js\": \"^2.25.2\" as production dependencies",
+        "Each directory manages its own node_modules, potentially causing version skew over time",
+        "JavaScript active_inference.js imports only mathjs; plotly.js is listed but its usage in the main file is unclear"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "no-algorithmic-correctness-tests",
+      "summary": "No test in any language implementation verifies algorithmic correctness of belief updates, free energy calculation, or policy selection",
+      "confidence": "high",
+      "suggestion": "Add at least one unit test per core algorithm function in the primary languages: for Python, use pytest with known-good inputs/outputs; for Rust, add #[cfg(test)] modules in main.rs; for TypeScript, add jest test files.",
+      "related_files": [
+        "test_suite.py",
+        "Python/Student_Teacher.py",
+        "Rust/src/main.rs",
+        "TypeScript/src/ActiveInferenceAgent.ts"
+      ],
+      "evidence": [
+        "test_suite.py only validates run.sh execution and file structure \u2014 zero assertion on computed values",
+        "Shell/Active_Shellference.sh implements calculate_kl_divergence, calculate_vfe, calculate_efe, update_beliefs with no tests",
+        "Rust/src/main.rs implements update_beliefs and select_action with no #[test] functions visible in main.rs",
+        "Python StudentTeacherPOMDP.update_beliefs, calculate_free_energy, infer_policy are untested"
+      ],
+      "impact_scope": "codebase",
+      "fix_scope": "architectural_change"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "typescript-jest-no-test-files",
+      "summary": "TypeScript package.json declares jest as a devDependency with a test script, but no test files exist",
+      "confidence": "high",
+      "suggestion": "Create TypeScript/src/ActiveInferenceAgent.test.ts with jest tests covering at least belief update normalization and config validation.",
+      "related_files": [
+        "TypeScript/package.json",
+        "TypeScript/src/ActiveInferenceAgent.ts"
+      ],
+      "evidence": [
+        "TypeScript/package.json: \"test\": \"jest\" script and \"jest\": \"^29.6.1\" in devDependencies",
+        "No *.test.ts or *.spec.ts files found in TypeScript/src/ directory",
+        "Running 'npm test' would report 'no test suites found'"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "javascript-test-file-missing",
+      "summary": "JavaScript package.json references test_active_inference.js which does not exist in the directory",
+      "confidence": "high",
+      "suggestion": "Either create test_active_inference.js with actual tests, or update package.json test script to something that exists.",
+      "related_files": [
+        "JavaScript/package.json"
+      ],
+      "evidence": [
+        "JavaScript/package.json: \"test\": \"node test_active_inference.js\"",
+        "Directory listing of JavaScript/ shows: active_inference.js, ant_colony_demo.js, config.js, enhanced_demo.html, logger.js, package.json, package-lock.json, run.sh, serializer.js, visualizer.js \u2014 no test_active_inference.js",
+        "Running 'npm test' would fail with 'Cannot find module test_active_inference.js'"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "test_strategy",
+      "identifier": "test-suite-path-hardcoded-wrong",
+      "summary": "test_suite.py hardcodes languages_dir as project_root/0_CONTEXT/Computer_Languages but is located inside that directory, causing path resolution errors",
+      "confidence": "medium",
+      "suggestion": "Change the default project_root to be computed relative to the test_suite.py file location using Path(__file__).parent.parent.parent to avoid caller confusion.",
+      "related_files": [
+        "test_suite.py"
+      ],
+      "evidence": [
+        "test_suite.py line 73: self.languages_dir = self.project_root / '0_CONTEXT' / 'Computer_Languages'",
+        "test_suite.py is itself located at /0_CONTEXT/Computer_Languages/test_suite.py",
+        "ActiveInferenceTestSuite.__init__ takes project_root as argument \u2014 callers must know to pass the repo root two levels up, not the directory where test_suite.py lives"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "python-policy-param-type-mismatch",
+      "summary": "Python StudentTeacherPOMDP uses 'policy' as an integer in calculate_free_energy but as an array in get_action, creating incompatible types under the same name",
+      "confidence": "high",
+      "suggestion": "Rename the parameter in get_action to 'policy_distribution' (array) and in calculate_free_energy to 'action_index' (integer) to make the type contract explicit and distinct.",
+      "related_files": [
+        "Python/Student_Teacher.py"
+      ],
+      "evidence": [
+        "calculate_free_energy(self, policy): uses 'np.dot(self.B[:, :, policy], self.d)' \u2014 policy must be integer index",
+        "get_action(self, policy): uses 'np.argmax(policy)' \u2014 policy must be array/list",
+        "infer_policy(self, policies): calls 'self.calculate_free_energy(p) for p in range(len(policies))' passing integer p \u2014 consistent with calculate_free_energy but shows policies is a count, not array",
+        "Callers cannot use the same object to call both methods with the same 'policy' argument"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "shell-select-action-unused-env-param",
+      "summary": "Shell select_action receives an environment parameter that is never used to differentiate actions, making the API signature dishonest",
+      "confidence": "high",
+      "suggestion": "Either pass the current action context to calculate_efe to compute action-specific EFE, or remove the environment_ref parameter if action enumeration is handled elsewhere.",
+      "related_files": [
+        "Shell/Active_Shellference.sh"
+      ],
+      "evidence": [
+        "select_action() signature: beliefs_ref, preferences_ref, transition_probs_ref, environment_ref (4 parameters)",
+        "Loop: 'for action in \"${environment_ref[@]}\"' iterates over environment, but inside the loop calls 'calculate_efe beliefs_ref preferences_ref transition_probs_ref' \u2014 the action variable is never passed to calculate_efe",
+        "Each iteration computes the same EFE (no action parameter differentiation), making the action selection logic incorrect: every action receives the same EFE and whichever is last wins"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "typescript-dead-type-exports",
+      "summary": "TypeScript types.ts exports four function type aliases (BeliefUpdateFunction, PolicySelectionFunction, etc.) that are not referenced anywhere in the implementation",
+      "confidence": "high",
+      "suggestion": "Remove the unused function type aliases from types.ts, or use them as the declared types for the corresponding method signatures in ActiveInferenceAgent.ts to enforce API conformance.",
+      "related_files": [
+        "TypeScript/src/types.ts",
+        "TypeScript/src/ActiveInferenceAgent.ts"
+      ],
+      "evidence": [
+        "types.ts lines 144-147: exports BeliefUpdateFunction, PolicySelectionFunction, FreeEnergyCalculationFunction, ActionExecutionFunction",
+        "ActiveInferenceAgent.ts imports only AgentConfig, GenerativeModel, BeliefState, Action, Observation, FreeEnergy, AgentHistory, BeliefUpdateError, PolicySelectionError, Vector, Matrix from types.ts",
+        "The function type aliases are not imported or used \u2014 they are dead API surface"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "js-ts-config-init-contract-divergence",
+      "summary": "JavaScript ActiveInferenceAgent accepts optional config with inline defaults while TypeScript version requires mandatory AgentConfig, making the sibling APIs incompatible in their initialization contract",
+      "confidence": "medium",
+      "suggestion": "Document the intentional difference, or make the JavaScript version validate required parameters consistently with the TypeScript implementation.",
+      "related_files": [
+        "JavaScript/active_inference.js",
+        "TypeScript/src/ActiveInferenceAgent.ts"
+      ],
+      "evidence": [
+        "JavaScript: 'constructor(config = {})' with 'this.nStates = config.nStates || 3'",
+        "TypeScript: 'constructor(config: AgentConfig)' with immediate validateConfig() that throws if values are missing",
+        "A developer switching from the JS to TS implementation must learn a different initialization contract"
+      ],
+      "impact_scope": "subsystem",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "sql-sudo-no-audit",
+      "summary": "SQL/run.sh executes sudo -u postgres without audit logging or access control verification",
+      "confidence": "high",
+      "suggestion": "Remove sudo and instead document that the invoking user must have createdb privileges in PostgreSQL, or use 'createdb' directly with a -U flag and explicit user parameter that the operator configures.",
+      "related_files": [
+        "SQL/run.sh"
+      ],
+      "evidence": [
+        "SQL/run.sh line 50: 'sudo -u postgres createdb active_inference 2>/dev/null || echo \"Database may already exist\"'",
+        "The 2>/dev/null suppresses sudo error output including authentication failures",
+        "No logging or notification when this privilege escalation is performed",
+        "The sudo invocation is not guarded by any environment check (e.g., CI flag, explicit admin mode)"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "teacher-wrapper-unverified-so",
+      "summary": "Python/teacher_wrapper.py loads a shared library from a relative path without any integrity check",
+      "confidence": "medium",
+      "suggestion": "Add an existence check (os.path.exists) with a clear error message before loading. For production use, add a SHA256 hash check against a known-good value to detect tampering.",
+      "related_files": [
+        "Python/teacher_wrapper.py"
+      ],
+      "evidence": [
+        "Line 6: lib_path = os.path.join(os.path.dirname(__file__), '..', 'C', 'teacher_model.so')",
+        "Line 7: teacher_lib = ctypes.CDLL(lib_path)",
+        "No check that teacher_model.so exists, no hash verification, no signature check",
+        "If the C/ directory contains a maliciously substituted .so file, it will be loaded with full native code execution privileges"
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit"
+    }
+  ],
+  "review_quality": {
+    "batch_count": 20,
+    "dimension_coverage": 1.0,
+    "evidence_density": 2.581,
+    "high_score_missing_issue_note": 0,
+    "issue_pressure": 127.53,
+    "dimensions_with_issues": 20
+  },
+  "provenance": {
+    "kind": "blind_review_batch_import",
+    "blind": true,
+    "runner": "dry-run",
+    "run_stamp": "20260311_124955",
+    "created_at": "2026-03-11T13:59:10+00:00",
+    "batch_count": 20,
+    "batch_indexes": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "packet_path": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/.desloppify/review_packet_blind.json",
+    "packet_sha256": "ff123de1d959e2c46cc6be3e342fd7666ef100797ecf3e88f7e383cf38b1b3f0"
+  }
+}

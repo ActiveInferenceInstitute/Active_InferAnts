@@ -1,0 +1,68 @@
+{
+  "batch": "abstraction_fitness",
+  "batch_index": 2,
+  "assessments": {"abstraction_fitness": 86.0},
+  "dimension_notes": {
+    "abstraction_fitness": {
+      "evidence": [
+        "Mechanical scan reports wrapper_rate=0.0, total_wrappers=0, delegation_heavy_class_count=0, facade_module_count=0, typed_dict_violation_count=0 — no automated signals of abstraction debt.",
+        "Shell/config.sh provides genuine value: exports named constants AND enforces validate_config() with probability-sum and range checks; it is not a bare key-value file.",
+        "Shell/Active_Shellference.sh functions (calculate_kl_divergence, calculate_efe, update_beliefs, select_action, run_simulation) are each focused on a single algorithmic concern with no delegation chains or pass-through forwarding.",
+        "run_all.sh run_language() wraps language execution with subshell isolation (cd + ./run.sh), error capture, and success/failure accounting — genuine orchestration, not empty indirection.",
+        "status_dashboard.sh check_language_status() implements branching logic (directory, README, run.sh, executable, source-file checks) — not a facade.",
+        "Shell/run.sh embeds a hardcoded copy of config.sh defaults as a heredoc fallback, duplicating default values already present in Shell/config.sh — two sources of truth for the same constants.",
+        "initialize_simulation() in Active_Shellference.sh copies six CONFIG_* scalar exports into a simulation[] associative array with no transformation — the translation adds mild indirection but serves to consolidate runtime state into one structure.",
+        "No util/helper dumping grounds observed; each file has a clear, bounded responsibility domain."
+      ],
+      "impact_scope": "local",
+      "fix_scope": "single_edit",
+      "confidence": "high",
+      "issues_preventing_higher_score": "Shell/run.sh duplicates config defaults inline as a heredoc fallback, creating two sources of truth for the same constants. initialize_simulation() performs a flat copy of CONFIG_* into simulation[] without transformation, a marginally thin abstraction that could be eliminated by having callers source config.sh directly.",
+      "sub_axes": {
+        "abstraction_leverage": 88.0,
+        "indirection_cost": 92.0,
+        "interface_honesty": 95.0,
+        "delegation_density": 97.0,
+        "definition_directness": 84.0,
+        "type_discipline": 90.0
+      }
+    }
+  },
+  "dimension_judgment": {
+    "abstraction_fitness": {
+      "strengths": [
+        "config.sh pairs constant definitions with validate_config() enforcement, making the abstraction earn its place by preventing invalid runtime states.",
+        "Active_Shellference.sh functions are tightly scoped to individual algorithmic steps (KL divergence, EFE, belief update, action selection), giving each abstraction clear leverage.",
+        "run_all.sh run_language() provides genuine value: subshell isolation, executable permission enforcement, and per-language success tracking — not a trivial forwarder.",
+        "No util/helper dumping grounds or single-implementation interface families exist in the codebase.",
+        "Mechanical scan confirms zero delegation-heavy classes, zero facade modules, and zero typed-dict violations across all 44 files."
+      ],
+      "issue_character": "Issues are localized to one file (Shell/run.sh) and one thin function (initialize_simulation), representing minor duplication and a marginally unjustified translation layer rather than any systemic abstraction overbuilding.",
+      "score_rationale": "The codebase is small and purpose-built, and the abstractions in place — config separation with validation, algorithmic function decomposition, orchestration scripts — all pay for themselves. Against the 80-anchor ('a developer regularly navigates indirection that doesn't pay for itself'), this codebase mostly clears it: indirection is rare and purposeful. The score falls short of 90 due to one concrete duplication (config defaults in two places) and one thin abstraction layer (initialize_simulation as a flat copy), which together create mild unnecessary indirection without offsetting leverage."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "config_defaults_duplicated_in_run_sh",
+      "summary": "Shell/run.sh embeds a full config.sh heredoc fallback, duplicating defaults already defined in Shell/config.sh",
+      "related_files": ["Shell/run.sh", "Shell/config.sh"],
+      "evidence": [
+        "Shell/run.sh lines 24-37 write a complete config.sh via heredoc (CONFIG_ENVIRONMENT, CONFIG_INITIAL_BELIEFS, CONFIG_PREFERENCES, CONFIG_TRANSITION_PROBS, CONFIG_TIME_STEPS, CONFIG_PRECISION) when the file is missing.",
+        "Shell/config.sh defines the same variables with different default values (CONFIG_ENVIRONMENT='ShellActiveInference_v1.0' vs 'food danger safe'; CONFIG_PRECISION=1000 vs 4), creating two authoritative sources of truth for the same configuration schema."
+      ],
+      "suggestion": "Remove the inline heredoc from Shell/run.sh. Instead, if config.sh is missing, copy it from a canonical template (e.g., cp config.sh.example config.sh) or symlink to the existing Shell/config.sh. This collapses both sources of truth to one file.",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "config_duplication"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "The Shell/ module evolved with a standalone run.sh that embeds fallback config to make it self-sufficient, diverging from the canonical config.sh — a common pattern in scripted projects where portability is prioritized over DRY."
+    ],
+    "likely_symptoms": ["config_defaults_duplicated_in_run_sh"],
+    "possible_false_positives": []
+  }
+}

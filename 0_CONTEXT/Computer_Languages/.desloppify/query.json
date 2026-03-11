@@ -1,0 +1,831 @@
+{
+  "command": "next",
+  "items": [
+    {
+      "id": "subjective::mid_level_elegance",
+      "kind": "subjective_dimension",
+      "confidence": "medium",
+      "detector": "subjective_assessment",
+      "file": ".",
+      "summary": "Subjective dimension below target: Mid elegance (27.6%)",
+      "detail": {
+        "dimension_name": "Mid elegance",
+        "dimension": "mid_level_elegance",
+        "failing": 0,
+        "strict_score": 27.6,
+        "open_review_issues": 0,
+        "cli_keys": [
+          "mid_level_elegance"
+        ]
+      },
+      "status": "open",
+      "primary_command": "desloppify review --prepare --dimensions mid_level_elegance",
+      "queue_position": 1
+    }
+  ],
+  "queue": {
+    "total": 1
+  },
+  "narrative": {
+    "phase": "middle_grind",
+    "headline": "All T1 and T2 items cleared!",
+    "dimensions": {
+      "lowest_dimensions": [
+        {
+          "name": "Test health",
+          "strict": 0.0,
+          "failing": 0,
+          "impact": 0.0
+        },
+        {
+          "name": "Test strategy",
+          "strict": 8.9,
+          "failing": 0,
+          "impact": 0.0,
+          "subjective": true,
+          "impact_description": "re-review to improve"
+        },
+        {
+          "name": "Error consistency",
+          "strict": 25.0,
+          "failing": 0,
+          "impact": 0.0,
+          "subjective": true,
+          "impact_description": "re-review to improve"
+        }
+      ],
+      "biggest_gap_dimensions": [
+        {
+          "name": "Test health",
+          "lenient": 100.0,
+          "strict": 0.0,
+          "gap": 100.0,
+          "wontfix_count": 44
+        },
+        {
+          "name": "Code quality",
+          "lenient": 100.0,
+          "strict": 63.8,
+          "gap": 36.2,
+          "wontfix_count": 354
+        }
+      ],
+      "stagnant_dimensions": [
+        {
+          "name": "Code quality",
+          "strict": 63.8,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Security",
+          "strict": 100.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "File health",
+          "strict": 100.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Duplication",
+          "strict": 100.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Test health",
+          "strict": 0.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Naming quality",
+          "strict": 60.9,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Logic clarity",
+          "strict": 41.2,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Type safety",
+          "strict": 38.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Error consistency",
+          "strict": 25.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "High elegance",
+          "strict": 28.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Mid elegance",
+          "strict": 27.6,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Low elegance",
+          "strict": 32.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Cross-module arch",
+          "strict": 52.3,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Init coupling",
+          "strict": 51.1,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Dep health",
+          "strict": 51.3,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Test strategy",
+          "strict": 8.9,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Stale migration",
+          "strict": 67.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Structure nav",
+          "strict": 31.0,
+          "stuck_scans": 5
+        }
+      ]
+    },
+    "actions": [
+      {
+        "type": "debt_review",
+        "detector": null,
+        "description": "5.2 pts of wontfix debt \u2014 review stale decisions",
+        "command": "desloppify show --status wontfix",
+        "gap": 5.2,
+        "priority": 1,
+        "lane": "debt_review"
+      }
+    ],
+    "strategy": {
+      "fixer_leverage": {
+        "auto_fixable_count": 0,
+        "total_count": 0,
+        "coverage": 0.0,
+        "impact_ratio": 0.0,
+        "recommendation": "none"
+      },
+      "lanes": {
+        "debt_review": {
+          "actions": [
+            1
+          ],
+          "file_count": 0,
+          "total_impact": 0.0,
+          "automation": "manual",
+          "run_first": false
+        }
+      },
+      "can_parallelize": false,
+      "hint": "Work through actions in priority order. Rescan after each fix to track progress."
+    },
+    "tools": {
+      "fixers": [],
+      "move": {
+        "available": true,
+        "relevant": false,
+        "reason": null,
+        "usage": "desloppify move <source> <dest> [--dry-run]"
+      },
+      "plan": {
+        "command": "desloppify plan",
+        "description": "Generate prioritized markdown cleanup plan"
+      },
+      "badge": {
+        "generated": true,
+        "in_readme": false,
+        "path": "scorecard.png",
+        "recommendation": "Add to README: <img src=\"scorecard.png\" width=\"100%\">"
+      }
+    },
+    "debt": {
+      "overall_gap": 5.2,
+      "wontfix_count": 449,
+      "worst_dimension": "Test health",
+      "worst_gap": 100.0,
+      "trend": "stable"
+    },
+    "milestone": "All T1 and T2 items cleared!",
+    "primary_action": {
+      "command": "desloppify show --status wontfix",
+      "description": "5.2 pts of wontfix debt \u2014 review stale decisions"
+    },
+    "why_now": "Work through actions in priority order. Rescan after each fix to track progress.",
+    "verification_step": {
+      "command": "desloppify scan",
+      "reason": "revalidate after changes"
+    },
+    "risk_flags": [
+      {
+        "type": "wontfix_gap",
+        "severity": "high",
+        "message": "Strict/lenient gap is 5.2 pts with 449 wontfix issues"
+      }
+    ],
+    "strict_target": {
+      "target": 95.0,
+      "current": 44.7,
+      "gap": 50.3,
+      "state": "below",
+      "warning": null
+    },
+    "reminders": [
+      {
+        "type": "stale_assessments",
+        "message": "1 subjective dimension stale after mechanical changes \u2014 re-review with: `desloppify review --prepare --dimensions api_surface_coherence`",
+        "command": "desloppify review --prepare --dimensions api_surface_coherence",
+        "priority": 2,
+        "severity": "medium"
+      }
+    ],
+    "reminder_history": {
+      "report_scores": 6,
+      "feedback_nudge": 3,
+      "review_issues_pending": 3,
+      "stagnant_nudge": 3,
+      "stale_assessments": 1
+    }
+  },
+  "agent_notes": [
+    "Do NOT use `desloppify plan skip` unless the user explicitly asks you to skip an item.",
+    "If you cannot fix an item, report it and move to the next one.",
+    "For cluster items: if the autofix_hint finds 0 results, drill into individual issues with the primary_command."
+  ],
+  "plan": {
+    "active": true,
+    "focus": null,
+    "clusters": [
+      {
+        "name": "auto/unused",
+        "description": "Remove 310 unused issues",
+        "item_count": 310
+      },
+      {
+        "name": "false-positives-wontfix",
+        "description": "Shell script CLI flags misidentified as unused imports; runner scripts misidentified as orphaned because they are intentional entry points; untested runner modules for multi-language demo repo",
+        "item_count": 0
+      },
+      {
+        "name": "subjective-review",
+        "description": "20 unscored subjective dimensions \u2014 worth 60% of overall score, currently all at 0%",
+        "item_count": 0
+      },
+      {
+        "name": "real-code-quality",
+        "description": "Real code quality issues in language implementation files and large orchestration scripts",
+        "item_count": 0
+      },
+      {
+        "name": "auto/orphaned",
+        "description": "Fix 44 orphaned issues",
+        "item_count": 44
+      },
+      {
+        "name": "auto/test_coverage",
+        "description": "Fix 44 test coverage issues",
+        "item_count": 44
+      },
+      {
+        "name": "already-fixed",
+        "description": "Items already fixed in commit f366a93 - need resolve to get score credit",
+        "item_count": 0
+      },
+      {
+        "name": "shell-logic-bugs",
+        "description": "Shell Active_Shellference.sh critical logic bugs - select_action never varies EFE, vfe is passthrough",
+        "item_count": 0
+      },
+      {
+        "name": "registry-duplication",
+        "description": "Duplicate language registry between run_all.sh and status_dashboard.sh",
+        "item_count": 0
+      },
+      {
+        "name": "ai-debt",
+        "description": "AI-generated docblock debt and hardcoded output",
+        "item_count": 0
+      },
+      {
+        "name": "review-backlog",
+        "description": "All remaining review issues to address in follow-up passes",
+        "item_count": 0
+      },
+      {
+        "name": "fixed-in-session",
+        "description": "Issues already fixed in this session: bc error handling in update_beliefs, Go/Golang key mismatch, case-insensitive language lookup",
+        "item_count": 0
+      },
+      {
+        "name": "wontfix-architectural",
+        "description": "Architectural patterns that are intentional for this multi-language demo codebase: runner skeleton cloning, dashboard duplication, config fallbacks, auth patterns in shell scripts",
+        "item_count": 0
+      },
+      {
+        "name": "select-action-doc",
+        "description": null,
+        "item_count": 0
+      },
+      {
+        "name": "stale-api-surface-reopening",
+        "description": "api_surface_coherence issues that keep reopening due to stale review data despite code fixes being committed in d4c50f9",
+        "item_count": 0
+      }
+    ],
+    "total_ordered": 52,
+    "total_skipped": 423,
+    "plan_overrides_narrative": true
+  },
+  "overall_score": 64.1,
+  "objective_score": 100.0,
+  "strict_score": 44.7,
+  "scorecard_dimensions": [
+    {
+      "name": "File health",
+      "score": 100.0,
+      "strict": 100.0,
+      "checks": 44,
+      "failing": 0,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "AI generated debt",
+      "score": 35.4,
+      "strict": 35.4,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 38.0,
+      "strict": 38.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 82.6,
+      "strict": 82.6,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness",
+        "delegation_density",
+        "definition_directness",
+        "type_discipline"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 66.8,
+      "strict": 66.8,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Code quality",
+      "score": 100.0,
+      "strict": 63.8,
+      "checks": 85,
+      "failing": 0,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Convention drift",
+      "score": 44.0,
+      "strict": 44.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 52.3,
+      "strict": 52.3,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Dep health",
+      "score": 51.3,
+      "strict": 51.3,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "dependency_health"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 53.4,
+      "strict": 53.4,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Duplication",
+      "score": 100.0,
+      "strict": 100.0,
+      "checks": 16,
+      "failing": 0,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Elegance",
+      "score": 29.2,
+      "strict": 29.2,
+      "checks": 30,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "mid_level_elegance",
+        "low_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 25.0,
+      "strict": 25.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Init coupling",
+      "score": 51.1,
+      "strict": 51.1,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "initialization_coupling"
+      ]
+    },
+    {
+      "name": "Naming quality",
+      "score": 60.9,
+      "strict": 60.9,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "naming_quality"
+      ]
+    },
+    {
+      "name": "Security",
+      "score": 100.0,
+      "strict": 100.0,
+      "checks": 88,
+      "failing": 0,
+      "tier": 4,
+      "subjective": false
+    },
+    {
+      "name": "Stale migration",
+      "score": 67.5,
+      "strict": 67.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 31.0,
+      "strict": 31.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    },
+    {
+      "name": "Test health",
+      "score": 100.0,
+      "strict": 0.0,
+      "checks": 302,
+      "failing": 0,
+      "tier": 4,
+      "subjective": false
+    },
+    {
+      "name": "Test strategy",
+      "score": 8.9,
+      "strict": 8.9,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "test_strategy"
+      ]
+    }
+  ],
+  "subjective_measures": [
+    {
+      "name": "AI generated debt",
+      "score": 35.4,
+      "strict": 35.4,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 38.0,
+      "strict": 38.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 82.6,
+      "strict": 82.6,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness",
+        "delegation_density",
+        "definition_directness",
+        "type_discipline"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 66.8,
+      "strict": 66.8,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Convention drift",
+      "score": 44.0,
+      "strict": 44.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 52.3,
+      "strict": 52.3,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Dep health",
+      "score": 51.3,
+      "strict": 51.3,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "dependency_health"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 53.4,
+      "strict": 53.4,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Elegance",
+      "score": 29.2,
+      "strict": 29.2,
+      "checks": 30,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "mid_level_elegance",
+        "low_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 25.0,
+      "strict": 25.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Init coupling",
+      "score": 51.1,
+      "strict": 51.1,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "initialization_coupling"
+      ]
+    },
+    {
+      "name": "Naming quality",
+      "score": 60.9,
+      "strict": 60.9,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "naming_quality"
+      ]
+    },
+    {
+      "name": "Stale migration",
+      "score": 67.5,
+      "strict": 67.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 31.0,
+      "strict": 31.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    },
+    {
+      "name": "Test strategy",
+      "score": 8.9,
+      "strict": 8.9,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "test_strategy"
+      ]
+    }
+  ],
+  "config": {
+    "target_strict_score": 95,
+    "review_max_age_days": 30,
+    "review_batch_max_files": 80,
+    "holistic_max_age_days": 30,
+    "generate_scorecard": true,
+    "badge_path": "scorecard.png",
+    "exclude": [],
+    "ignore": [],
+    "ignore_metadata": {},
+    "zone_overrides": {},
+    "review_dimensions": [],
+    "large_files_threshold": 0,
+    "props_threshold": 0,
+    "issue_noise_budget": 10,
+    "issue_noise_global_budget": 0,
+    "execution_log_max_entries": 10000,
+    "needs_rescan": false,
+    "languages": {},
+    "commit_tracking_enabled": true,
+    "commit_pr": 0,
+    "commit_default_branch": "",
+    "commit_message_template": "desloppify: {status} {count} issue(s) \u2014 {summary}"
+  }
+}

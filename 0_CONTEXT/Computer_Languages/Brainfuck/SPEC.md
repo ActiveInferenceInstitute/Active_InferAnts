@@ -1,0 +1,36 @@
+# SPEC.md — Active Inference in Brainfuck
+
+> Technical specification for `0_CONTEXT/Computer_Languages/Brainfuck` within the Active InferAnts framework.
+
+## Overview
+
+Brainfuck — esoteric minimalist language demonstrating Turing-completeness
+
+## Structure
+
+- 📄 `AGENTS.md`
+- 📄 `Brainfuck_ActiveInference.py`
+- 📄 `README.md`
+- 📄 `analysis.py`
+- 📄 `category_theory.py`
+- 📄 `config_schema.py`
+- 📄 `run.sh`
+- 📄 `visualization.py`
+
+## Interfaces
+
+- **Input**: Active Inference parameters (state space, observation model, transition model)
+- **Output**: Inference results (beliefs, policies, free energy values)
+- **API**: Language-specific API consistent with the cross-language Active Inference interface
+- **Testing**: Validated via `master_controller.py test brainfuck`
+
+## Dependencies
+
+- Brainfuck compiler/interpreter (see language-specific README)
+- Active Inference mathematical libraries for Brainfuck
+- Visualization libraries (where applicable)
+
+## Version
+
+- **Framework**: Active InferAnts
+- **License**: CC BY-NC-ND 4.0

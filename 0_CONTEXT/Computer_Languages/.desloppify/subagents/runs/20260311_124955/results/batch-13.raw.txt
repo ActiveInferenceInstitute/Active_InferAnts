@@ -1,0 +1,104 @@
+{
+  "batch": "abstraction_fitness",
+  "batch_index": 13,
+  "assessments": {"abstraction_fitness": 52.0},
+  "dimension_notes": {
+    "abstraction_fitness": {
+      "evidence": [
+        "Shell/Active_Shellference.sh: calculate_vfe() is a zero-value pass-through wrapper — its body is exactly one line delegating to calculate_kl_divergence with no translation, policy, or transformation added; it exists as a named abstraction that adds indirection without leverage",
+        "run_all.sh: run_language() is a thin wrapper over cd + ./run.sh with minimal added value — it adds success/failure printing and directory navigation, which is genuinely useful, but provides no abstraction over the diversity of language environments",
+        "status_dashboard.sh: each category in show_implementations() is a hardcoded inline string rather than a structured data type — the 'declare -A categories' map stores space-delimited 'lang:dir' tokens that must be manually parsed on each use, duplicating the same parsing logic used in run_all.sh's LANGUAGES array; no shared abstraction captures the language-directory contract",
+        "run_all.sh: LANGUAGES array and status_dashboard.sh categories map are parallel data structures defining the same language set in different formats — no single source of truth abstraction",
+        "Shell/Active_Shellference.sh: all three math functions (calculate_kl_divergence, calculate_efe, update_beliefs) receive name-reference arguments and emit results via echo to stdout — this is a uniform shell 'return value' pattern that provides consistent interface honesty but forces callers into command substitution for every call, creating unavoidable subprocess overhead that scales poorly",
+        "status_dashboard.sh: show_system_info(), show_statistics(), show_implementations(), show_recent_activity(), show_recommendations() are all void functions with no inputs and no return values — they are all pure side-effect (print) procedures bundled into a main() orchestrator; this is flat, not layered, and the abstraction level is consistent if shallow",
+        "Shell/config.sh: validate_config() is a standalone validation function exported alongside configuration variables — this is appropriate separation that pays for itself; callers can source config.sh and get validation automatically",
+        "Brainfuck/run.sh: creates config.json inline in the script using a heredoc — the config schema is defined once here and never abstracted, which is appropriate for a single-consumer config"
+      ],
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "confidence": "medium",
+      "sub_axes": {
+        "abstraction_leverage": 45.0,
+        "indirection_cost": 55.0,
+        "interface_honesty": 50.0,
+        "delegation_density": 60.0,
+        "definition_directness": 65.0,
+        "type_discipline": 40.0
+      }
+    }
+  },
+  "dimension_judgment": {
+    "abstraction_fitness": {
+      "strengths": [
+        "Shell/config.sh's validate_config() is a focused, self-contained abstraction that pays for itself by actively enforcing config contracts",
+        "The run.sh pattern across language directories is a consistent, intentional abstraction that isolates language-specific build details from the orchestrator",
+        "status_dashboard.sh's flat chain of void display functions is internally consistent — each function has one clear output responsibility"
+      ],
+      "issue_character": "The most consequential abstraction defect is the parallel, format-divergent language registry — the LANGUAGES array in run_all.sh and the categories map in status_dashboard.sh define the same domain entity twice in different formats, with no shared source of truth, causing maintenance burden whenever a language is added or renamed.",
+      "score_rationale": "The abstraction layer for individual language execution (run.sh per directory, run_language() dispatcher) pays for itself and is well-leveraged. However, the codebase has a clear duplication antipattern at the registry level — two parallel language-list definitions with incompatible formats — and a zero-value wrapper (calculate_vfe) that adds indirection without any computation. Shell's lack of typed returns forces all math functions into stdout-capture patterns, which is unavoidable in the language but creates consistent indirection cost. The score reflects functional but unlevered abstractions with one notable duplication defect."
+    }
+  },
+  "issues": [
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "AF-01",
+      "summary": "calculate_vfe() is a pass-through wrapper with no added behavior — pure indirection cost",
+      "related_files": ["Shell/Active_Shellference.sh"],
+      "evidence": [
+        "calculate_vfe body: 'vfe=$(calculate_kl_divergence beliefs_ref preferences_ref); echo \"$vfe\"'",
+        "No transformation, policy, or additional computation is applied",
+        "Callers could call calculate_kl_divergence directly; the wrapper exists only as a naming artifact"
+      ],
+      "suggestion": "Either implement the correct VFE computation in calculate_vfe() (making the abstraction earn its existence), or remove calculate_vfe() and have run_simulation() call calculate_kl_divergence() directly with a comment explaining the simplification",
+      "confidence": "high",
+      "impact_scope": "local",
+      "fix_scope": "single_edit",
+      "root_cause_cluster": "passthrough_wrapper"
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "AF-02",
+      "summary": "Duplicate language registry: run_all.sh LANGUAGES array and status_dashboard.sh categories map define the same language set in incompatible formats",
+      "related_files": ["run_all.sh", "status_dashboard.sh"],
+      "evidence": [
+        "run_all.sh: 'LANGUAGES=(\"Ada:Ada\" \"Assembly:Assembly\" ...)' — flat list of 33 colon-delimited lang:dir pairs",
+        "status_dashboard.sh: 'declare -A categories=([\"Systems\"]=\"Ada:Ada Assembly:Assembly ...\" ...)' — associative array grouping the same languages by category",
+        "Adding 'PHP' to run_all.sh (present in LANGUAGES) requires a separate manual update to status_dashboard.sh categories",
+        "The two structures must be kept in sync manually; no shared source of truth exists"
+      ],
+      "suggestion": "Extract a single language registry file (e.g., languages.sh) that defines all lang:dir:category triples and is sourced by both run_all.sh and status_dashboard.sh",
+      "confidence": "high",
+      "impact_scope": "subsystem",
+      "fix_scope": "multi_file_refactor",
+      "root_cause_cluster": "missing_shared_abstraction"
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "AF-03",
+      "summary": "status_dashboard.sh categories map omits languages present in run_all.sh (PHP, Perl, Ruby, etc.), creating silently incomplete coverage",
+      "related_files": ["status_dashboard.sh", "run_all.sh"],
+      "evidence": [
+        "run_all.sh LANGUAGES includes: PHP, Perl, Ruby, Swift, V, Zig, Nim, OCaml, Crystal, Odin, FSharp, Fortran, Clojure, Erlang, Racket, Kotlin, Lua",
+        "status_dashboard.sh Scripting category includes only: Python, JavaScript, TypeScript, Lua, Perl, Shell",
+        "Missing from dashboard: PHP, Ruby, Swift among others — the status abstraction does not cover the full language set"
+      ],
+      "suggestion": "Align both registries as part of AF-02 — a single source of truth would prevent coverage drift",
+      "confidence": "high",
+      "impact_scope": "module",
+      "fix_scope": "multi_file_refactor",
+      "root_cause_cluster": "missing_shared_abstraction"
+    }
+  ],
+  "retrospective": {
+    "root_causes": [
+      "The language registry was defined independently in two different scripts at two different development times without a DRY refactor step",
+      "calculate_vfe was likely a placeholder stub whose body was filled with a simpler substitute (KL divergence) but the abstraction layer was never removed"
+    ],
+    "likely_symptoms": [
+      "AF-03: Languages added to run_all.sh do not appear in the dashboard — status dashboard gives incorrect completeness report"
+    ],
+    "possible_false_positives": [
+      "AF-01: If future development intends to make calculate_vfe compute a richer formula, the wrapper is a legitimate placeholder — the issue is only confirmed if the codebase is considered in its current finalized state"
+    ]
+  }
+}

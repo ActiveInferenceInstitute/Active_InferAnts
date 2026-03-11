@@ -1,0 +1,3328 @@
+{
+  "version": 1,
+  "created": "2026-03-11T13:00:15+00:00",
+  "last_scan": "2026-03-11T13:00:15+00:00",
+  "scan_count": 1,
+  "overall_score": 53.2,
+  "objective_score": 100.0,
+  "strict_score": 53.2,
+  "verified_strict_score": 100.0,
+  "stats": {
+    "total": 79,
+    "auto_resolved": 0,
+    "false_positive": 0,
+    "fixed": 0,
+    "open": 79,
+    "wontfix": 0,
+    "by_tier": {
+      "1": {
+        "auto_resolved": 0,
+        "false_positive": 0,
+        "fixed": 0,
+        "open": 61,
+        "wontfix": 0
+      },
+      "2": {
+        "auto_resolved": 0,
+        "false_positive": 0,
+        "fixed": 0,
+        "open": 18,
+        "wontfix": 0
+      }
+    }
+  },
+  "issues": {
+    "review::.::holistic::high_level_elegance::hle-01::44505e93": {
+      "id": "review::.::holistic::high_level_elegance::hle-01::44505e93",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Six language directories exist on disk but are absent from run_all.sh LANGUAGES registry",
+      "detail": {
+        "holistic": true,
+        "dimension": "high_level_elegance",
+        "related_files": [
+          "run_all.sh"
+        ],
+        "evidence": [
+          "MATLAB, Ruby, PHP, Swift, CSharp, and Scala directories all exist under the repo root but are not listed in the LANGUAGES array in run_all.sh.",
+          "run_all.sh line 66: 'if [ -d \"$lang_dir\" ] && [ -f \"$lang_dir/run.sh\" ]' \u2014 these directories would never be reached because they are never iterated."
+        ],
+        "suggestion": "Add the missing languages to the LANGUAGES array in run_all.sh. Longer term, derive the language list from a single canonical source (e.g., a languages.txt or JSON manifest) that both run_all.sh and status_dashboard.sh read.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::high_level_elegance::hle-02::3688cf1d": {
+      "id": "review::.::holistic::high_level_elegance::hle-02::3688cf1d",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Language registry is duplicated across run_all.sh, status_dashboard.sh, and master_controller.py with no shared source of truth",
+      "detail": {
+        "holistic": true,
+        "dimension": "high_level_elegance",
+        "related_files": [
+          "run_all.sh",
+          "status_dashboard.sh",
+          "master_controller.py"
+        ],
+        "evidence": [
+          "run_all.sh lines 21-55: LANGUAGES array defines 33 entries.",
+          "status_dashboard.sh lines 150-158: declare -A categories defines its own language-to-directory mapping independently.",
+          "master_controller.py defines language handling logic separately via _run_all_languages().",
+          "Adding a new language requires edits in all three files."
+        ],
+        "suggestion": "Introduce a single canonical languages manifest (e.g., languages.json at root listing name and directory). Both run_all.sh and status_dashboard.sh should source/parse this file. master_controller.py should read the same file.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::high_level_elegance::hle-03::bd9aef4c": {
+      "id": "review::.::holistic::high_level_elegance::hle-03::bd9aef4c",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Dual orchestration layers (Shell and Python) with no clear primary entry point create ambiguous ownership",
+      "detail": {
+        "holistic": true,
+        "dimension": "high_level_elegance",
+        "related_files": [
+          "run_all.sh",
+          "status_dashboard.sh",
+          "master_controller.py",
+          "reporting_system.py",
+          "benchmark_suite.py",
+          "config_manager.py",
+          "test_suite.py"
+        ],
+        "evidence": [
+          "run_all.sh and status_dashboard.sh are shell-based orchestrators at root.",
+          "master_controller.py is a Python orchestrator that calls os.system(str(dashboard_script)) on status_dashboard.sh \u2014 the Python layer delegates back to Shell.",
+          "Five Python files live at root alongside two shell scripts; no README or structural signal indicates which layer is primary.",
+          "A new engineer cannot determine whether to use './run_all.sh' or 'python3 master_controller.py' as the canonical entry point."
+        ],
+        "suggestion": "Designate one layer as primary (likely Shell for simplicity, or Python for richer features). Demote the other to a utility called by the primary, or merge them. Document the intended entry point clearly in the root README.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::type_safety::student_teacher_missing_all_public_annotations::1400bdbf": {
+      "id": "review::.::holistic::type_safety::student_teacher_missing_all_public_annotations::1400bdbf",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Student_Teacher.py has zero type annotations on any public methods in its core domain classes",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "Python/Student_Teacher.py"
+        ],
+        "evidence": [
+          "TeacherModel methods (update_knowledge, get_knowledge, suggest_resource) have no parameter or return type annotations",
+          "StudentTeacherPOMDP methods (update_beliefs, get_action, step, calculate_free_energy, infer_policy, plot_matrices) have no annotations",
+          "This is the primary domain class used by the entire Python subsystem"
+        ],
+        "suggestion": "Add numpy type annotations using numpy.typing.NDArray; annotate return types: get_knowledge() -> NDArray[float64], step(action: int) -> int, calculate_free_energy(policy: int) -> float, infer_policy(policies: NDArray) -> NDArray[float64]",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::type_safety::benchmark_config_parameters_type_lies::e33c3eaa": {
+      "id": "review::.::holistic::type_safety::benchmark_config_parameters_type_lies::e33c3eaa",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "BenchmarkConfig.parameters annotated as Dict[str, Any] but default is None \u2014 the annotation promises a non-None dict that cannot exist at construction time",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "benchmark_suite.py"
+        ],
+        "evidence": [
+          "Line 56: 'parameters: Dict[str, Any] = None' \u2014 dataclass field has non-Optional type but None default",
+          "Line 58-60: __post_init__ corrects this with 'if self.parameters is None: self.parameters = {}' \u2014 but the annotation is still wrong at the field declaration level"
+        ],
+        "suggestion": "Change annotation to 'parameters: Optional[Dict[str, Any]] = None' or use 'parameters: Dict[str, Any] = field(default_factory=dict)' to eliminate the None default entirely",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::type_safety::reporting_system_str_vs_path_boundary::08ff8563": {
+      "id": "review::.::holistic::type_safety::reporting_system_str_vs_path_boundary::08ff8563",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "ActiveInferenceAnalyzer.__init__ parameter typed as str but immediately converted to Path, creating a type mismatch at the public API boundary",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "reporting_system.py"
+        ],
+        "evidence": [
+          "Line 86: 'def __init__(self, root_directory: str = \".\"):'",
+          "Line 87: 'self.root_directory = Path(root_directory)' \u2014 type of self.root_directory is Path, not str"
+        ],
+        "suggestion": "Accept 'Union[str, Path]' as the parameter type: 'root_directory: Union[str, Path] = \".\"' and convert at assignment; or type as Path and use Path('.') as default",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::type_safety::serializer_deserialize_missing_return_annotation::547fbd3b": {
+      "id": "review::.::holistic::type_safety::serializer_deserialize_missing_return_annotation::547fbd3b",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "serializer.py deserialize() has no return type annotation despite returning either a dict or an agent object depending on arguments",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "Python/serializer.py"
+        ],
+        "evidence": [
+          "Line 76: 'def deserialize(self, data: Union[str, bytes], agent_class=None):' \u2014 no return annotation",
+          "Lines 106-112: returns 'agent' (of agent_class type) when agent_class is provided, returns 'state' (dict) otherwise",
+          "The overloaded return type should be expressed with @overload or a Union annotation"
+        ],
+        "suggestion": "Use typing.overload to provide separate signatures: one for agent_class=None returning Dict[str, Any], one for agent_class provided returning the agent type; or annotate return as 'Union[Dict[str, Any], Any]' as a minimum",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::type_safety::config_manager_dependency_dict_erases_types::173292ad": {
+      "id": "review::.::holistic::type_safety::config_manager_dependency_dict_erases_types::173292ad",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "config_manager.py _load_dependency_definitions() uses Dict[str, Any] for the inner dict, erasing type information for the known checker/installer/required structure",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "config_manager.py"
+        ],
+        "evidence": [
+          "Line 26: 'def _load_dependency_definitions(self) -> Dict[str, Dict[str, Any]]:'",
+          "Each inner dict has consistent shape: {'checker': Callable, 'installer': Callable, 'required': List[str]}",
+          "Line 181: 'checker = dep_info[\"checker\"]' \u2014 checker is Any type, losing callable type information; calling checker() without type checking"
+        ],
+        "suggestion": "Define a TypedDict: 'class LanguageDeps(TypedDict): checker: Callable[[], Tuple[bool, List[str], List[str]]]; installer: Callable[[], bool]; required: List[str]' and use 'Dict[str, LanguageDeps]' as return type",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::contract_coherence::CC-01::ef95b991": {
+      "id": "review::.::holistic::contract_coherence::CC-01::ef95b991",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "calculate_vfe() is a mislabeled passthrough \u2014 it returns KL divergence, not Variational Free Energy",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "calculate_vfe() body: 'vfe=$(calculate_kl_divergence beliefs_ref preferences_ref)'",
+          "Docstring says 'Computes the Variational Free Energy based on current beliefs and preferences' \u2014 VFE in active inference includes additional terms beyond KL divergence (e.g., accuracy minus complexity), making this label a behavioral contract lie"
+        ],
+        "suggestion": "Either implement the correct VFE formula (expected log-likelihood minus KL divergence) or rename the function to calculate_kl_divergence_alias with a comment explaining the simplification",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::contract_coherence::CC-02::d6842618": {
+      "id": "review::.::holistic::contract_coherence::CC-02::d6842618",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "select_action() never varies EFE input across actions \u2014 the selection loop does not match its documented contract",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Loop: 'for action in \"${environment_ref[@]}\"; do local efe; efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref)'",
+          "calculate_efe is called with identical arguments on every iteration \u2014 the $action variable is never passed or used, so EFE is always the same value and min_efe is updated on the first action and never changes",
+          "Docstring: 'Chooses the action that minimizes the Expected Free Energy' \u2014 but no action-specific EFE is computed"
+        ],
+        "suggestion": "Pass the current action to calculate_efe so EFE varies per action, or document that this is a degenerate single-policy approximation",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::contract_coherence::CC-03::cde45b6a": {
+      "id": "review::.::holistic::contract_coherence::CC-03::cde45b6a",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Shell/run.sh generates a config.sh with array syntax incompatible with the existing config.sh format",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "Shell/run.sh",
+          "Shell/config.sh"
+        ],
+        "evidence": [
+          "Shell/run.sh generates: 'CONFIG_INITIAL_BELIEFS=(\"0.25\" \"0.25\" \"0.25\" \"0.25\")' \u2014 bash array assignment",
+          "Shell/config.sh uses: 'export CONFIG_INITIAL_BELIEFS=\"0.25 0.25 0.25 0.25\"' \u2014 space-separated string export",
+          "Active_Shellference.sh reads CONFIG_INITIAL_BELIEFS as a space-separated string via 'read -ra beliefs <<< \"${simulation[beliefs]}\"' \u2014 only the string format is compatible"
+        ],
+        "suggestion": "Remove the config.sh generation block from Shell/run.sh since a valid config.sh already exists, or align the generated format to match the expected string format",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::contract_coherence::CC-04::6c0a2607": {
+      "id": "review::.::holistic::contract_coherence::CC-04::6c0a2607",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "status_dashboard.sh check_language_status() uses nonsensical glob pattern for unlisted languages",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "Default case: 'main_file=\"$lang_dir/*.$lang_dir\"' \u2014 the extension becomes the directory name (e.g., '*.Julia', '*.Haskell', '*.Python')",
+          "No source files in any language directory use the directory name as their extension",
+          "The ls $main_file glob always fails for unlisted languages, silently marking them as 'No Code' regardless of actual content"
+        ],
+        "suggestion": "Replace the default glob with a check for any source file: 'main_file=\"$lang_dir\"' and use 'ls \"$main_file\"/*.* 2>/dev/null' or specifically list extensions per language",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::contract_coherence::CC-05::eaecce7d": {
+      "id": "review::.::holistic::contract_coherence::CC-05::eaecce7d",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Rust/run.sh uses post-condition $? checks voided by active set -e, creating dead error-handling branches",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "Rust/run.sh"
+        ],
+        "evidence": [
+          "Line 1: 'set -e' \u2014 script exits on any non-zero return",
+          "Lines 38-43: 'if [ $? -eq 0 ]; then ... else echo \"\u274c Rust build failed.\"; exit 1; fi'",
+          "Under set -e, if cargo build fails, the script already exited \u2014 the else branch can never execute; same pattern on lines 43-73 for cargo run",
+          "The error message contract ('\u274c Rust build failed. \ud83d\udca1 Try running cargo clean') is documented but unreachable"
+        ],
+        "suggestion": "Either remove set -e and rely on the if/else chains, or remove the redundant if/else blocks and let set -e handle failures, then add an ERR trap for the diagnostic messages",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::contract_coherence::CC-06::b36c85ec": {
+      "id": "review::.::holistic::contract_coherence::CC-06::b36c85ec",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "run_all.sh parallel mode does not honor set -e error contract \u2014 failure tracking may be skipped on early exit",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "run_all.sh"
+        ],
+        "evidence": [
+          "set -e is active at script level",
+          "In parallel mode, run_language is backgrounded \u2014 background process failures do not trigger set -e in the parent",
+          "In sequential mode, run_language failure causes ((FAILURE_COUNT++)) via 'else ((FAILURE_COUNT++))' but with set -e active, a subshell failure causes the outer 'if run_language' to evaluate false without exiting \u2014 however if run_language itself exits non-zero and set -e applies, the parent also exits before the counter increments",
+          "The stated contract is to count successes and failures; set -e breaks this contract for the sequential path"
+        ],
+        "suggestion": "Wrap run_language calls with 'set +e; run_language \"$lang_info\"; result=$?; set -e' to prevent premature exit while still capturing failures",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::error_consistency::EC-01::36f0e8f6": {
+      "id": "review::.::holistic::error_consistency::EC-01::36f0e8f6",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "set -e combined with explicit if/else error checks creates dead failure branches across multiple run.sh files",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "Rust/run.sh",
+          "Cpp/run.sh",
+          "Scala/run.sh",
+          "MATLAB/run.sh",
+          "run_all.sh"
+        ],
+        "evidence": [
+          "Rust/run.sh line 1: 'set -e'; lines 38-43: 'if [ $? -eq 0 ]; then ... else echo \"\u274c Rust build failed.\"; exit 1; fi' \u2014 the else branch is unreachable",
+          "Cpp/run.sh same pattern for make and ./ActiveInferenceDemo",
+          "Scala/run.sh same pattern for sbt and scalac invocations",
+          "MATLAB/run.sh same pattern for both matlab and octave execution paths",
+          "run_all.sh: failure counter increments in else branches that set -e prevents from reaching"
+        ],
+        "suggestion": "Standardize on one strategy per script: either use 'set -e' with a trap ERR for diagnostic messages, or remove 'set -e' and rely on the existing if/else chains. Using 'trap ... ERR' allows both early-exit and meaningful error messages.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::error_consistency::EC-02::fe3a4a8b": {
+      "id": "review::.::holistic::error_consistency::EC-02::fe3a4a8b",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "SQL/run.sh silently swallows sqlite3 stored-procedure failures without propagating error context",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "SQL/run.sh"
+        ],
+        "evidence": [
+          "Line 67: 'sqlite3 active_inference.db \"CALL run_simulation();\" 2>/dev/null || echo \"Note: SQLite stored procedures have limited support\"'",
+          "Both stderr and exit code are suppressed; an actual schema error, syntax error, or missing table would print the same 'Note:' message as an unsupported feature",
+          "The script then prints '\u2705 SQL simulation completed successfully!' regardless"
+        ],
+        "suggestion": "Capture stderr separately: run the command, if it fails check whether the error message contains 'not recognized'/'unsupported' to distinguish capability limitations from real failures, and propagate real failures with exit 1",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::error_consistency::EC-03::12aa902b": {
+      "id": "review::.::holistic::error_consistency::EC-03::12aa902b",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Python/run.sh pip fallback does not check whether fallback install succeeded",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "Python/run.sh"
+        ],
+        "evidence": [
+          "Lines 21-24: 'pip3 install numpy scipy matplotlib seaborn pandas || { echo \"\u26a0\ufe0f Warning...\"; pip3 install --user numpy scipy matplotlib seaborn pandas }'",
+          "The fallback 'pip3 install --user' has no error check \u2014 if both global and user installs fail, the script continues and 'python3 Student_Teacher.py' will fail with an ImportError rather than a clear diagnostic"
+        ],
+        "suggestion": "Change the fallback block to: 'pip3 install --user numpy scipy matplotlib seaborn pandas || { echo \"\u274c Error: Could not install Python dependencies\"; exit 1; }'",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::error_consistency::EC-04::ab2d203f": {
+      "id": "review::.::holistic::error_consistency::EC-04::ab2d203f",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Shell/Active_Shellference.sh: bc math calls have no error handling \u2014 empty or NaN output propagates silently",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "calculate_kl_divergence: 'kl_divergence=$(echo \"scale=$precision; $kl_divergence + $belief * (l($belief) - l($preference))\" | bc -l)' \u2014 if belief=0, bc l(0) is undefined and outputs an error to stderr, leaving kl_divergence empty",
+          "update_beliefs: 'total_belief=$(IFS=+; echo \"scale=$precision; ${updated_beliefs[*]}\" | bc -l)' \u2014 if updated_beliefs is empty, bc gets an empty expression and returns nothing; subsequent division produces further empty values",
+          "No checks for empty output from any bc call throughout the file"
+        ],
+        "suggestion": "After each bc call, check: 'if [ -z \"$result\" ]; then echo \"ERROR: Math computation failed at step X\" >&2; exit 1; fi'",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::error_consistency::EC-05::83e45851": {
+      "id": "review::.::holistic::error_consistency::EC-05::83e45851",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Julia/run.sh subdirectory cd with no error handling produces no diagnostic on missing SideCar/MC_AI",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "Julia/run.sh"
+        ],
+        "evidence": [
+          "Lines 32-34: 'cd SideCar/MC_AI; julia run.jl; cd ../..'",
+          "If SideCar/MC_AI does not exist or run.jl is missing, set -e would exit on the cd failure with no message beyond the shell default 'No such file or directory'",
+          "The outer 'if [ -d \"SideCar\" ]' only checks that the SideCar directory exists, not that MC_AI or run.jl exist within it"
+        ],
+        "suggestion": "Add 'if [ -f \"SideCar/MC_AI/run.jl\" ]; then ... fi' guard before entering the subdirectory",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::abstraction_fitness::AF-01::20f941f6": {
+      "id": "review::.::holistic::abstraction_fitness::AF-01::20f941f6",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "calculate_vfe() is a pass-through wrapper with no added behavior \u2014 pure indirection cost",
+      "detail": {
+        "holistic": true,
+        "dimension": "abstraction_fitness",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "calculate_vfe body: 'vfe=$(calculate_kl_divergence beliefs_ref preferences_ref); echo \"$vfe\"'",
+          "No transformation, policy, or additional computation is applied",
+          "Callers could call calculate_kl_divergence directly; the wrapper exists only as a naming artifact"
+        ],
+        "suggestion": "Either implement the correct VFE computation in calculate_vfe() (making the abstraction earn its existence), or remove calculate_vfe() and have run_simulation() call calculate_kl_divergence() directly with a comment explaining the simplification",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::abstraction_fitness::AF-02::cb61d647": {
+      "id": "review::.::holistic::abstraction_fitness::AF-02::cb61d647",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Duplicate language registry: run_all.sh LANGUAGES array and status_dashboard.sh categories map define the same language set in incompatible formats",
+      "detail": {
+        "holistic": true,
+        "dimension": "abstraction_fitness",
+        "related_files": [
+          "run_all.sh",
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "run_all.sh: 'LANGUAGES=(\"Ada:Ada\" \"Assembly:Assembly\" ...)' \u2014 flat list of 33 colon-delimited lang:dir pairs",
+          "status_dashboard.sh: 'declare -A categories=([\"Systems\"]=\"Ada:Ada Assembly:Assembly ...\" ...)' \u2014 associative array grouping the same languages by category",
+          "Adding 'PHP' to run_all.sh (present in LANGUAGES) requires a separate manual update to status_dashboard.sh categories",
+          "The two structures must be kept in sync manually; no shared source of truth exists"
+        ],
+        "suggestion": "Extract a single language registry file (e.g., languages.sh) that defines all lang:dir:category triples and is sourced by both run_all.sh and status_dashboard.sh",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::abstraction_fitness::AF-03::7f3939e5": {
+      "id": "review::.::holistic::abstraction_fitness::AF-03::7f3939e5",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "status_dashboard.sh categories map omits languages present in run_all.sh (PHP, Perl, Ruby, etc.), creating silently incomplete coverage",
+      "detail": {
+        "holistic": true,
+        "dimension": "abstraction_fitness",
+        "related_files": [
+          "status_dashboard.sh",
+          "run_all.sh"
+        ],
+        "evidence": [
+          "run_all.sh LANGUAGES includes: PHP, Perl, Ruby, Swift, V, Zig, Nim, OCaml, Crystal, Odin, FSharp, Fortran, Clojure, Erlang, Racket, Kotlin, Lua",
+          "status_dashboard.sh Scripting category includes only: Python, JavaScript, TypeScript, Lua, Perl, Shell",
+          "Missing from dashboard: PHP, Ruby, Swift among others \u2014 the status abstraction does not cover the full language set"
+        ],
+        "suggestion": "Align both registries as part of AF-02 \u2014 a single source of truth would prevent coverage drift",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::low_level_elegance::LL-01::7d17ef11": {
+      "id": "review::.::holistic::low_level_elegance::LL-01::7d17ef11",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Cpp/run.sh has a syntax error in the G++ version detection command substitution",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "Cpp/run.sh"
+        ],
+        "evidence": [
+          "Line 17: 'echo \"\u2705 G++ found: $(g++) --version | head -1)\"'",
+          "The '$(' opens at 'g++' and closes at the first ')' after g++ \u2014 so the substitution is just '$( g++ )' which runs g++ with no arguments",
+          "The text ' --version | head -1)' is literal string output, and the trailing ')' is an unmatched paren in the echo string",
+          "Correct form: '$(g++ --version | head -1)'"
+        ],
+        "suggestion": "Fix to: 'echo \"\u2705 G++ found: $(g++ --version | head -1)\"'",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::low_level_elegance::LL-02::a9633231": {
+      "id": "review::.::holistic::low_level_elegance::LL-02::a9633231",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "run_all.sh allocates a results[] array in parallel mode that is never read after population",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "run_all.sh"
+        ],
+        "evidence": [
+          "Line 216: 'results=()'",
+          "Lines 228-231: 'results[$i]=\"success\"' and 'results[$i]=\"failure\"' are assigned",
+          "After the wait loop there is no reference to 'results' \u2014 the array is dead state",
+          "Failure counting via FAILURE_COUNT is done correctly in the same loop block; results[] is redundant"
+        ],
+        "suggestion": "Remove the 'results=()' declaration and all 'results[$i]=' assignments \u2014 they add noise without value",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::low_level_elegance::LL-03::937b0ceb": {
+      "id": "review::.::holistic::low_level_elegance::LL-03::937b0ceb",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "status_dashboard.sh show_statistics() computes hardcoded word counts as if they reflect actual filesystem state",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "Lines 127-132: 'local systems_langs=$(echo \"Ada Assembly C Cpp Rust Zig Go Nim Crystal\" | wc -w)'",
+          "These strings are compile-time constants \u2014 the result is always 9, 9, 8, 5, 4, 3 respectively",
+          "The variable names imply dynamic counts ('systems_langs', 'functional_langs') but the values are fixed regardless of what is actually implemented",
+          "This creates false precision: the dashboard displays category sizes that do not reflect actual directory contents"
+        ],
+        "suggestion": "Either compute actual counts by scanning directories, or replace with plain numeric literals with a comment explaining they are static definitions",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::low_level_elegance::LL-04::92c5f994": {
+      "id": "review::.::holistic::low_level_elegance::LL-04::92c5f994",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "status_dashboard.sh show_implementations() iterates associative array keys in undefined order",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "Line 161: 'for category in \"${!categories[@]}\"; do'",
+          "In bash, associative array key iteration order is undefined and implementation-dependent",
+          "The display order of language categories will vary across runs and bash versions \u2014 not reproducible"
+        ],
+        "suggestion": "Define an explicit ordered list: 'CATEGORY_ORDER=(Systems Functional Scripting Scientific JVM Logic Esoteric Compiled)' and iterate over that instead of '${!categories[@]}'",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::low_level_elegance::LL-05::4bd6e8a4": {
+      "id": "review::.::holistic::low_level_elegance::LL-05::4bd6e8a4",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "select_action() uses magic number 1000000 as EFE initialization bound with no documented assumption",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Line 164: 'local min_efe=1000000'",
+          "No comment explains why 1000000 is a safe upper bound for EFE in this simulation",
+          "If bc computes an EFE > 1000000, the comparison will never update min_efe and selected_action will remain empty string, silently producing an empty action selection"
+        ],
+        "suggestion": "Initialize min_efe to empty string and handle the first iteration specially ('if [ -z \"$min_efe\" ] || ...')  or add a comment with the reasoning for the bound and an assertion check",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::low_level_elegance::LL-06::9e4cc6e0": {
+      "id": "review::.::holistic::low_level_elegance::LL-06::9e4cc6e0",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "status_dashboard.sh show_recent_activity() has fragile OS-dependent ls output parsing",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "Line 190: 'find ... | xargs ls -lt | head -5 | while read -r line; do echo \"$line\" | awk \"{print \\\"    \\\" \\$6 \\\" \\\" \\$7 \\\" \\\" \\$8 \\\" \\\" \\$9}\"'",
+          "ls -lt output column positions vary between GNU coreutils (Linux) and BSD ls (macOS): macOS ls -lt has date in columns 5-7 and filename in column 8; GNU ls -lt may have year in column 8",
+          "The hardcoded $6 $7 $8 $9 awk indices produce garbled or empty output on macOS"
+        ],
+        "suggestion": "Replace ls-based parsing with 'stat' or use 'find -printf' with explicit format tokens which are OS-independent for date and name extraction",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::cross_module_architecture::lang_registry_duplication::a1e4eb27": {
+      "id": "review::.::holistic::cross_module_architecture::lang_registry_duplication::a1e4eb27",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Language registry maintained independently in run_all.sh and status_dashboard.sh causing drift",
+      "detail": {
+        "holistic": true,
+        "dimension": "cross_module_architecture",
+        "related_files": [
+          "run_all.sh",
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "run_all.sh LANGUAGES array and status_dashboard.sh categories dict are separate sources of truth for language list"
+        ],
+        "suggestion": "Extract language registry to a shared config file sourced by both run_all.sh and status_dashboard.sh, or generate dynamically from directory presence",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::cross_module_architecture::relative_source_coupling::5de5c5f0": {
+      "id": "review::.::holistic::cross_module_architecture::relative_source_coupling::5de5c5f0",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Shell/Active_Shellference.sh sources config.sh via relative path breaking when called from outside Shell/",
+      "detail": {
+        "holistic": true,
+        "dimension": "cross_module_architecture",
+        "related_files": [
+          "Shell/Active_Shellference.sh",
+          "Shell/config.sh"
+        ],
+        "evidence": [
+          "Line 11: source config.sh uses relative path requiring CWD to be Shell/ at invocation time"
+        ],
+        "suggestion": "Use script-relative path: source \"$(dirname \"${BASH_SOURCE[0]}\")/config.sh\" to make sourcing location-independent",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::convention_outlier::jock-noop-runner::02059bdc": {
+      "id": "review::.::holistic::convention_outlier::jock-noop-runner::02059bdc",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Jock/run.sh prints documentation instead of executing code, unlike all other sibling run.sh files",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "Jock/run.sh"
+        ],
+        "evidence": [
+          "Jock/run.sh only echoes documentation strings and exits with success \u2014 no actual execution occurs",
+          "All other sibling run.sh files check for runtime availability, build, and execute code",
+          "run_all.sh invokes all run.sh files uniformly and counts successes, so Jock inflates success counts without verifying executability"
+        ],
+        "suggestion": "Either implement actual Jock execution or mark the runner clearly as a stub with a non-zero exit if the Urbit runtime is absent, consistent with the error-exit pattern of all other runners.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::convention_outlier::shell-run-inline-config-mismatch::3d8f9dff": {
+      "id": "review::.::holistic::convention_outlier::shell-run-inline-config-mismatch::3d8f9dff",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Shell/run.sh generates a config.sh heredoc with array syntax that conflicts with the existing config.sh which uses export+string syntax",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "Shell/run.sh",
+          "Shell/config.sh"
+        ],
+        "evidence": [
+          "Shell/run.sh creates config.sh with CONFIG_ENVIRONMENT=(\"food\" \"danger\" \"safe\") (bash array syntax)",
+          "Actual Shell/config.sh uses export CONFIG_ENVIRONMENT=\"ShellActiveInference_v1.0\" (exported string)",
+          "Active_Shellference.sh reads simulation[environment]=\"${CONFIG_ENVIRONMENT}\" expecting the exported string form",
+          "If config.sh already exists (normal case), Shell/run.sh skips the heredoc \u2014 but if it doesn't, the generated config is structurally different from the expected format"
+        ],
+        "suggestion": "Remove the inline config generation from Shell/run.sh and rely solely on the existing config.sh, or align the heredoc format precisely with what Active_Shellference.sh expects.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::convention_outlier::brainfuck-python-wrapper-outlier::472ef608": {
+      "id": "review::.::holistic::convention_outlier::brainfuck-python-wrapper-outlier::472ef608",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Brainfuck/run.sh installs and runs Python packages rather than a Brainfuck interpreter, deviating from every other language runner's self-contained model",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "Brainfuck/run.sh"
+        ],
+        "evidence": [
+          "Brainfuck/run.sh checks for python3 and installs numpy, scipy, matplotlib, seaborn, networkx, fastdtw, sklearn",
+          "Runs python3 Brainfuck_ActiveInference.py \u2014 the implementation is Python, not actual Brainfuck",
+          "All other compiled-language runners (Assembly, C, Cpp, Rust) check for their respective compilers",
+          "The language is named 'Brainfuck' but the runner is functionally identical to Python/run.sh"
+        ],
+        "suggestion": "If the Brainfuck implementation is a Python simulation of Brainfuck semantics, add a comment to run.sh clarifying this intent; otherwise restructure to use an actual Brainfuck interpreter for the primary run.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::convention_outlier::status-dashboard-golang-miscategorized::c1018599": {
+      "id": "review::.::holistic::convention_outlier::status-dashboard-golang-miscategorized::c1018599",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "status_dashboard.sh categorizes Golang in a standalone 'Compiled' category separate from the 'Systems' languages group that includes other compiled systems languages",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "categories=(\"Systems\")=\"Ada:Ada Assembly:Assembly C:C Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V\"",
+          "categories=(\"Compiled\")=\"Golang:Golang\" \u2014 singleton category",
+          "Go is a compiled systems programming language; its separation creates an asymmetric category with only one member"
+        ],
+        "suggestion": "Move Golang into the 'Systems' category or rename 'Compiled' to something that meaningfully distinguishes Go from the other systems languages.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::convention_outlier::python-main-file-naming-break::82e033c1": {
+      "id": "review::.::holistic::convention_outlier::python-main-file-naming-break::82e033c1",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Python/Student_Teacher.py uses PascalCase with underscore, breaking the snake_case convention of its sibling Python files",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "Python/Student_Teacher.py",
+          "Python/config_manager.py",
+          "Python/serializer.py",
+          "Python/teacher_wrapper.py"
+        ],
+        "evidence": [
+          "config_manager.py, serializer.py, teacher_wrapper.py all use snake_case",
+          "Student_Teacher.py uses PascalCase_PascalCase hybrid",
+          "Python/run.sh runs 'python3 Student_Teacher.py' referencing the inconsistently named file directly"
+        ],
+        "suggestion": "Rename Student_Teacher.py to student_teacher.py to follow the snake_case convention used by all other Python source files in the directory.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::convention_outlier::julia-flat-directory-vs-structured-peers::553d3346": {
+      "id": "review::.::holistic::convention_outlier::julia-flat-directory-vs-structured-peers::553d3346",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Julia directory is a flat dump of multiple .jl files while TypeScript and Kotlin/Scala/Haskell use src/ subdirectory structure",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "Julia/Julia_InferAnts.jl",
+          "Julia/RxInfer.jl",
+          "Julia/RxInfer_Agent_Model.jl",
+          "Julia/Clone_Julia_Repo.jl"
+        ],
+        "evidence": [
+          "Julia/ root contains Julia_InferAnts.jl, RxInfer.jl, RxInfer_Agent_Model.jl, Clone_Julia_Repo.jl as peer files",
+          "TypeScript/ has a proper src/ hierarchy with subdirectories",
+          "Haskell/ has app/ and src/ActiveInference/ organization",
+          "Julia/SideCar/ and Julia/Category_Theory_Julia/ are subdirs but primary .jl files are unorganized at root"
+        ],
+        "suggestion": "Organize Julia source files into a src/ or lib/ subdirectory consistent with Haskell and TypeScript implementations.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::dependency_health::python-no-requirements-file::e92ddb01": {
+      "id": "review::.::holistic::dependency_health::python-no-requirements-file::e92ddb01",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Python implementation installs dependencies at runtime via pip3 with no requirements.txt, making builds unreproducible",
+      "detail": {
+        "holistic": true,
+        "dimension": "dependency_health",
+        "related_files": [
+          "Python/run.sh"
+        ],
+        "evidence": [
+          "Python/run.sh: 'pip3 install numpy scipy matplotlib seaborn pandas' with no version pins",
+          "No requirements.txt or pyproject.toml found in the Python/ directory",
+          "config_manager.py imports yaml (PyYAML) which is not in the runtime pip install list"
+        ],
+        "suggestion": "Add a requirements.txt pinning all dependencies (numpy, scipy, matplotlib, seaborn, pandas, pyyaml) and update run.sh to use 'pip3 install -r requirements.txt'.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::dependency_health::types-mathjs-redundant::d6cd653e": {
+      "id": "review::.::holistic::dependency_health::types-mathjs-redundant::d6cd653e",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "TypeScript devDependency @types/mathjs is redundant because mathjs 11.x ships its own TypeScript types",
+      "detail": {
+        "holistic": true,
+        "dimension": "dependency_health",
+        "related_files": [
+          "TypeScript/package.json"
+        ],
+        "evidence": [
+          "TypeScript/package.json devDependencies includes \"@types/mathjs\": \"^9.4.2\"",
+          "mathjs ^11.9.1 bundles its own type definitions in the package",
+          "TypeScript/src/types.ts augments 'mathjs' module via 'declare module mathjs', showing types are already being used from the bundled types"
+        ],
+        "suggestion": "Remove @types/mathjs from devDependencies in TypeScript/package.json \u2014 the bundled types are sufficient and @types/mathjs may conflict with them.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::dependency_health::rust-runtime-cargo-add::856b864d": {
+      "id": "review::.::holistic::dependency_health::rust-runtime-cargo-add::856b864d",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Rust/run.sh runs 'cargo add' at execution time to add dependencies that are already declared in Cargo.toml",
+      "detail": {
+        "holistic": true,
+        "dimension": "dependency_health",
+        "related_files": [
+          "Rust/run.sh",
+          "Rust/Cargo.toml"
+        ],
+        "evidence": [
+          "Rust/run.sh line 30: 'cargo add ndarray thiserror serde serde_json rand ndarray-rand'",
+          "Cargo.toml already lists all six of these dependencies with pinned versions",
+          "'cargo add' at runtime may overwrite Cargo.toml pinned versions with latest, breaking reproducibility"
+        ],
+        "suggestion": "Remove the 'cargo add' call from run.sh \u2014 cargo build/run already resolves Cargo.toml dependencies automatically.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::dependency_health::js-ts-duplicate-production-deps::0bbccaeb": {
+      "id": "review::.::holistic::dependency_health::js-ts-duplicate-production-deps::0bbccaeb",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "JavaScript and TypeScript implementations declare identical production dependencies (mathjs, plotly.js), duplicating dependency management across sibling implementations",
+      "detail": {
+        "holistic": true,
+        "dimension": "dependency_health",
+        "related_files": [
+          "JavaScript/package.json",
+          "TypeScript/package.json"
+        ],
+        "evidence": [
+          "Both package.json files list \"mathjs\": \"^11.9.1\" and \"plotly.js\": \"^2.25.2\" as production dependencies",
+          "Each directory manages its own node_modules, potentially causing version skew over time",
+          "JavaScript active_inference.js imports only mathjs; plotly.js is listed but its usage in the main file is unclear"
+        ],
+        "suggestion": "Verify plotly.js is actually used in both implementations; if it is unused in either, remove it. Consider whether the two implementations share enough to benefit from a shared workspace root.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::test_strategy::no-algorithmic-correctness-tests::5a6be11e": {
+      "id": "review::.::holistic::test_strategy::no-algorithmic-correctness-tests::5a6be11e",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "No test in any language implementation verifies algorithmic correctness of belief updates, free energy calculation, or policy selection",
+      "detail": {
+        "holistic": true,
+        "dimension": "test_strategy",
+        "related_files": [
+          "test_suite.py",
+          "Python/Student_Teacher.py",
+          "Rust/src/main.rs",
+          "TypeScript/src/ActiveInferenceAgent.ts"
+        ],
+        "evidence": [
+          "test_suite.py only validates run.sh execution and file structure \u2014 zero assertion on computed values",
+          "Shell/Active_Shellference.sh implements calculate_kl_divergence, calculate_vfe, calculate_efe, update_beliefs with no tests",
+          "Rust/src/main.rs implements update_beliefs and select_action with no #[test] functions visible in main.rs",
+          "Python StudentTeacherPOMDP.update_beliefs, calculate_free_energy, infer_policy are untested"
+        ],
+        "suggestion": "Add at least one unit test per core algorithm function in the primary languages: for Python, use pytest with known-good inputs/outputs; for Rust, add #[cfg(test)] modules in main.rs; for TypeScript, add jest test files.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::test_strategy::typescript-jest-no-test-files::13921532": {
+      "id": "review::.::holistic::test_strategy::typescript-jest-no-test-files::13921532",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "TypeScript package.json declares jest as a devDependency with a test script, but no test files exist",
+      "detail": {
+        "holistic": true,
+        "dimension": "test_strategy",
+        "related_files": [
+          "TypeScript/package.json",
+          "TypeScript/src/ActiveInferenceAgent.ts"
+        ],
+        "evidence": [
+          "TypeScript/package.json: \"test\": \"jest\" script and \"jest\": \"^29.6.1\" in devDependencies",
+          "No *.test.ts or *.spec.ts files found in TypeScript/src/ directory",
+          "Running 'npm test' would report 'no test suites found'"
+        ],
+        "suggestion": "Create TypeScript/src/ActiveInferenceAgent.test.ts with jest tests covering at least belief update normalization and config validation.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::test_strategy::javascript-test-file-missing::08991c94": {
+      "id": "review::.::holistic::test_strategy::javascript-test-file-missing::08991c94",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "JavaScript package.json references test_active_inference.js which does not exist in the directory",
+      "detail": {
+        "holistic": true,
+        "dimension": "test_strategy",
+        "related_files": [
+          "JavaScript/package.json"
+        ],
+        "evidence": [
+          "JavaScript/package.json: \"test\": \"node test_active_inference.js\"",
+          "Directory listing of JavaScript/ shows: active_inference.js, ant_colony_demo.js, config.js, enhanced_demo.html, logger.js, package.json, package-lock.json, run.sh, serializer.js, visualizer.js \u2014 no test_active_inference.js",
+          "Running 'npm test' would fail with 'Cannot find module test_active_inference.js'"
+        ],
+        "suggestion": "Either create test_active_inference.js with actual tests, or update package.json test script to something that exists.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::test_strategy::test-suite-path-hardcoded-wrong::a015cbbc": {
+      "id": "review::.::holistic::test_strategy::test-suite-path-hardcoded-wrong::a015cbbc",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "test_suite.py hardcodes languages_dir as project_root/0_CONTEXT/Computer_Languages but is located inside that directory, causing path resolution errors",
+      "detail": {
+        "holistic": true,
+        "dimension": "test_strategy",
+        "related_files": [
+          "test_suite.py"
+        ],
+        "evidence": [
+          "test_suite.py line 73: self.languages_dir = self.project_root / '0_CONTEXT' / 'Computer_Languages'",
+          "test_suite.py is itself located at /0_CONTEXT/Computer_Languages/test_suite.py",
+          "ActiveInferenceTestSuite.__init__ takes project_root as argument \u2014 callers must know to pass the repo root two levels up, not the directory where test_suite.py lives"
+        ],
+        "suggestion": "Change the default project_root to be computed relative to the test_suite.py file location using Path(__file__).parent.parent.parent to avoid caller confusion.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::api_surface_coherence::python-policy-param-type-mismatch::33c01f3c": {
+      "id": "review::.::holistic::api_surface_coherence::python-policy-param-type-mismatch::33c01f3c",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Python StudentTeacherPOMDP uses 'policy' as an integer in calculate_free_energy but as an array in get_action, creating incompatible types under the same name",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "Python/Student_Teacher.py"
+        ],
+        "evidence": [
+          "calculate_free_energy(self, policy): uses 'np.dot(self.B[:, :, policy], self.d)' \u2014 policy must be integer index",
+          "get_action(self, policy): uses 'np.argmax(policy)' \u2014 policy must be array/list",
+          "infer_policy(self, policies): calls 'self.calculate_free_energy(p) for p in range(len(policies))' passing integer p \u2014 consistent with calculate_free_energy but shows policies is a count, not array",
+          "Callers cannot use the same object to call both methods with the same 'policy' argument"
+        ],
+        "suggestion": "Rename the parameter in get_action to 'policy_distribution' (array) and in calculate_free_energy to 'action_index' (integer) to make the type contract explicit and distinct.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::api_surface_coherence::shell-select-action-unused-env-param::1d6f9b65": {
+      "id": "review::.::holistic::api_surface_coherence::shell-select-action-unused-env-param::1d6f9b65",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Shell select_action receives an environment parameter that is never used to differentiate actions, making the API signature dishonest",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "select_action() signature: beliefs_ref, preferences_ref, transition_probs_ref, environment_ref (4 parameters)",
+          "Loop: 'for action in \"${environment_ref[@]}\"' iterates over environment, but inside the loop calls 'calculate_efe beliefs_ref preferences_ref transition_probs_ref' \u2014 the action variable is never passed to calculate_efe",
+          "Each iteration computes the same EFE (no action parameter differentiation), making the action selection logic incorrect: every action receives the same EFE and whichever is last wins"
+        ],
+        "suggestion": "Either pass the current action context to calculate_efe to compute action-specific EFE, or remove the environment_ref parameter if action enumeration is handled elsewhere.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::api_surface_coherence::typescript-dead-type-exports::9d9c99e0": {
+      "id": "review::.::holistic::api_surface_coherence::typescript-dead-type-exports::9d9c99e0",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "TypeScript types.ts exports four function type aliases (BeliefUpdateFunction, PolicySelectionFunction, etc.) that are not referenced anywhere in the implementation",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "TypeScript/src/types.ts",
+          "TypeScript/src/ActiveInferenceAgent.ts"
+        ],
+        "evidence": [
+          "types.ts lines 144-147: exports BeliefUpdateFunction, PolicySelectionFunction, FreeEnergyCalculationFunction, ActionExecutionFunction",
+          "ActiveInferenceAgent.ts imports only AgentConfig, GenerativeModel, BeliefState, Action, Observation, FreeEnergy, AgentHistory, BeliefUpdateError, PolicySelectionError, Vector, Matrix from types.ts",
+          "The function type aliases are not imported or used \u2014 they are dead API surface"
+        ],
+        "suggestion": "Remove the unused function type aliases from types.ts, or use them as the declared types for the corresponding method signatures in ActiveInferenceAgent.ts to enforce API conformance.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::api_surface_coherence::js-ts-config-init-contract-divergence::ceb140f2": {
+      "id": "review::.::holistic::api_surface_coherence::js-ts-config-init-contract-divergence::ceb140f2",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "JavaScript ActiveInferenceAgent accepts optional config with inline defaults while TypeScript version requires mandatory AgentConfig, making the sibling APIs incompatible in their initialization contract",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "JavaScript/active_inference.js",
+          "TypeScript/src/ActiveInferenceAgent.ts"
+        ],
+        "evidence": [
+          "JavaScript: 'constructor(config = {})' with 'this.nStates = config.nStates || 3'",
+          "TypeScript: 'constructor(config: AgentConfig)' with immediate validateConfig() that throws if values are missing",
+          "A developer switching from the JS to TS implementation must learn a different initialization contract"
+        ],
+        "suggestion": "Document the intentional difference, or make the JavaScript version validate required parameters consistently with the TypeScript implementation.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::mid_level_elegance::mle-01::2e126323": {
+      "id": "review::.::holistic::mid_level_elegance::mle-01::2e126323",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "run.sh generates a config.sh using bash array syntax incompatible with Active_Shellference.sh's expected scalar string format",
+      "detail": {
+        "holistic": true,
+        "dimension": "mid_level_elegance",
+        "related_files": [
+          "Shell/run.sh",
+          "Shell/config.sh",
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Shell/run.sh lines 28-31 generate: CONFIG_INITIAL_BELIEFS=(\"0.25\" \"0.25\" \"0.25\" \"0.25\") \u2014 bash array assignment without export.",
+          "Shell/config.sh line 12: export CONFIG_INITIAL_BELIEFS=\"0.25 0.25 0.25 0.25\" \u2014 exported scalar string.",
+          "Shell/Active_Shellference.sh line 195: read -ra beliefs <<< \"${simulation[beliefs]}\" \u2014 expects space-separated scalar, not a bash array variable.",
+          "If run.sh generates the fallback config and Active_Shellference.sh sources it, CONFIG_INITIAL_BELIEFS would be a bash array; ${CONFIG_INITIAL_BELIEFS} would expand to just the first element."
+        ],
+        "suggestion": "Align the fallback config generated by run.sh with the format expected by Active_Shellference.sh: use 'export CONFIG_INITIAL_BELIEFS=\"0.25 0.25 0.25 0.25\"' (scalar string). Alternatively, define a single authoritative config.sh template and have run.sh copy it rather than generating inline.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::mid_level_elegance::mle-02::b590ad11": {
+      "id": "review::.::holistic::mid_level_elegance::mle-02::b590ad11",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "select_action passes the same EFE inputs on every action iteration \u2014 action identity is never threaded into EFE calculation",
+      "detail": {
+        "holistic": true,
+        "dimension": "mid_level_elegance",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Lines 167-174: 'for action in \"${environment_ref[@]}\"; do ... efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref); done'",
+          "The loop variable 'action' is never passed to calculate_efe. All iterations compute identical EFE values.",
+          "The first action always satisfies '< $min_efe' and is selected; subsequent actions never beat the minimum. Selection is not action-dependent."
+        ],
+        "suggestion": "calculate_efe should accept an action index or action-specific transition slice. Pass the current 'action' to calculate_efe inside the loop so each action's EFE is computed using the transition probabilities that correspond to that action.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::mid_level_elegance::mle-03::72afdecc": {
+      "id": "review::.::holistic::mid_level_elegance::mle-03::72afdecc",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "config.sh emits stdout text on source, polluting any script that sources it",
+      "detail": {
+        "holistic": true,
+        "dimension": "mid_level_elegance",
+        "related_files": [
+          "Shell/config.sh",
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Shell/config.sh line 90: echo \"Configuration loaded and validated successfully\" \u2014 unconditional stdout write at module scope.",
+          "Active_Shellference.sh line 11 sources config.sh; the echo output appears mixed into the simulation's output without any signal that it is a config side effect.",
+          "If Active_Shellference.sh output is piped or parsed downstream, the config message introduces unexpected noise."
+        ],
+        "suggestion": "Remove the success echo from config.sh, or redirect it to stderr (>&2) so it does not pollute stdout of the sourcing script.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::mid_level_elegance::mle-04::34ad6049": {
+      "id": "review::.::holistic::mid_level_elegance::mle-04::34ad6049",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "calculate_vfe is a pass-through wrapper over calculate_kl_divergence with no added boundary value",
+      "detail": {
+        "holistic": true,
+        "dimension": "mid_level_elegance",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Lines 69-76: calculate_vfe() takes beliefs_ref and preferences_ref, calls calculate_kl_divergence with identical args, and echoes the result.",
+          "No transformation, clamping, weighting, or policy difference between VFE and KL divergence at this abstraction level.",
+          "Callers must understand that VFE == KL divergence here, which is either a domain simplification not documented or an incomplete implementation."
+        ],
+        "suggestion": "Either remove calculate_vfe and call calculate_kl_divergence directly (with a comment explaining VFE = KL divergence under this simplified model), or implement the full VFE formula so the function earns its boundary.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::authorization_consistency::sql-sudo-no-audit::2b5535bd": {
+      "id": "review::.::holistic::authorization_consistency::sql-sudo-no-audit::2b5535bd",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "SQL/run.sh executes sudo -u postgres without audit logging or access control verification",
+      "detail": {
+        "holistic": true,
+        "dimension": "authorization_consistency",
+        "related_files": [
+          "SQL/run.sh"
+        ],
+        "evidence": [
+          "SQL/run.sh line 50: 'sudo -u postgres createdb active_inference 2>/dev/null || echo \"Database may already exist\"'",
+          "The 2>/dev/null suppresses sudo error output including authentication failures",
+          "No logging or notification when this privilege escalation is performed",
+          "The sudo invocation is not guarded by any environment check (e.g., CI flag, explicit admin mode)"
+        ],
+        "suggestion": "Remove sudo and instead document that the invoking user must have createdb privileges in PostgreSQL, or use 'createdb' directly with a -U flag and explicit user parameter that the operator configures.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::authorization_consistency::teacher-wrapper-unverified-so::03a7b70a": {
+      "id": "review::.::holistic::authorization_consistency::teacher-wrapper-unverified-so::03a7b70a",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Python/teacher_wrapper.py loads a shared library from a relative path without any integrity check",
+      "detail": {
+        "holistic": true,
+        "dimension": "authorization_consistency",
+        "related_files": [
+          "Python/teacher_wrapper.py"
+        ],
+        "evidence": [
+          "Line 6: lib_path = os.path.join(os.path.dirname(__file__), '..', 'C', 'teacher_model.so')",
+          "Line 7: teacher_lib = ctypes.CDLL(lib_path)",
+          "No check that teacher_model.so exists, no hash verification, no signature check",
+          "If the C/ directory contains a maliciously substituted .so file, it will be loaded with full native code execution privileges"
+        ],
+        "suggestion": "Add an existence check (os.path.exists) with a clear error message before loading. For production use, add a SHA256 hash check against a known-good value to detect tampering.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::ai_generated_debt::aid-01::d580adb7": {
+      "id": "review::.::holistic::ai_generated_debt::aid-01::d580adb7",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Every function in Active_Shellference.sh has a multi-line docblock that restates the function signature without domain insight",
+      "detail": {
+        "holistic": true,
+        "dimension": "ai_generated_debt",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Lines 37-45: '# Computes the KL divergence between the agent's current beliefs and its preferences. Arguments: $1 - Name reference to the beliefs array ...' \u2014 these are the parameter names already visible in lines 47-48.",
+          "Lines 60-68: '# Returns: The calculated Variational Free Energy' \u2014 the return statement on line 75 already conveys this.",
+          "All 7 function headers follow identical ###### delimiter format with 'Arguments:' and 'Returns:' sections that mirror the function signature."
+        ],
+        "suggestion": "Replace the restating docblocks with inline comments that explain non-obvious constraints, e.g., why bc -l is needed for the logarithm, or why beliefs must be normalized before this calculation. Remove parameter documentation that simply echoes the variable names.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::ai_generated_debt::aid-02::b2e91332": {
+      "id": "review::.::holistic::ai_generated_debt::aid-02::b2e91332",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "config.sh exports 7 variables that are never referenced by any file in the Shell subsystem",
+      "detail": {
+        "holistic": true,
+        "dimension": "ai_generated_debt",
+        "related_files": [
+          "Shell/config.sh",
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "config.sh exports: CONFIG_OUTPUT_FILE, CONFIG_LOG_LEVEL, CONFIG_LEARNING_RATE, CONFIG_DISCOUNT_FACTOR, CONFIG_RANDOM_SEED, CONFIG_ENABLE_DEBUG, CONFIG_SAVE_INTERMEDIATE.",
+          "Active_Shellference.sh references only: CONFIG_ENVIRONMENT, CONFIG_INITIAL_BELIEFS, CONFIG_PREFERENCES, CONFIG_TRANSITION_PROBS, CONFIG_TIME_STEPS, CONFIG_PRECISION.",
+          "grep for CONFIG_OUTPUT_FILE, CONFIG_LOG_LEVEL, CONFIG_LEARNING_RATE in Shell/ returns no hits outside config.sh itself."
+        ],
+        "suggestion": "Remove the unused exported variables from config.sh. If CONFIG_OUTPUT_FILE or CONFIG_LOG_LEVEL are intended for future use, add a comment explaining the intended consumer; otherwise delete them.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::ai_generated_debt::aid-03::4cbb2db9": {
+      "id": "review::.::holistic::ai_generated_debt::aid-03::4cbb2db9",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "status_dashboard.sh show_recommendations() outputs static hardcoded generic suggestions unrelated to actual repo state",
+      "detail": {
+        "holistic": true,
+        "dimension": "ai_generated_debt",
+        "related_files": [
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "Lines 226-231: echo lines output 'Add more language implementations', 'Create comprehensive testing suite', 'Add performance benchmarking', 'Implement language comparison tools', 'Add continuous integration' \u2014 these are boilerplate suggestions that appear regardless of what is or isn't present.",
+          "The same function (show_recommendations) does dynamically check for missing READMEs and non-executable scripts (lines 202-223), making the static suggestions section a visible contrast: dynamic checks then static boilerplate."
+        ],
+        "suggestion": "Remove the static 'Suggested Improvements' block, or replace it with dynamic checks (e.g., detect missing test files, count languages with no source file, detect non-passing runs from a cache).",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::incomplete_migration::im-01::11cde6e6": {
+      "id": "review::.::holistic::incomplete_migration::im-01::11cde6e6",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Shell simulation has two stale TODO stubs marking permanently deferred features",
+      "detail": {
+        "holistic": true,
+        "dimension": "incomplete_migration",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Line 215: '# TODO: Implement action effects on environment' \u2014 the simulation loop never modifies the environment state after action selection, making the simulation non-interactive.",
+          "Line 226: '# TODO: Add error handling, logging, and command-line argument parsing for more robustness' \u2014 at end of file with no tracking issue."
+        ],
+        "suggestion": "Either implement the missing action-environment feedback loop (required for the simulation to be meaningful), or document explicitly in a comment why action effects are intentionally omitted in this simplified model. Remove the trailing robustness TODO or convert to a tracked issue.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::package_organization::po-01::3f7f48f3": {
+      "id": "review::.::holistic::package_organization::po-01::3f7f48f3",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Five Python tooling files at root mix orchestration/tooling concern with language-demo entry points",
+      "detail": {
+        "holistic": true,
+        "dimension": "package_organization",
+        "related_files": [
+          "master_controller.py",
+          "config_manager.py",
+          "reporting_system.py",
+          "benchmark_suite.py",
+          "test_suite.py"
+        ],
+        "evidence": [
+          "Root directory contains: run_all.sh, status_dashboard.sh (entry points for running demos) alongside master_controller.py, config_manager.py, reporting_system.py, benchmark_suite.py, test_suite.py (tooling/orchestration).",
+          "holistic_context.structure shows all root files as fan_in 0 / fan_out 0 / role 'peripheral' \u2014 these are not shared utilities imported by capsules but standalone tools that happen to live at root.",
+          "A developer browsing the root cannot easily distinguish 'run this' (run_all.sh) from 'report on this' (reporting_system.py) from 'manage deps for this' (config_manager.py)."
+        ],
+        "suggestion": "Stage 1: Create a 'tools/' directory at root. Move benchmark_suite.py, config_manager.py, reporting_system.py, test_suite.py, master_controller.py into tools/. Stage 2: Update any cross-file invocation paths (master_controller.py's reference to status_dashboard.sh is relative and will need adjustment). Stage 3: Validate by running python3 tools/master_controller.py and ./run_all.sh to confirm paths still resolve. No import graph updates needed since these files have fan_in 0.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::package_organization::po-02::edf013b5": {
+      "id": "review::.::holistic::package_organization::po-02::edf013b5",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Six language directories on disk are unregistered stragger roots invisible to run_all.sh",
+      "detail": {
+        "holistic": true,
+        "dimension": "package_organization",
+        "related_files": [
+          "run_all.sh"
+        ],
+        "evidence": [
+          "Directories present: CSharp/, MATLAB/, Ruby/, PHP/, Swift/, Scala/.",
+          "None appear in run_all.sh LANGUAGES array.",
+          "From a package organization perspective these directories exist but have no functional registration \u2014 they are stragger roots with low operational fan-in (0 callers from the run orchestration layer)."
+        ],
+        "suggestion": "Stage 1: Audit each directory for a working run.sh. Stage 2: For those with run.sh, add the entry to LANGUAGES in run_all.sh. Stage 3: For those without a run.sh, either add a stub run.sh or move the directory to an 'experimental/' or 'wip/' subdirectory to signal their status. Stage 4: Run './run_all.sh --list' to verify all newly added entries show as available or missing rather than silently absent.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::package_organization::po-03::a28c0ac1": {
+      "id": "review::.::holistic::package_organization::po-03::a28c0ac1",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Rust directory has non-uniform structure (multiple sub-directories, extra docs) diverging from the single-capsule convention",
+      "detail": {
+        "holistic": true,
+        "dimension": "package_organization",
+        "related_files": [
+          "Rust/"
+        ],
+        "evidence": [
+          "Rust/ contains: RustConfig/, RustThings/, src/, Cargo.lock, Cargo.toml, README.md, Rust.README.md, config.json, run.sh, system_spec_RUST.txt.",
+          "Other language capsules (e.g., Python/, TypeScript/, Golang/) have flat or minimal src/-only structure.",
+          "Two README files (README.md and Rust.README.md) in the same directory indicate disorganized documentation accumulation.",
+          "RustConfig/ and RustThings/ as subdirectory names are ambiguous: they do not communicate whether they are configuration data, source modules, or auxiliary demos."
+        ],
+        "suggestion": "Consolidate Rust.README.md content into README.md and remove the duplicate. Rename or flatten RustConfig/ and RustThings/ to match purpose-driven names (e.g., 'config/' or 'examples/'). Ensure the final structure matches the minimal capsule pattern used by other languages to reduce navigation overhead.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::initialization_coupling::student_teacher_module_scope_execution::187b6c20": {
+      "id": "review::.::holistic::initialization_coupling::student_teacher_module_scope_execution::187b6c20",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Student_Teacher.py runs a full 20-step simulation and generates plots at module import scope",
+      "detail": {
+        "holistic": true,
+        "dimension": "initialization_coupling",
+        "related_files": [
+          "Python/Student_Teacher.py",
+          "Python/run.sh"
+        ],
+        "evidence": [
+          "Lines 159-179 of Student_Teacher.py: 'pomdp = StudentTeacherPOMDP(...)' and the simulation loop execute unconditionally at module scope",
+          "Python/run.sh imports Student_Teacher via 'from Student_Teacher import StudentTeacherPOMDP' \u2014 this triggers the full simulation as a side effect of the import, causing double execution"
+        ],
+        "suggestion": "Wrap all module-level execution in 'if __name__ == \"__main__\":' guard so that importing the module does not trigger side effects",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::initialization_coupling::config_sh_exit_on_source::c656f214": {
+      "id": "review::.::holistic::initialization_coupling::config_sh_exit_on_source::c656f214",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "config.sh calls exit 1 at module scope inside validate_config, killing the sourcing shell process on validation failure",
+      "detail": {
+        "holistic": true,
+        "dimension": "initialization_coupling",
+        "related_files": [
+          "Shell/config.sh",
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Shell/config.sh lines 85-88: 'if ! validate_config; then ... exit 1 ... fi' executes at source time",
+          "Active_Shellference.sh line 11-13: 'if ! source config.sh; then echo Error; exit 1; fi' \u2014 but config.sh's own 'exit 1' will kill the parent shell before this check can run"
+        ],
+        "suggestion": "Replace 'exit 1' inside config.sh with 'return 1' so that sourcing scripts can handle validation failure without killing the parent shell",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::initialization_coupling::shell_run_conflicting_config_formats::72680316": {
+      "id": "review::.::holistic::initialization_coupling::shell_run_conflicting_config_formats::72680316",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Shell/run.sh creates config.sh with array syntax while Shell/config.sh uses scalar export syntax \u2014 the two formats are incompatible",
+      "detail": {
+        "holistic": true,
+        "dimension": "initialization_coupling",
+        "related_files": [
+          "Shell/run.sh",
+          "Shell/config.sh"
+        ],
+        "evidence": [
+          "Shell/run.sh lines 22-38: creates config.sh with 'CONFIG_ENVIRONMENT=(\"food\" \"danger\" \"safe\")' using bash array syntax",
+          "Shell/config.sh line 9: 'export CONFIG_ENVIRONMENT=\"ShellActiveInference_v1.0\"' uses scalar string syntax",
+          "Active_Shellference.sh uses '${simulation[environment]}' from CONFIG_ENVIRONMENT \u2014 behavior differs based on which config.sh is active"
+        ],
+        "suggestion": "Unify config format: either use only scalar exports or only arrays, and remove the conflicting inline config generation from run.sh",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::initialization_coupling::reporting_system_global_state_mutation::45fe66a5": {
+      "id": "review::.::holistic::initialization_coupling::reporting_system_global_state_mutation::45fe66a5",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "reporting_system.py mutates global matplotlib and seaborn state at module import scope",
+      "detail": {
+        "holistic": true,
+        "dimension": "initialization_coupling",
+        "related_files": [
+          "reporting_system.py"
+        ],
+        "evidence": [
+          "Lines 27-28: 'plt.style.use(\"seaborn-v0_8-darkgrid\")' and 'sns.set_palette(\"husl\")' execute at import scope",
+          "These calls permanently affect plot style for any module sharing the same Python process"
+        ],
+        "suggestion": "Move global style configuration into the main() function or an explicit initialize_plots() function called at entrypoint rather than at import scope",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::initialization_coupling::run_all_relative_cd_boot_order::0ce5423c": {
+      "id": "review::.::holistic::initialization_coupling::run_all_relative_cd_boot_order::0ce5423c",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "run_all.sh uses relative 'cd $lang_dir / cd ..' pattern that breaks if not invoked from the repo root",
+      "detail": {
+        "holistic": true,
+        "dimension": "initialization_coupling",
+        "related_files": [
+          "run_all.sh"
+        ],
+        "evidence": [
+          "run_all.sh line 68: 'cd \"$lang_dir\"' followed by line 74: 'cd ..' \u2014 assumes cwd is always the repo root",
+          "run_language() has no cwd guard; calling it from a subdirectory would navigate to a wrong directory silently"
+        ],
+        "suggestion": "Capture the script's directory at startup with 'SCRIPT_DIR=$(cd -- \"$(dirname -- \"${BASH_SOURCE[0]}\")\" && pwd)' and use absolute paths for all cd operations",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::design_coherence::config_manager_26_identical_method_pairs::cfb91c80": {
+      "id": "review::.::holistic::design_coherence::config_manager_26_identical_method_pairs::cfb91c80",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "config_manager.py contains 26+ near-identical _check_*_deps() and _install_*_deps() method pairs that should be data-driven",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "config_manager.py"
+        ],
+        "evidence": [
+          "Lines 446-690: _check_lua_deps, _check_perl_deps, _check_r_deps, _check_racket_deps, etc. all follow identical patterns: call _command_exists() on a fixed string, build available/missing lists, return tuple",
+          "The dependency definitions dict already stores the required tool list \u2014 the checker methods reimplement the same logic redundantly instead of using the stored required list"
+        ],
+        "suggestion": "Replace per-language _check_*_deps() methods with a generic _check_commands(required: List[str]) method that iterates self.dependencies[lang]['required'], eliminating 20+ nearly identical method bodies",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::design_coherence::status_dashboard_mixed_concerns::ac545d14": {
+      "id": "review::.::holistic::design_coherence::status_dashboard_mixed_concerns::ac545d14",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "status_dashboard.sh mixes display formatting, OS introspection, filesystem queries, tool detection, and analysis recommendations in a single 253-line file",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "show_system_info() queries lsb_release, /etc/os-release, nproc, free, and iterates 29 tool names \u2014 this is system introspection, not dashboard display",
+          "show_statistics() uses find with -printf and wc -l for file counting \u2014 data aggregation distinct from display",
+          "show_recommendations() both analyzes and prints \u2014 analysis should be separated from rendering"
+        ],
+        "suggestion": "Extract data-gathering functions (collect_system_info, collect_statistics, collect_recommendations) separately from display functions, or split into a data-gathering script and a display script",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::design_coherence::select_action_loop_ignores_action_variable::58f468aa": {
+      "id": "review::.::holistic::design_coherence::select_action_loop_ignores_action_variable::58f468aa",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "select_action() in Active_Shellference.sh iterates over environment actions but never passes the current action to calculate_efe(), computing identical EFE for every action",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Lines 167-175: 'for action in \"${environment_ref[@]}\"; do ... efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref) ...' \u2014 the loop variable 'action' is never used in the EFE call",
+          "EFE is action-dependent by definition; the design promises action selection but delivers a constant comparison"
+        ],
+        "suggestion": "Pass the current action as a parameter to calculate_efe() and update calculate_efe() to apply action-specific transition probabilities for that action index",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::design_coherence::cpp_run_sh_broken_subshell_syntax::fb151797": {
+      "id": "review::.::holistic::design_coherence::cpp_run_sh_broken_subshell_syntax::fb151797",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Cpp/run.sh has unbalanced parenthesis in g++ version echo command making compiler version reporting silently broken",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "Cpp/run.sh"
+        ],
+        "evidence": [
+          "Line 17: 'echo \"\u2705 G++ found: $(g++) --version | head -1)\"' \u2014 the subshell opens with $( but contains the closing paren of g++ before the pipe, producing incorrect output"
+        ],
+        "suggestion": "Fix to: 'echo \"\u2705 G++ found: $(g++ --version | head -1)\"' \u2014 move the closing paren to after head -1",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::design_coherence::brainfuck_run_sh_over_responsibility::4cd066c5": {
+      "id": "review::.::holistic::design_coherence::brainfuck_run_sh_over_responsibility::4cd066c5",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Brainfuck/run.sh has four distinct responsibilities: dependency checking, config generation, primary execution, and conditional analysis execution",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "Brainfuck/run.sh"
+        ],
+        "evidence": [
+          "Lines 20-24: checks 7 Python packages",
+          "Lines 28-50: generates a JSON config file if not present",
+          "Line 54: runs the primary simulation",
+          "Lines 57-62: conditionally runs two additional analysis scripts"
+        ],
+        "suggestion": "Move config generation to a setup.sh or init script, and move analysis invocation to a separate analyze.sh; keep run.sh focused on dependency check and primary execution",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::naming_quality::check_language_status_produces_output_not_check::4ed153e7": {
+      "id": "review::.::holistic::naming_quality::check_language_status_produces_output_not_check::4ed153e7",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "status_dashboard.sh check_language_status() name implies a check/return but the function only produces stdout output via printf",
+      "detail": {
+        "holistic": true,
+        "dimension": "naming_quality",
+        "related_files": [
+          "status_dashboard.sh"
+        ],
+        "evidence": [
+          "Lines 26-70: function is named 'check_language_status' but its entire body builds status strings and ends with 'printf \"  %-12s %s - %s\\n\"' \u2014 it has no return value",
+          "Callers in show_implementations() use it as 'check_language_status \"$lang\" \"$dir\"' without capturing output \u2014 consistent with a print function, not a check function"
+        ],
+        "suggestion": "Rename to 'print_language_status' or 'show_language_status' to match actual behavior",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::naming_quality::generate_dependency_report_returns_string_not_file::dc8d0b78": {
+      "id": "review::.::holistic::naming_quality::generate_dependency_report_returns_string_not_file::dc8d0b78",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "config_manager.py generate_dependency_report() returns a string but 'generate' conventionally implies creating a file or artifact",
+      "detail": {
+        "holistic": true,
+        "dimension": "naming_quality",
+        "related_files": [
+          "config_manager.py"
+        ],
+        "evidence": [
+          "Lines 707-735: method builds and returns a string: 'return report'",
+          "The actual file write ('with open(\"dependency_report.txt\", \"w\") as f') happens in main() at line 749-751 \u2014 not in this method"
+        ],
+        "suggestion": "Rename to 'format_dependency_report()' or 'build_dependency_report()' to accurately describe that it returns a formatted string",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::naming_quality::precision_variable_domain_collision::cb350b8b": {
+      "id": "review::.::holistic::naming_quality::precision_variable_domain_collision::cb350b8b",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Shell/Active_Shellference.sh uses 'precision' as a bc scale parameter, conflicting with its domain meaning of inverse variance in Active Inference",
+      "detail": {
+        "holistic": true,
+        "dimension": "naming_quality",
+        "related_files": [
+          "Shell/Active_Shellference.sh",
+          "Shell/config.sh"
+        ],
+        "evidence": [
+          "Active_Shellference.sh line 18: 'declare -i precision' and line 33: 'precision=\"${CONFIG_PRECISION}\"'",
+          "config.sh line 26: 'export CONFIG_PRECISION=1000' \u2014 used as 'scale=$precision' in bc arithmetic expressions",
+          "In Active Inference literature, 'precision' specifically means the inverse variance weighting beliefs \u2014 the use here for arithmetic scale creates a false semantic link"
+        ],
+        "suggestion": "Rename to 'bc_scale' or 'arithmetic_scale' to distinguish from the domain-specific concept of precision as inverse variance",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::logic_clarity::select_action_constant_efe_computation::2d62bbdb": {
+      "id": "review::.::holistic::logic_clarity::select_action_constant_efe_computation::2d62bbdb",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Active_Shellference.sh select_action() computes identical EFE for every action because the action variable is never passed to calculate_efe()",
+      "detail": {
+        "holistic": true,
+        "dimension": "logic_clarity",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Lines 167-175: 'for action in \"${environment_ref[@]}\"; do ... efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref) ...'",
+          "The variable 'action' from the loop is not passed to calculate_efe()",
+          "Since min_efe starts at 1000000 and all EFE values are identical, selected_action is set on the first iteration and then unchanged only if subsequent EFEs are never lower \u2014 or may update spuriously based on floating point equality"
+        ],
+        "suggestion": "Pass the action index to calculate_efe() so that transition probabilities for that specific action are used; update calculate_efe() to accept an action index parameter and apply action-specific transition probabilities",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::logic_clarity::rust_run_dead_code_set_e_check::227945a0": {
+      "id": "review::.::holistic::logic_clarity::rust_run_dead_code_set_e_check::227945a0",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Rust/run.sh checks $? after cargo build and cargo run under set -e, making the failure branches unreachable dead code",
+      "detail": {
+        "holistic": true,
+        "dimension": "logic_clarity",
+        "related_files": [
+          "Rust/run.sh"
+        ],
+        "evidence": [
+          "Line 6: 'set -e' makes any failing command abort the script immediately",
+          "Line 36: 'cargo build --release'",
+          "Line 38: 'if [ $? -eq 0 ]; then' \u2014 if cargo build fails, set -e has already aborted; this check can only be true",
+          "Lines 71-78 (else branch): 'echo \"\u274c Rust build failed.\"' is dead code that can never execute"
+        ],
+        "suggestion": "Remove the 'if [ $? -eq 0 ]' wrapper and run the success-path code directly, relying on set -e for failure handling; or remove set -e and keep the explicit checks consistently",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::logic_clarity::cpp_run_dead_code_set_e_check::b6c66048": {
+      "id": "review::.::holistic::logic_clarity::cpp_run_dead_code_set_e_check::b6c66048",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Cpp/run.sh has same dead code pattern as Rust/run.sh: $? checks after make and ./ActiveInferenceDemo under set -e",
+      "detail": {
+        "holistic": true,
+        "dimension": "logic_clarity",
+        "related_files": [
+          "Cpp/run.sh"
+        ],
+        "evidence": [
+          "Line 6: 'set -e'",
+          "Line 38: 'make'",
+          "Line 40: 'if [ $? -eq 0 ]; then' \u2014 failure branch at lines 60-62 is dead code under set -e"
+        ],
+        "suggestion": "Same fix as rust_run: remove the $? wrappers and rely on set -e, or remove set -e and use explicit checks consistently",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::logic_clarity::run_all_total_count_wrong_in_specific_lang_mode::659cdebb": {
+      "id": "review::.::holistic::logic_clarity::run_all_total_count_wrong_in_specific_lang_mode::659cdebb",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "run_all.sh compares SUCCESS_COUNT to TOTAL_IMPLEMENTATIONS after running a specific language, but TOTAL_IMPLEMENTATIONS is always 34 regardless of how many were actually run",
+      "detail": {
+        "holistic": true,
+        "dimension": "logic_clarity",
+        "related_files": [
+          "run_all.sh"
+        ],
+        "evidence": [
+          "Line 245: 'TOTAL_IMPLEMENTATIONS=$(echo \"${LANGUAGES[@]}\" | wc -w)' \u2014 always counts all 34 languages",
+          "Lines 184-196: when SPECIFIC_LANG is set, only 1 language runs incrementing SUCCESS_COUNT to at most 1",
+          "Lines 248-252: 'if [ $SUCCESS_COUNT -eq $TOTAL_IMPLEMENTATIONS ]' \u2014 condition 1 -eq 34 is always false in single-language mode; 'All implementations completed' message never displays"
+        ],
+        "suggestion": "Track TOTAL_RUN separately from TOTAL_IMPLEMENTATIONS, incrementing it only for languages actually attempted, and compare SUCCESS_COUNT against TOTAL_RUN",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::logic_clarity::calculate_vfe_identity_wrapper::211afbd0": {
+      "id": "review::.::holistic::logic_clarity::calculate_vfe_identity_wrapper::211afbd0",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Active_Shellference.sh calculate_vfe() is an identity wrapper over calculate_kl_divergence() with no additional computation",
+      "detail": {
+        "holistic": true,
+        "dimension": "logic_clarity",
+        "related_files": [
+          "Shell/Active_Shellference.sh"
+        ],
+        "evidence": [
+          "Lines 69-76: calculate_vfe() calls calculate_kl_divergence() with the same arguments and immediately echoes the result",
+          "The function adds no logic \u2014 VFE and KL divergence are treated as identical, which may be intentionally simplified but the wrapper adds indirection without behavior"
+        ],
+        "suggestion": "Either remove calculate_vfe() and call calculate_kl_divergence() directly at the call site, or add the actual VFE computation that distinguishes it from KL divergence (accuracy + complexity terms)",
+        "reasoning": ""
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-11T13:00:15+00:00",
+      "last_seen": "2026-03-11T13:00:15+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "lang": "bash",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    }
+  },
+  "scan_coverage": {},
+  "score_confidence": {
+    "status": "full",
+    "confidence": 1.0,
+    "detectors": [],
+    "dimensions": []
+  },
+  "subjective_integrity": {
+    "status": "disabled",
+    "target_score": null,
+    "matched_count": 0,
+    "matched_dimensions": [],
+    "reset_dimensions": []
+  },
+  "subjective_assessments": {
+    "high_level_elegance": {
+      "score": 52.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "type_safety": {
+      "score": 55.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "contract_coherence": {
+      "score": 58.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "error_consistency": {
+      "score": 47.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "abstraction_fitness": {
+      "score": 52.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "low_level_elegance": {
+      "score": 51.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "cross_module_architecture": {
+      "score": 62.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "convention_outlier": {
+      "score": 54.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "dependency_health": {
+      "score": 67.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "test_strategy": {
+      "score": 30.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "api_surface_coherence": {
+      "score": 61.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "mid_level_elegance": {
+      "score": 44.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "authorization_consistency": {
+      "score": 82.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "ai_generated_debt": {
+      "score": 45.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "incomplete_migration": {
+      "score": 72.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "package_organization": {
+      "score": 50.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "initialization_coupling": {
+      "score": 72.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "design_coherence": {
+      "score": 62.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "naming_quality": {
+      "score": 70.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    },
+    "logic_clarity": {
+      "score": 58.0,
+      "source": "manual_override",
+      "assessed_at": "2026-03-11T13:00:15+00:00",
+      "provisional_override": true,
+      "provisional_until_scan": 2
+    }
+  },
+  "potentials": {
+    "bash": {
+      "review": 10
+    }
+  },
+  "scan_history": [
+    {
+      "timestamp": "2026-03-11T13:00:15+00:00",
+      "lang": "bash",
+      "strict_score": 53.2,
+      "verified_strict_score": 100.0,
+      "objective_score": 100.0,
+      "overall_score": 53.2,
+      "open": 79,
+      "diff_new": 79,
+      "diff_resolved": 0,
+      "ignored": 0,
+      "raw_issues": 79,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "disabled",
+        "matched_count": 0,
+        "reset_count": 0,
+        "target_score": null
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Naming quality": {
+          "score": 70.0,
+          "strict": 70.0
+        },
+        "Logic clarity": {
+          "score": 58.0,
+          "strict": 58.0
+        },
+        "Type safety": {
+          "score": 55.0,
+          "strict": 55.0
+        },
+        "Contracts": {
+          "score": 58.0,
+          "strict": 58.0
+        },
+        "Error consistency": {
+          "score": 47.0,
+          "strict": 47.0
+        },
+        "Abstraction fit": {
+          "score": 52.0,
+          "strict": 52.0
+        },
+        "AI generated debt": {
+          "score": 45.0,
+          "strict": 45.0
+        },
+        "High elegance": {
+          "score": 52.0,
+          "strict": 52.0
+        },
+        "Mid elegance": {
+          "score": 44.0,
+          "strict": 44.0
+        },
+        "Low elegance": {
+          "score": 51.0,
+          "strict": 51.0
+        },
+        "Cross-module arch": {
+          "score": 62.0,
+          "strict": 62.0
+        },
+        "Init coupling": {
+          "score": 72.0,
+          "strict": 72.0
+        },
+        "Convention drift": {
+          "score": 54.0,
+          "strict": 54.0
+        },
+        "Dep health": {
+          "score": 67.0,
+          "strict": 67.0
+        },
+        "Test strategy": {
+          "score": 30.0,
+          "strict": 30.0
+        },
+        "API coherence": {
+          "score": 61.0,
+          "strict": 61.0
+        },
+        "Auth consistency": {
+          "score": 82.0,
+          "strict": 82.0
+        },
+        "Stale migration": {
+          "score": 72.0,
+          "strict": 72.0
+        },
+        "Structure nav": {
+          "score": 50.0,
+          "strict": 50.0
+        },
+        "Design coherence": {
+          "score": 62.0,
+          "strict": 62.0
+        }
+      }
+    }
+  ],
+  "tool_hash": "c108a62acd1d",
+  "scan_path": null,
+  "scan_completeness": {
+    "bash": "full"
+  },
+  "dimension_scores": {
+    "Naming quality": {
+      "score": 70.0,
+      "strict": 70.0,
+      "verified_strict_score": 70.0,
+      "checks": 10,
+      "failing": 3,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.7,
+          "failing": 3,
+          "weighted_failures": 3.0,
+          "assessment_score": 70.0,
+          "placeholder": false,
+          "dimension_key": "naming_quality",
+          "configured_weight": 2.0,
+          "components": []
+        }
+      }
+    },
+    "Logic clarity": {
+      "score": 58.0,
+      "strict": 58.0,
+      "verified_strict_score": 58.0,
+      "checks": 10,
+      "failing": 5,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.58,
+          "failing": 5,
+          "weighted_failures": 4.2,
+          "assessment_score": 58.0,
+          "placeholder": false,
+          "dimension_key": "logic_clarity",
+          "configured_weight": 6.0,
+          "components": []
+        }
+      }
+    },
+    "Type safety": {
+      "score": 55.0,
+      "strict": 55.0,
+      "verified_strict_score": 55.0,
+      "checks": 10,
+      "failing": 5,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.55,
+          "failing": 5,
+          "weighted_failures": 4.5,
+          "assessment_score": 55.0,
+          "placeholder": false,
+          "dimension_key": "type_safety",
+          "configured_weight": 12.0,
+          "components": []
+        }
+      }
+    },
+    "Contracts": {
+      "score": 58.0,
+      "strict": 58.0,
+      "verified_strict_score": 58.0,
+      "checks": 10,
+      "failing": 6,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.58,
+          "failing": 6,
+          "weighted_failures": 4.2,
+          "assessment_score": 58.0,
+          "placeholder": false,
+          "dimension_key": "contract_coherence",
+          "configured_weight": 12.0,
+          "components": []
+        }
+      }
+    },
+    "Error consistency": {
+      "score": 47.0,
+      "strict": 47.0,
+      "verified_strict_score": 47.0,
+      "checks": 10,
+      "failing": 5,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.47,
+          "failing": 5,
+          "weighted_failures": 5.3,
+          "assessment_score": 47.0,
+          "placeholder": false,
+          "dimension_key": "error_consistency",
+          "configured_weight": 3.0,
+          "components": []
+        }
+      }
+    },
+    "Abstraction fit": {
+      "score": 52.0,
+      "strict": 52.0,
+      "verified_strict_score": 52.0,
+      "checks": 10,
+      "failing": 3,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.52,
+          "failing": 3,
+          "weighted_failures": 4.8,
+          "assessment_score": 52.0,
+          "placeholder": false,
+          "dimension_key": "abstraction_fitness",
+          "configured_weight": 8.0,
+          "components": []
+        }
+      }
+    },
+    "AI generated debt": {
+      "score": 45.0,
+      "strict": 45.0,
+      "verified_strict_score": 45.0,
+      "checks": 10,
+      "failing": 3,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.45,
+          "failing": 3,
+          "weighted_failures": 5.5,
+          "assessment_score": 45.0,
+          "placeholder": false,
+          "dimension_key": "ai_generated_debt",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "High elegance": {
+      "score": 52.0,
+      "strict": 52.0,
+      "verified_strict_score": 52.0,
+      "checks": 10,
+      "failing": 3,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.52,
+          "failing": 3,
+          "weighted_failures": 4.8,
+          "assessment_score": 52.0,
+          "placeholder": false,
+          "dimension_key": "high_level_elegance",
+          "configured_weight": 22.0,
+          "components": []
+        }
+      }
+    },
+    "Mid elegance": {
+      "score": 44.0,
+      "strict": 44.0,
+      "verified_strict_score": 44.0,
+      "checks": 10,
+      "failing": 4,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.44,
+          "failing": 4,
+          "weighted_failures": 5.6,
+          "assessment_score": 44.0,
+          "placeholder": false,
+          "dimension_key": "mid_level_elegance",
+          "configured_weight": 22.0,
+          "components": []
+        }
+      }
+    },
+    "Low elegance": {
+      "score": 51.0,
+      "strict": 51.0,
+      "verified_strict_score": 51.0,
+      "checks": 10,
+      "failing": 6,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.51,
+          "failing": 6,
+          "weighted_failures": 4.9,
+          "assessment_score": 51.0,
+          "placeholder": false,
+          "dimension_key": "low_level_elegance",
+          "configured_weight": 12.0,
+          "components": []
+        }
+      }
+    },
+    "Cross-module arch": {
+      "score": 62.0,
+      "strict": 62.0,
+      "verified_strict_score": 62.0,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.62,
+          "failing": 2,
+          "weighted_failures": 3.8,
+          "assessment_score": 62.0,
+          "placeholder": false,
+          "dimension_key": "cross_module_architecture",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "Init coupling": {
+      "score": 72.0,
+      "strict": 72.0,
+      "verified_strict_score": 72.0,
+      "checks": 10,
+      "failing": 5,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.72,
+          "failing": 5,
+          "weighted_failures": 2.8,
+          "assessment_score": 72.0,
+          "placeholder": false,
+          "dimension_key": "initialization_coupling",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "Convention drift": {
+      "score": 54.0,
+      "strict": 54.0,
+      "verified_strict_score": 54.0,
+      "checks": 10,
+      "failing": 6,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.54,
+          "failing": 6,
+          "weighted_failures": 4.6,
+          "assessment_score": 54.0,
+          "placeholder": false,
+          "dimension_key": "convention_outlier",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "Dep health": {
+      "score": 67.0,
+      "strict": 67.0,
+      "verified_strict_score": 67.0,
+      "checks": 10,
+      "failing": 4,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.67,
+          "failing": 4,
+          "weighted_failures": 3.3,
+          "assessment_score": 67.0,
+          "placeholder": false,
+          "dimension_key": "dependency_health",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "Test strategy": {
+      "score": 30.0,
+      "strict": 30.0,
+      "verified_strict_score": 30.0,
+      "checks": 10,
+      "failing": 4,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.3,
+          "failing": 4,
+          "weighted_failures": 7.0,
+          "assessment_score": 30.0,
+          "placeholder": false,
+          "dimension_key": "test_strategy",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "API coherence": {
+      "score": 61.0,
+      "strict": 61.0,
+      "verified_strict_score": 61.0,
+      "checks": 10,
+      "failing": 4,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.61,
+          "failing": 4,
+          "weighted_failures": 3.9,
+          "assessment_score": 61.0,
+          "placeholder": false,
+          "dimension_key": "api_surface_coherence",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "Auth consistency": {
+      "score": 82.0,
+      "strict": 82.0,
+      "verified_strict_score": 82.0,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.82,
+          "failing": 2,
+          "weighted_failures": 1.8,
+          "assessment_score": 82.0,
+          "placeholder": false,
+          "dimension_key": "authorization_consistency",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "Stale migration": {
+      "score": 72.0,
+      "strict": 72.0,
+      "verified_strict_score": 72.0,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.72,
+          "failing": 1,
+          "weighted_failures": 2.8,
+          "assessment_score": 72.0,
+          "placeholder": false,
+          "dimension_key": "incomplete_migration",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "Structure nav": {
+      "score": 50.0,
+      "strict": 50.0,
+      "verified_strict_score": 50.0,
+      "checks": 10,
+      "failing": 3,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.5,
+          "failing": 3,
+          "weighted_failures": 5.0,
+          "assessment_score": 50.0,
+          "placeholder": false,
+          "dimension_key": "package_organization",
+          "configured_weight": 5.0,
+          "components": []
+        }
+      }
+    },
+    "Design coherence": {
+      "score": 62.0,
+      "strict": 62.0,
+      "verified_strict_score": 62.0,
+      "checks": 10,
+      "failing": 5,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.62,
+          "failing": 5,
+          "weighted_failures": 3.8,
+          "assessment_score": 62.0,
+          "placeholder": false,
+          "dimension_key": "design_coherence",
+          "configured_weight": 10.0,
+          "components": []
+        }
+      }
+    }
+  },
+  "review_cache": {
+    "files": {},
+    "holistic": {
+      "reviewed_at": "2026-03-11T13:00:15+00:00",
+      "file_count_at_review": 0,
+      "issue_count": 79
+    }
+  },
+  "assessment_import_audit": [
+    {
+      "timestamp": "2026-03-11T13:00:15+00:00",
+      "mode": "manual_override",
+      "trusted": false,
+      "reason": "manual override attested by operator",
+      "override_used": true,
+      "attested_external": false,
+      "provisional": true,
+      "provisional_count": 20,
+      "attest": "Claude subagents ran blind parallel reviews against review_packet_blind.json across all 20 subjective dimensions. Subagents were context-isolated and scored from code evidence only. I am not gaming the score.",
+      "import_file": "/Users/4d/Documents/GitHub/activeinferants/0_CONTEXT/Computer_Languages/review_merged.json"
+    }
+  ]
+}
