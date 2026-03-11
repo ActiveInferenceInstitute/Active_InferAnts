@@ -54,7 +54,7 @@ check_language_status() {
             "Go") main_file="$lang_dir/*.go" ;;
             "Haskell") main_file="$lang_dir/app/Main.hs" ;;
             "TypeScript") main_file="$lang_dir/src/ActiveInferenceAgent.ts" ;;
-            *) main_file="$lang_dir/*.$lang_dir" ;;
+            *) main_file="$lang_dir/run.sh" ;;
         esac
 
         if ls $main_file 1> /dev/null 2>&1; then

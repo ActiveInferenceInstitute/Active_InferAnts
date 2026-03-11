@@ -35,45 +35,34 @@ fi
 echo "🔨 Building Rust implementation..."
 cargo build --release
 
-if [ $? -eq 0 ]; then
-    # Run the simulation
-    echo "🚀 Running Rust active inference simulation..."
-    cargo run --release
+# Run the simulation (set -e handles build failures above)
+echo "🚀 Running Rust active inference simulation..."
+cargo run --release
 
-    if [ $? -eq 0 ]; then
-        echo ""
-        echo "✅ Rust simulation completed successfully!"
+echo ""
+echo "✅ Rust simulation completed successfully!"
 
-        # Check for output files
-        if [ -d "output" ] && [ "$(ls -A output)" ]; then
-            echo "📁 Output files generated:"
-            ls -la output/
-        fi
+# Check for output files
+if [ -d "output" ] && [ "$(ls -A output)" ]; then
+    echo "📁 Output files generated:"
+    ls -la output/
+fi
 
-        # Run tests if requested
-        if [ "$1" = "--test" ]; then
-            echo "🧪 Running tests..."
-            cargo test
-        fi
+# Run tests if requested
+if [ "$1" = "--test" ]; then
+    echo "🧪 Running tests..."
+    cargo test
+fi
 
-        # Generate documentation if requested
-        if [ "$1" = "--docs" ]; then
-            echo "📚 Generating documentation..."
-            cargo doc --no-deps
-            echo "   Documentation available in target/doc/"
-        fi
+# Generate documentation if requested
+if [ "$1" = "--docs" ]; then
+    echo "📚 Generating documentation..."
+    cargo doc --no-deps
+    echo "   Documentation available in target/doc/"
+fi
 
-        # Show performance info if requested
-        if [ "$1" = "--bench" ]; then
-            echo "📊 Running benchmarks..."
-            cargo bench 2>/dev/null || echo "   No benchmarks available"
-        fi
-    else
-        echo "❌ Rust execution failed."
-        exit 1
-    fi
-else
-    echo "❌ Rust build failed."
-    echo "💡 Try running 'cargo clean' and rebuilding."
-    exit 1
+# Show performance info if requested
+if [ "$1" = "--bench" ]; then
+    echo "📊 Running benchmarks..."
+    cargo bench 2>/dev/null || echo "   No benchmarks available"
 fi

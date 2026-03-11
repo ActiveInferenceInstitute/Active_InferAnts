@@ -54,9 +54,9 @@ class StudentTeacherPOMDP:
         self.d = self.d * likelihood
         self.d /= np.sum(self.d)
     
-    def get_action(self, policy):
-        # Simplified action selection based on current policy
-        return np.argmax(policy)
+    def get_action(self, action_probs: np.ndarray) -> int:
+        # Select action with highest probability from softmax policy distribution
+        return int(np.argmax(action_probs))
     
     def step(self, action):
         # Transition to a new state
