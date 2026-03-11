@@ -21,25 +21,6 @@ export CONFIG_TRANSITION_PROBS="0.8 0.2 0.6 0.4 0.3 0.7 0.9 0.1"
 export CONFIG_TIME_STEPS=15
 export CONFIG_PRECISION=1000
 
-# Output Configuration
-export CONFIG_OUTPUT_FILE="shell_simulation_output.txt"
-export CONFIG_LOG_LEVEL="INFO"
-
-# Agent Learning Parameters
-export CONFIG_LEARNING_RATE=0.1
-export CONFIG_DISCOUNT_FACTOR=0.95
-
-# Environment Parameters
-export CONFIG_NUM_STATES=4
-export CONFIG_NUM_OBSERVATIONS=3
-export CONFIG_NUM_ACTIONS=2
-
-# Random Seed for Reproducibility
-export CONFIG_RANDOM_SEED=42
-
-# Performance Settings
-export CONFIG_ENABLE_DEBUG=false
-export CONFIG_SAVE_INTERMEDIATE=true
 
 #########################################################################
 # Validation Functions

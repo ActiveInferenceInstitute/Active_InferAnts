@@ -123,13 +123,13 @@ show_statistics() {
     echo -e "  🚀 Run Scripts: $run_count"
     echo -e "  ⚙️ Executable Scripts: $exec_count"
 
-    # Language categories
-    local systems_langs=$(echo "Ada Assembly C Cpp Rust Zig Go Nim Crystal" | wc -w)
-    local functional_langs=$(echo "Haskell OCaml FSharp Clojure Elixir Erlang Lisp Scheme Racket" | wc -w)
-    local scripting_langs=$(echo "Python JavaScript TypeScript Lua Perl Ruby PHP Shell" | wc -w)
-    local scientific_langs=$(echo "Julia R Fortran MATLAB Octave" | wc -w)
-    local jvm_langs=$(echo "Java Kotlin Scala Groovy" | wc -w)
-    local ml_langs=$(echo "Prolog Mercury Curry" | wc -w)
+    # Language categories (counts match show_implementations categories)
+    local systems_langs=11   # Ada Assembly C Cpp Rust Zig Nim Crystal Odin V Swift
+    local functional_langs=7 # Haskell OCaml FSharp Clojure Elixir Erlang Racket
+    local scripting_langs=8  # Python JavaScript TypeScript Lua Perl Ruby PHP Shell
+    local scientific_langs=4 # Julia R Fortran MATLAB
+    local jvm_langs=3        # Java Kotlin Scala
+    local ml_langs=3         # Prolog SQL Jock
 
     echo -e "  🏗️ Systems Languages: $systems_langs"
     echo -e "  λ Functional Languages: $functional_langs"
@@ -148,11 +148,11 @@ show_implementations() {
 
     # Define language categories - map display names to actual directory names
     declare -A categories=(
-        ["Systems"]="Ada:Ada Assembly:Assembly C:C Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V"
+        ["Systems"]="Ada:Ada Assembly:Assembly C:C Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V Swift:Swift"
         ["Functional"]="Haskell:Haskell OCaml:OCaml FSharp:FSharp Clojure:Clojure Elixir:Elixir Erlang:Erlang Racket:Racket"
-        ["Scripting"]="Python:Python JavaScript:JavaScript TypeScript:TypeScript Lua:Lua Perl:Perl Shell:Shell"
-        ["Scientific"]="Julia:Julia R:R Fortran:Fortran"
-        ["JVM"]="Java:Java Kotlin:Kotlin"
+        ["Scripting"]="Python:Python JavaScript:JavaScript TypeScript:TypeScript Lua:Lua Perl:Perl Ruby:Ruby PHP:PHP Shell:Shell"
+        ["Scientific"]="Julia:Julia R:R Fortran:Fortran MATLAB:MATLAB"
+        ["JVM"]="Java:Java Kotlin:Kotlin Scala:Scala"
         ["Logic"]="Prolog:Prolog SQL:SQL Jock:Jock"
         ["Esoteric"]="Brainfuck:Brainfuck"
         ["Compiled"]="Golang:Golang"
@@ -181,8 +181,8 @@ show_recent_activity() {
     echo -e "${WHITE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
     echo -e "  📁 Latest Modified Directories:"
-    find . -maxdepth 1 -type d -not -name "." -not -name ".." -printf '%T@ %p\n' | sort -n | tail -5 | while read -r timestamp dir; do
-        printf "    %s - %s\n" "$(date -d @"${timestamp%.*}" '+%Y-%m-%d %H:%M')" "$(basename "$dir")"
+    find . -maxdepth 1 -type d -not -name "." -not -name ".." | xargs ls -dt | head -5 | while read -r dir; do
+        printf "    %s - %s\n" "$(date -r "$dir" '+%Y-%m-%d %H:%M' 2>/dev/null || stat -c '%y' "$dir" 2>/dev/null | cut -d' ' -f1,2 | cut -d'.' -f1)" "$(basename "$dir")"
     done
 
     echo ""

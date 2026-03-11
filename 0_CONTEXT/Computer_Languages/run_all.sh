@@ -24,6 +24,7 @@ LANGUAGES=(
     "Brainfuck:Brainfuck"
     "C:C"
     "Clojure:Clojure"
+    "Cpp:Cpp"
     "Crystal:Crystal"
     "Elixir:Elixir"
     "Erlang:Erlang"
@@ -37,17 +38,22 @@ LANGUAGES=(
     "Julia:Julia"
     "Kotlin:Kotlin"
     "Lua:Lua"
+    "MATLAB:MATLAB"
     "Nim:Nim"
     "OCaml:OCaml"
     "Odin:Odin"
     "Pascal:Pascal"
     "Perl:Perl"
+    "PHP:PHP"
     "Python:Python"
     "Prolog:Prolog"
     "Racket:Racket"
     "R:R"
+    "Ruby:Ruby"
     "Rust:Rust"
+    "Scala:Scala"
     "Shell:Shell"
+    "Swift:Swift"
     "SQL:SQL"
     "TypeScript:TypeScript"
     "V:V"
@@ -64,14 +70,13 @@ run_language() {
     echo -e "${CYAN}========================================${NC}"
 
     if [ -d "$lang_dir" ] && [ -f "$lang_dir/run.sh" ]; then
-        cd "$lang_dir"
-        if ./run.sh; then
+        # Run in subshell to isolate CWD changes
+        if (cd "$lang_dir" && ./run.sh); then
             echo -e "${GREEN}✅ $lang_name completed successfully!${NC}"
         else
             echo -e "${RED}❌ $lang_name failed!${NC}"
             return 1
         fi
-        cd ..
     else
         echo -e "${YELLOW}⚠️ $lang_name implementation not found or missing run.sh${NC}"
     fi
@@ -242,7 +247,7 @@ if [ $FAILURE_COUNT -gt 0 ]; then
     echo -e "${RED}❌ Failed implementations: $FAILURE_COUNT${NC}"
 fi
 
-TOTAL_IMPLEMENTATIONS=$(echo "${LANGUAGES[@]}" | wc -w)
+TOTAL_IMPLEMENTATIONS=${#LANGUAGES[@]}
 echo -e "${BLUE}📈 Total implementations: $TOTAL_IMPLEMENTATIONS${NC}"
 
 if [ $SUCCESS_COUNT -eq $TOTAL_IMPLEMENTATIONS ]; then

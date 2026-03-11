@@ -140,12 +140,6 @@ export class PolicySelectionError extends ActiveInferenceError {
 export type ReadonlyMatrix = Readonly<math.Matrix>;
 export type ReadonlyVector = Readonly<math.Matrix>;
 
-// Function signatures for type safety
-export type BeliefUpdateFunction = (observation: Observation) => Vector;
-export type PolicySelectionFunction = () => Action;
-export type FreeEnergyCalculationFunction = () => FreeEnergy;
-export type ActionExecutionFunction = (action: Action) => Observation;
-
 // Import mathjs for type augmentation
 import * as math from 'mathjs';
 

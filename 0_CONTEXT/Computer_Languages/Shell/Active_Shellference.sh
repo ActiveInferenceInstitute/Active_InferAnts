@@ -7,8 +7,9 @@
 # Principle.
 #########################################################################
 
-# Load configuration
-if ! source config.sh; then
+# Load configuration from script-relative path
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if ! source "${SCRIPT_DIR}/config.sh"; then
     echo "Error: Failed to source config.sh" >&2
     exit 1
 fi

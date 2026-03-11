@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"sync"
 	"time"
 )
@@ -203,7 +202,7 @@ func simulateAntBehavior(ctx context.Context, config AgentConfig, resultChan cha
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
+	// rand.Seed is deprecated since Go 1.20; global rand auto-seeds with random value
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
