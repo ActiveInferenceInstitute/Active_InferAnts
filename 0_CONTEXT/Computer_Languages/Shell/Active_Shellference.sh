@@ -95,15 +95,30 @@ update_beliefs() {
         local posterior=0
         for j in "${!beliefs_ref[@]}"; do
             local idx=$((i * env_size + j))
-            posterior=$(echo "scale=$precision; $posterior + ${beliefs_ref[$i]} * ${transition_probs_ref[$idx]}" | bc -l)
+            local inner_term
+            inner_term=$(echo "scale=$precision; $posterior + ${beliefs_ref[$i]} * ${transition_probs_ref[$idx]}" | bc -l)
+            if [ -z "$inner_term" ]; then
+                echo "ERROR: update_beliefs inner computation failed at [$i,$j]" >&2
+                return 1
+            fi
+            posterior=$inner_term
         done
-        posterior=$(echo "scale=$precision; $posterior * ${preferences_ref[$i]}" | bc -l)
-        updated_beliefs+=("$posterior")
+        local outer_term
+        outer_term=$(echo "scale=$precision; $posterior * ${preferences_ref[$i]}" | bc -l)
+        if [ -z "$outer_term" ]; then
+            echo "ERROR: update_beliefs outer computation failed at state $i" >&2
+            return 1
+        fi
+        updated_beliefs+=("$outer_term")
     done
 
     # Normalize the beliefs
     local total_belief
     total_belief=$(IFS=+; echo "scale=$precision; ${updated_beliefs[*]}" | bc -l)
+    if [ -z "$total_belief" ] || [ "$total_belief" = "0" ]; then
+        echo "ERROR: update_beliefs normalization failed (zero or empty total)" >&2
+        return 1
+    fi
 
     for i in "${!updated_beliefs[@]}"; do
         updated_beliefs[$i]=$(echo "scale=$precision; ${updated_beliefs[$i]} / $total_belief" | bc -l)

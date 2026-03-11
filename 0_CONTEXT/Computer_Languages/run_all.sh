@@ -189,10 +189,12 @@ TOTAL_RUN=0
 
 # Run specific language or all languages
 if [ -n "$SPECIFIC_LANG" ]; then
-    # Find the specific language
+    # Find the specific language (case-insensitive)
+    SPECIFIC_LANG_LOWER=$(echo "$SPECIFIC_LANG" | tr '[:upper:]' '[:lower:]')
     for lang_info in "${LANGUAGES[@]}"; do
         lang_name="${lang_info%:*}"
-        if [ "$lang_name" = "$SPECIFIC_LANG" ]; then
+        lang_name_lower=$(echo "$lang_name" | tr '[:upper:]' '[:lower:]')
+        if [ "$lang_name_lower" = "$SPECIFIC_LANG_LOWER" ]; then
             if run_language "$lang_info"; then
                 ((SUCCESS_COUNT++))
             else

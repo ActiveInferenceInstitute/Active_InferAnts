@@ -51,7 +51,7 @@ check_language_status() {
             "C") main_file="$lang_dir/Active_Inference.c" ;;
             "Cpp") main_file="$lang_dir/src/main.cpp" ;;
             "Rust") main_file="$lang_dir/src/main.rs" ;;
-            "Go") main_file="$lang_dir/*.go" ;;
+            "Golang") main_file="$lang_dir/*.go" ;;
             "Haskell") main_file="$lang_dir/app/Main.hs" ;;
             "TypeScript") main_file="$lang_dir/src/ActiveInferenceAgent.ts" ;;
             *) main_file="$lang_dir/run.sh" ;;
