@@ -10,6 +10,7 @@ Assembly — low-level machine-code implementations
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.asm`
 - 📄 `run.sh`
 

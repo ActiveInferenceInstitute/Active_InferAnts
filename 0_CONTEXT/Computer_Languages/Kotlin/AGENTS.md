@@ -4,12 +4,15 @@
 
 ## Purpose
 
-Kotlin — modern JVM language implementation
+Kotlin — jvm/.net compiled implementation
 
 ## Directory Contents
 
 - 📁 `src/`
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `build.gradle.kts`
 - 📄 `run.sh`
 

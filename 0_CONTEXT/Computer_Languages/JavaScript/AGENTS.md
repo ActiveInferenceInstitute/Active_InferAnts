@@ -4,11 +4,14 @@
 
 ## Purpose
 
-JavaScript — browser and Node.js implementation
+JavaScript — scripting implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.js`
 - 📄 `ant_colony_demo.js`
 - 📄 `config.js`
@@ -18,6 +21,7 @@ JavaScript — browser and Node.js implementation
 - 📄 `package.json`
 - 📄 `run.sh`
 - 📄 `serializer.js`
+- 📄 `test_active_inference.js`
 - 📄 `visualizer.js`
 
 ## Agent Instructions

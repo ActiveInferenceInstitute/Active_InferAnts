@@ -1,17 +1,20 @@
-# AGENTS.md — Active Inference in Cpp
+# AGENTS.md — Active Inference in C++
 
 > Agent guidance for the `0_CONTEXT/Computer_Languages/Cpp` directory within the Active InferAnts framework.
 
 ## Purpose
 
-C++ — high-performance systems implementation
+C++ — systems compiled implementation
 
 ## Directory Contents
 
 - 📁 `include/`
 - 📁 `src/`
+- 📄 `AGENTS.md`
 - 📄 `CMakeLists.txt`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `run.sh`
 
 ## Agent Instructions

@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Racket — Lisp-family language implementation
+Racket — functional implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.rkt`
 - 📄 `run.sh`
 

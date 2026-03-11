@@ -4,12 +4,15 @@
 
 ## Purpose
 
-PHP — server-side scripting implementation
+PHP — scripting implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `ActiveInferenceAgent.php`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `run.sh`
 
 ## Agent Instructions

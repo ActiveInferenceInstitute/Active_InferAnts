@@ -10,6 +10,7 @@ Crystal — Ruby-like syntax with compiled performance
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.cr`
 - 📄 `run.sh`
 

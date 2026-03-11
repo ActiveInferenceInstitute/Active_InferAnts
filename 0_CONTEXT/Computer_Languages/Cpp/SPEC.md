@@ -13,6 +13,7 @@ C++ — high-performance systems implementation
 - 📄 `AGENTS.md`
 - 📄 `CMakeLists.txt`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `run.sh`
 
 ## Interfaces

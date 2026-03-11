@@ -10,6 +10,7 @@ JavaScript — browser and Node.js implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.js`
 - 📄 `ant_colony_demo.js`
 - 📄 `config.js`

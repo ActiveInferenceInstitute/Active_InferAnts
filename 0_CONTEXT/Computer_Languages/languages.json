@@ -1,0 +1,406 @@
+{
+  "_comment": "Canonical language registry. Single source of truth for all orchestration tools.",
+  "languages": [
+    {
+      "name": "Ada",
+      "directory": "Ada",
+      "category": "Systems",
+      "extension": ".adb",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "Assembly",
+      "directory": "Assembly",
+      "category": "Systems",
+      "extension": ".asm",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "Brainfuck",
+      "directory": "Brainfuck",
+      "category": "Esoteric",
+      "extension": ".py",
+      "runner": "python3",
+      "compilation": false,
+      "note": "Python simulation of Brainfuck semantics"
+    },
+    {
+      "name": "C",
+      "directory": "C",
+      "category": "Systems",
+      "extension": ".c",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "C#",
+      "directory": "CSharp",
+      "category": "JVM/.NET",
+      "extension": ".cs",
+      "runner": "dotnet run",
+      "compilation": true
+    },
+    {
+      "name": "C++",
+      "directory": "Cpp",
+      "category": "Systems",
+      "extension": ".cpp",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "Clojure",
+      "directory": "Clojure",
+      "category": "Functional",
+      "extension": ".clj",
+      "runner": "clj",
+      "compilation": false
+    },
+    {
+      "name": "COBOL",
+      "directory": "COBOL",
+      "category": "Legacy",
+      "extension": ".cob",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "Common Lisp",
+      "directory": "CommonLisp",
+      "category": "Functional",
+      "extension": ".lisp",
+      "runner": "sbcl --script",
+      "compilation": false
+    },
+    {
+      "name": "Crystal",
+      "directory": "Crystal",
+      "category": "Systems",
+      "extension": ".cr",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "D",
+      "directory": "D",
+      "category": "Systems",
+      "extension": ".d",
+      "runner": "dmd -run",
+      "compilation": true
+    },
+    {
+      "name": "Dart",
+      "directory": "Dart",
+      "category": "Scripting",
+      "extension": ".dart",
+      "runner": "dart run",
+      "compilation": false
+    },
+    {
+      "name": "Elixir",
+      "directory": "Elixir",
+      "category": "Functional",
+      "extension": ".ex",
+      "runner": "elixir",
+      "compilation": false
+    },
+    {
+      "name": "Erlang",
+      "directory": "Erlang",
+      "category": "Functional",
+      "extension": ".erl",
+      "runner": "erl",
+      "compilation": false
+    },
+    {
+      "name": "F#",
+      "directory": "FSharp",
+      "category": "Functional",
+      "extension": ".fs",
+      "runner": "dotnet run",
+      "compilation": true
+    },
+    {
+      "name": "Fortran",
+      "directory": "Fortran",
+      "category": "Scientific",
+      "extension": ".f90",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "Golang",
+      "directory": "Golang",
+      "category": "Systems",
+      "extension": ".go",
+      "runner": "go run",
+      "compilation": true
+    },
+    {
+      "name": "Groovy",
+      "directory": "Groovy",
+      "category": "JVM/.NET",
+      "extension": ".groovy",
+      "runner": "groovy",
+      "compilation": false
+    },
+    {
+      "name": "Haskell",
+      "directory": "Haskell",
+      "category": "Functional",
+      "extension": ".hs",
+      "runner": "runhaskell",
+      "compilation": false
+    },
+    {
+      "name": "Java",
+      "directory": "Java",
+      "category": "JVM/.NET",
+      "extension": ".java",
+      "runner": "java",
+      "compilation": true
+    },
+    {
+      "name": "JavaScript",
+      "directory": "JavaScript",
+      "category": "Scripting",
+      "extension": ".js",
+      "runner": "node",
+      "compilation": false
+    },
+    {
+      "name": "Jock",
+      "directory": "Jock",
+      "category": "Esoteric",
+      "extension": ".jock",
+      "runner": "urbit",
+      "compilation": false
+    },
+    {
+      "name": "Julia",
+      "directory": "Julia",
+      "category": "Scientific",
+      "extension": ".jl",
+      "runner": "julia",
+      "compilation": false
+    },
+    {
+      "name": "Kotlin",
+      "directory": "Kotlin",
+      "category": "JVM/.NET",
+      "extension": ".kt",
+      "runner": "kotlin",
+      "compilation": true
+    },
+    {
+      "name": "Lua",
+      "directory": "Lua",
+      "category": "Scripting",
+      "extension": ".lua",
+      "runner": "lua",
+      "compilation": false
+    },
+    {
+      "name": "MATLAB",
+      "directory": "MATLAB",
+      "category": "Scientific",
+      "extension": ".m",
+      "runner": "matlab -batch",
+      "compilation": false
+    },
+    {
+      "name": "Nim",
+      "directory": "Nim",
+      "category": "Systems",
+      "extension": ".nim",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "Objective-C",
+      "directory": "ObjectiveC",
+      "category": "Systems",
+      "extension": ".m",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "OCaml",
+      "directory": "OCaml",
+      "category": "Functional",
+      "extension": ".ml",
+      "runner": "ocaml",
+      "compilation": false
+    },
+    {
+      "name": "Odin",
+      "directory": "Odin",
+      "category": "Systems",
+      "extension": ".odin",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "Pascal",
+      "directory": "Pascal",
+      "category": "Compiled",
+      "extension": ".pas",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "Perl",
+      "directory": "Perl",
+      "category": "Scripting",
+      "extension": ".pl",
+      "runner": "perl",
+      "compilation": false
+    },
+    {
+      "name": "PHP",
+      "directory": "PHP",
+      "category": "Scripting",
+      "extension": ".php",
+      "runner": "php",
+      "compilation": false
+    },
+    {
+      "name": "PowerShell",
+      "directory": "PowerShell",
+      "category": "Scripting",
+      "extension": ".ps1",
+      "runner": "pwsh -File",
+      "compilation": false
+    },
+    {
+      "name": "Prolog",
+      "directory": "Prolog",
+      "category": "Logic",
+      "extension": ".pl",
+      "runner": "swipl",
+      "compilation": false
+    },
+    {
+      "name": "Python",
+      "directory": "Python",
+      "category": "Scripting",
+      "extension": ".py",
+      "runner": "python3",
+      "compilation": false
+    },
+    {
+      "name": "R",
+      "directory": "R",
+      "category": "Scientific",
+      "extension": ".R",
+      "runner": "Rscript",
+      "compilation": false
+    },
+    {
+      "name": "Racket",
+      "directory": "Racket",
+      "category": "Functional",
+      "extension": ".rkt",
+      "runner": "racket",
+      "compilation": false
+    },
+    {
+      "name": "Ruby",
+      "directory": "Ruby",
+      "category": "Scripting",
+      "extension": ".rb",
+      "runner": "ruby",
+      "compilation": false
+    },
+    {
+      "name": "Rust",
+      "directory": "Rust",
+      "category": "Systems",
+      "extension": ".rs",
+      "runner": "cargo run --release",
+      "compilation": true
+    },
+    {
+      "name": "Scala",
+      "directory": "Scala",
+      "category": "JVM/.NET",
+      "extension": ".scala",
+      "runner": "scala",
+      "compilation": true
+    },
+    {
+      "name": "Scheme",
+      "directory": "Scheme",
+      "category": "Functional",
+      "extension": ".scm",
+      "runner": "chibi-scheme",
+      "compilation": false
+    },
+    {
+      "name": "Shell",
+      "directory": "Shell",
+      "category": "Scripting",
+      "extension": ".sh",
+      "runner": "bash",
+      "compilation": false
+    },
+    {
+      "name": "Solidity",
+      "directory": "Solidity",
+      "category": "Blockchain",
+      "extension": ".sol",
+      "runner": "solc",
+      "compilation": true
+    },
+    {
+      "name": "SQL",
+      "directory": "SQL",
+      "category": "Logic",
+      "extension": ".sql",
+      "runner": "sqlite3",
+      "compilation": false
+    },
+    {
+      "name": "Swift",
+      "directory": "Swift",
+      "category": "Systems",
+      "extension": ".swift",
+      "runner": "swift run",
+      "compilation": true
+    },
+    {
+      "name": "Tcl",
+      "directory": "Tcl",
+      "category": "Scripting",
+      "extension": ".tcl",
+      "runner": "tclsh",
+      "compilation": false
+    },
+    {
+      "name": "TypeScript",
+      "directory": "TypeScript",
+      "category": "Scripting",
+      "extension": ".ts",
+      "runner": "ts-node",
+      "compilation": false
+    },
+    {
+      "name": "V",
+      "directory": "V",
+      "category": "Systems",
+      "extension": ".v",
+      "runner": "./",
+      "compilation": true
+    },
+    {
+      "name": "Zig",
+      "directory": "Zig",
+      "category": "Systems",
+      "extension": ".zig",
+      "runner": "./",
+      "compilation": true
+    }
+  ]
+}

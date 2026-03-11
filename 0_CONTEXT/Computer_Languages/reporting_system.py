@@ -116,7 +116,8 @@ class ActiveInferenceAnalyzer:
             results[impl.name] = result
 
             if result.get("success"):
-                print(".2f"                print(f"   📊 Memory: {result.get('memory_used', 0) / 1024 / 1024:.1f} MB")
+                print(f"   ⏱️  Time: {result.get('execution_time', 0):.2f}s")
+                print(f"   📊 Memory: {result.get('memory_used', 0) / 1024 / 1024:.1f} MB")
             else:
                 print(f"   ❌ Failed: {result.get('error', 'Unknown error')}")
 
@@ -125,7 +126,12 @@ class ActiveInferenceAnalyzer:
 
     def generate_comprehensive_report(self) -> str:
         """Generate comprehensive HTML report."""
-        html_content = ".1f"".1f""""
+        total = len(self.implementations)
+        implemented = sum(1 for impl in self.implementations if impl.implemented)
+        html_content = f"<html><body><h1>Active Inference Report</h1>"
+        html_content += f"<p>Total implementations: {total}</p>"
+        html_content += f"<p>Implemented: {implemented} ({100*implemented/max(total,1):.1f}%)</p>"
+        html_content += f"</body></html>"
         return html_content
 
     def create_visualizations(self):
@@ -169,9 +175,9 @@ class ActiveInferenceAnalyzer:
         plt.xticks(rotation=45, ha='right')
 
         # Add value labels on bars
-        for bar, time in zip(bars, execution_times):
+        for bar, time_val in zip(bars, execution_times):
             plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
-                    '.2f', ha='center', va='bottom', fontsize=10)
+                    f'{time_val:.2f}', ha='center', va='bottom', fontsize=10)
 
         plt.tight_layout()
         plt.savefig('visualizations/performance_comparison.png', dpi=300, bbox_inches='tight')
@@ -191,7 +197,7 @@ class ActiveInferenceAnalyzer:
 
         for bar, mem in zip(bars, memory_usage):
             plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
-                    '.1f', ha='center', va='bottom', fontsize=10)
+                    f'{mem:.1f}', ha='center', va='bottom', fontsize=10)
 
         plt.tight_layout()
         plt.savefig('visualizations/memory_usage.png', dpi=300, bbox_inches='tight')
@@ -216,13 +222,13 @@ class ActiveInferenceAnalyzer:
     def _create_category_analysis(self):
         """Create language category analysis."""
         categories = {
-            'Systems': ['Ada', 'Assembly', 'C', 'Cpp', 'Rust', 'Zig', 'Nim', 'Crystal', 'Odin', 'V'],
-            'Functional': ['Haskell', 'OCaml', 'FSharp', 'Clojure', 'Elixir', 'Erlang', 'Racket'],
-            'Scripting': ['Python', 'JavaScript', 'TypeScript', 'Lua', 'Perl', 'Shell'],
-            'Scientific': ['Julia', 'R', 'Fortran', 'MATLAB', 'Octave'],
-            'JVM': ['Java', 'Kotlin', 'Scala', 'Groovy'],
-            'Logic': ['Prolog', 'Mercury', 'Curry'],
-            'Esoteric': ['Brainfuck', 'Whitespace', 'Malbolge']
+            'Systems': ['Ada', 'Assembly', 'C', 'CSharp', 'Cpp', 'Crystal', 'Golang', 'Nim', 'Odin', 'Pascal', 'Rust', 'Swift', 'V', 'Zig'],
+            'Functional': ['Clojure', 'Elixir', 'Erlang', 'FSharp', 'Haskell', 'OCaml', 'Racket'],
+            'Scripting': ['JavaScript', 'Lua', 'Perl', 'PHP', 'Python', 'Ruby', 'Shell', 'TypeScript'],
+            'Scientific': ['Fortran', 'Julia', 'MATLAB', 'R'],
+            'JVM': ['Java', 'Kotlin', 'Scala'],
+            'Logic': ['Prolog', 'SQL', 'Jock'],
+            'Esoteric': ['Brainfuck']
         }
 
         category_counts = {}
@@ -254,7 +260,14 @@ class ActiveInferenceAnalyzer:
         implemented = sum(1 for impl in self.implementations if impl.implemented)
         successful_runs = sum(1 for result in self.results.values() if result.get("success", False))
 
-        report = ".1f"".1f"f"""
+        report = f"""\n{'='*60}
+🧠 Active Inference Multi-Language Analysis Summary
+{'='*60}
+📁 Total implementations discovered: {total_impls}
+✅ Fully implemented: {implemented} ({100*implemented/max(total_impls,1):.1f}%)
+🧪 Successful benchmark runs: {successful_runs}
+{'='*60}
+"""
         return report
 
     def export_results_to_json(self, filename: str = "benchmark_results.json"):

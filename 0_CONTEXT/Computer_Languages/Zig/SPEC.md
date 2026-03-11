@@ -10,6 +10,7 @@ Zig — low-level systems language implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.zig`
 - 📄 `run.sh`
 

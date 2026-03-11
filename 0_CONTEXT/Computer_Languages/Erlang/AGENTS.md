@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Erlang — distributed systems implementation on BEAM VM
+Erlang — functional implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.erl`
 - 📄 `run.sh`
 

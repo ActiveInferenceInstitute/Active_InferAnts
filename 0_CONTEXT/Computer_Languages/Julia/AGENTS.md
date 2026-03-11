@@ -4,18 +4,21 @@
 
 ## Purpose
 
-Julia — high-performance scientific computing implementation
+Julia — scientific implementation
 
 ## Directory Contents
 
 - 📁 `Category_Theory_Julia/`
 - 📁 `SideCar/`
 - 📁 `Visualization/`
+- 📄 `AGENTS.md`
 - 📄 `Clone_Julia_Repo.jl`
 - 📄 `Julia_InferAnts.jl`
 - 📄 `README.md`
 - 📄 `RxInfer.jl`
 - 📄 `RxInfer_Agent_Model.jl`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `run.sh`
 
 ## Agent Instructions

@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Ada — safety-critical systems language with strong typing
+Ada — systems compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.adb`
 - 📄 `active_inference.ads`
 - 📄 `demo.adb`

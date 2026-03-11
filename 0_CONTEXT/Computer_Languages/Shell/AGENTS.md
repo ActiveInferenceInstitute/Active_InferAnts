@@ -4,12 +4,15 @@
 
 ## Purpose
 
-Shell — Unix scripting implementation
+Shell — scripting implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `Active_Shellference.sh`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `config.sh`
 - 📄 `run.sh`
 

@@ -1,102 +1,145 @@
+"""
+Active Inference Student-Teacher POMDP Implementation.
+
+Demonstrates core active inference concepts:
+- Generative model with A, B, C, D matrices
+- Bayesian belief updating
+- Expected free energy minimization
+- Policy selection via softmax
+- Teacher-student knowledge interaction
+
+Reference implementation for the Active InferAnts multi-language framework.
+"""
+
+import logging
+import os
+from typing import Optional
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy.special import softmax
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
-import os
 
-# Standalone Teacher Model Implementation
+logger = logging.getLogger(__name__)
+
+
 class TeacherModel:
-    def __init__(self, n_states, growth_rate=0.1, max_knowledge=1.0):
+    """Logistic-growth knowledge model for the teacher agent."""
+
+    def __init__(self, n_states: int, growth_rate: float = 0.1, max_knowledge: float = 1.0) -> None:
         self.n_states = n_states
         self.growth_rate = growth_rate
         self.max_knowledge = max_knowledge
-        self.knowledge = np.zeros(n_states)
+        self.knowledge: NDArray[np.float64] = np.zeros(n_states)
+        logger.info("TeacherModel initialized: n_states=%d, growth_rate=%.3f", n_states, growth_rate)
 
-    def update_knowledge(self, state):
-        """Update teacher knowledge using logistic growth model."""
+    def update_knowledge(self, state: int) -> None:
+        """Update teacher knowledge for a state using logistic growth."""
         current = self.knowledge[state]
         exp_gr = np.exp(self.growth_rate)
-        self.knowledge[state] = (self.max_knowledge * current * exp_gr) / \
-                               (self.max_knowledge + current * (exp_gr - 1))
+        denominator = self.max_knowledge + current * (exp_gr - 1)
+        if denominator > 0:
+            self.knowledge[state] = (self.max_knowledge * current * exp_gr) / denominator
+        logger.debug("Knowledge updated for state %d: %.4f", state, self.knowledge[state])
 
-    def get_knowledge(self):
-        """Get current knowledge state."""
+    def get_knowledge(self) -> NDArray[np.float64]:
+        """Return a copy of the current knowledge state."""
         return self.knowledge.copy()
 
-    def suggest_resource(self, student_beliefs):
-        """Suggest resource based on student beliefs and teacher knowledge."""
+    def suggest_resource(self, student_beliefs: NDArray[np.float64]) -> int:
+        """Suggest resource based on student beliefs and teacher knowledge gaps."""
         gaps = (self.max_knowledge - self.knowledge) * student_beliefs
-        return np.argmax(gaps)
+        suggestion = int(np.argmax(gaps))
+        logger.debug("Suggested resource: state %d (gap=%.4f)", suggestion, gaps[suggestion])
+        return suggestion
+
 
 class StudentTeacherPOMDP:
-    def __init__(self, n_states, n_observations, n_actions):
+    """
+    Active Inference agent using a Student-Teacher POMDP formulation.
+
+    Generative model:
+        A: Likelihood matrix P(o|s), shape (n_observations, n_states)
+        B: Transition tensor P(s'|s, a), shape (n_states, n_states, n_actions)
+        C: Preference vector over observations, shape (n_observations,)
+        D: Prior belief over initial states, shape (n_states,)
+    """
+
+    def __init__(self, n_states: int, n_observations: int, n_actions: int) -> None:
         self.n_states = n_states
         self.n_observations = n_observations
         self.n_actions = n_actions
-        
-        # Initialize transition, likelihood, and preference matrices
-        self.A = np.random.rand(n_observations, n_states)  # Likelihood (observation model)
-        self.A /= self.A.sum(axis=0)  # Normalize columns to sum to 1
-        self.B = np.ones((n_states, n_states, n_actions)) / n_states  # Transition model
-        self.C = np.zeros(n_observations)  # Preference over observations
-        
-        # Initialize beliefs
-        self.D = np.ones(n_states) / n_states  # Prior beliefs about initial states
-        self.d = np.copy(self.D)  # Posterior beliefs about states
-        
-        # Initialize teacher model
+
+        # Generative model matrices
+        self.A: NDArray[np.float64] = np.random.rand(n_observations, n_states)
+        self.A /= self.A.sum(axis=0)  # Normalize columns
+        self.B: NDArray[np.float64] = np.ones((n_states, n_states, n_actions)) / n_states
+        self.C: NDArray[np.float64] = np.zeros(n_observations)
+
+        # Prior and posterior beliefs
+        self.D: NDArray[np.float64] = np.ones(n_states) / n_states
+        self.d: NDArray[np.float64] = np.copy(self.D)
+
+        # Teacher model
         self.teacher = TeacherModel(n_states)
-        
-    def update_beliefs(self, observation):
-        # Bayesian belief updating
+
+        logger.info(
+            "StudentTeacherPOMDP initialized: states=%d, obs=%d, actions=%d",
+            n_states, n_observations, n_actions
+        )
+
+    def update_beliefs(self, observation: int) -> None:
+        """Bayesian belief update: posterior proportional to P(o|s) * prior."""
         likelihood = self.A[observation, :]
         self.d = self.d * likelihood
-        self.d /= np.sum(self.d)
-    
-    def get_action(self, action_probs: np.ndarray) -> int:
-        # Select action with highest probability from softmax policy distribution
+        total = np.sum(self.d)
+        if total > 0:
+            self.d /= total
+        logger.debug("Beliefs updated for obs=%d", observation)
+
+    def get_action(self, action_probs: NDArray[np.float64]) -> int:
+        """Select action with highest probability from softmax policy distribution."""
         return int(np.argmax(action_probs))
-    
-    def step(self, action):
-        # Transition to a new state
+
+    def step(self, action: int) -> int:
+        """Execute one perception-action cycle: transition, observe, update."""
         new_state = np.random.choice(self.n_states, p=self.B[:, np.argmax(self.d), action])
-        
-        # Generate an observation
         observation = np.random.choice(self.n_observations, p=self.A[:, new_state])
-        
-        # Update teacher's knowledge
         self.teacher.update_knowledge(new_state)
-        
-        # Update beliefs
         self.update_beliefs(observation)
-        
+        logger.debug("Step: action=%d, new_state=%d, obs=%d", action, new_state, observation)
         return observation
-    
-    def calculate_free_energy(self, action_idx: int):
-        # Simplified free energy for a single action index
+
+    def calculate_free_energy(self, action_idx: int) -> float:
+        """
+        Compute (negative) expected free energy for a single action.
+
+        Returns negative EFE so that argmax selects the best action.
+        Uses np.clip for numerical stability to avoid log(0).
+        """
         expected_states = np.dot(self.B[:, :, action_idx], self.d)
         expected_observations = np.dot(self.A, expected_states)
 
-        free_energy = np.dot(expected_observations, self.C) + \
-                      np.sum(expected_states * np.log(expected_states / self.D))
+        pragmatic = np.dot(expected_observations, self.C)
+        kl = np.sum(expected_states * np.log(
+            np.clip(expected_states, 1e-16, None) / np.clip(self.D, 1e-16, None)
+        ))
 
-        return -free_energy  # Negative free energy (to be maximized)
+        free_energy = -(pragmatic + kl)
+        return free_energy
 
-    def infer_policy(self, policies):
-        # Calculate free energy for each action and return softmax distribution
+    def infer_policy(self) -> NDArray[np.float64]:
+        """Compute softmax policy distribution over actions via EFE minimization."""
         F = np.array([self.calculate_free_energy(a) for a in range(self.n_actions)])
-        
-        # Softmax distribution over policies
         pi = softmax(F)
-        
         return pi
 
-    def plot_matrices(self, output_folder='output'):
-        # Create output folder if it doesn't exist
+    def plot_matrices(self, output_folder: str = 'output') -> None:
+        """Plot generative model matrices to PNG files."""
         os.makedirs(output_folder, exist_ok=True)
 
-        # Plot A matrix (Likelihood model)
         plt.figure(figsize=(10, 8))
         plt.imshow(self.A, cmap='viridis', aspect='auto')
         plt.colorbar(label='Probability')
@@ -106,7 +149,6 @@ class StudentTeacherPOMDP:
         plt.savefig(os.path.join(output_folder, 'A_matrix.png'))
         plt.close()
 
-        # Plot B matrix (Transition model)
         fig, axes = plt.subplots(1, self.n_actions, figsize=(20, 5), squeeze=False)
         for a in range(self.n_actions):
             im = axes[0, a].imshow(self.B[:, :, a], cmap='viridis', aspect='auto')
@@ -118,7 +160,6 @@ class StudentTeacherPOMDP:
         plt.savefig(os.path.join(output_folder, 'B_matrix.png'))
         plt.close()
 
-        # Plot C vector (Preference over observations)
         plt.figure(figsize=(10, 6))
         plt.bar(range(self.n_observations), self.C)
         plt.title('C Vector: Preference over Observations')
@@ -127,7 +168,6 @@ class StudentTeacherPOMDP:
         plt.savefig(os.path.join(output_folder, 'C_vector.png'))
         plt.close()
 
-        # Plot D vector (Prior beliefs about initial states)
         plt.figure(figsize=(10, 6))
         plt.bar(range(self.n_states), self.D)
         plt.title('D Vector: Prior Beliefs about Initial States')
@@ -135,57 +175,64 @@ class StudentTeacherPOMDP:
         plt.ylabel('Probability')
         plt.savefig(os.path.join(output_folder, 'D_vector.png'))
         plt.close()
+        logger.info("Matrices plotted to %s", output_folder)
 
-    def plot_student_beliefs(self, beliefs, title, output_folder='output'):
+    def plot_student_beliefs(self, beliefs: NDArray[np.float64], title: str,
+                             output_folder: str = 'output') -> None:
+        """Plot student belief distribution to PNG."""
+        os.makedirs(output_folder, exist_ok=True)
         plt.figure(figsize=(10, 6))
         plt.bar(range(self.n_states), beliefs)
         plt.title(f"Student's Beliefs: {title}")
-        plt.xlabel('States (Aspects of Romantic Prussian Poetry)')
+        plt.xlabel('States')
         plt.ylabel('Belief Probability')
-        plt.savefig(os.path.join(output_folder, f'student_beliefs_{title.lower().replace(" ", "_")}.png'))
+        safe_title = title.lower().replace(" ", "_")
+        plt.savefig(os.path.join(output_folder, f'student_beliefs_{safe_title}.png'))
         plt.close()
 
-    def plot_teacher_knowledge(self, title, output_folder='output'):
+    def plot_teacher_knowledge(self, title: str, output_folder: str = 'output') -> None:
+        """Plot teacher knowledge levels to PNG."""
+        os.makedirs(output_folder, exist_ok=True)
         knowledge = self.teacher.get_knowledge()
         plt.figure(figsize=(10, 6))
         plt.bar(range(self.n_states), knowledge)
         plt.title(f"Teacher's Knowledge: {title}")
-        plt.xlabel('States (Aspects of Romantic Prussian Poetry)')
+        plt.xlabel('States')
         plt.ylabel('Knowledge Level')
-        plt.savefig(os.path.join(output_folder, f'teacher_knowledge_{title.lower().replace(" ", "_")}.png'))
+        safe_title = title.lower().replace(" ", "_")
+        plt.savefig(os.path.join(output_folder, f'teacher_knowledge_{safe_title}.png'))
         plt.close()
 
+
 if __name__ == '__main__':
-    # Example usage
-    n_states = 10  # States represent different aspects of Romantic Prussian poetry
-    n_observations = 15  # Observations are learning outcomes or experiences
-    n_actions = 5  # Actions are learning activities or resource explorations
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    n_states = 10
+    n_observations = 15
+    n_actions = 5
 
     pomdp = StudentTeacherPOMDP(n_states, n_observations, n_actions)
 
-    # Plot initial matrices
     pomdp.plot_matrices()
-
-    # Plot initial student beliefs and teacher knowledge
     pomdp.plot_student_beliefs(pomdp.d, "Initial")
     pomdp.plot_teacher_knowledge("Initial")
 
-    # Simulate a few steps
     num_steps = 20
     for step in range(num_steps):
-        policies = np.random.rand(pomdp.n_actions)  # Random policies for demonstration
-        pi = pomdp.infer_policy(policies)
+        pi = pomdp.infer_policy()
         action = pomdp.get_action(pi)
         observation = pomdp.step(action)
         print(f"Step {step + 1}: Action: {action}, Observation: {observation}")
 
-        # Teacher suggests a resource based on current student beliefs
         suggested_resource = pomdp.teacher.suggest_resource(pomdp.d)
         print(f"Teacher suggests focusing on aspect: {suggested_resource}")
 
-    # Plot final student beliefs and teacher knowledge
     pomdp.plot_student_beliefs(pomdp.d, "Final")
     pomdp.plot_teacher_knowledge("Final")
 
     print("Final beliefs:", pomdp.d)
     print("Teacher's knowledge:", pomdp.teacher.get_knowledge())
+    print("\n✅ Python simulation completed successfully!")

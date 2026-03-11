@@ -4,12 +4,15 @@
 
 ## Purpose
 
-MATLAB — numerical computing and matrix operations
+MATLAB — scientific implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `ActiveInferenceAgent.m`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `demo.m`
 - 📄 `run.sh`
 

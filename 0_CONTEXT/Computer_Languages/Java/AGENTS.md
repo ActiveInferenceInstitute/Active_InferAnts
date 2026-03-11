@@ -4,12 +4,15 @@
 
 ## Purpose
 
-Java — enterprise-grade JVM implementation
+Java — jvm/.net compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `AntColony.java`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `run.sh`
 
 ## Agent Instructions

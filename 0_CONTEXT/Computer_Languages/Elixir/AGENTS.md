@@ -4,11 +4,15 @@
 
 ## Purpose
 
-Elixir — concurrent, fault-tolerant implementation on BEAM VM
+Elixir — functional compiled implementation
 
 ## Directory Contents
 
+- 📁 `lib/`
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `demo.exs`
 - 📄 `mix.exs`
 - 📄 `run.sh`

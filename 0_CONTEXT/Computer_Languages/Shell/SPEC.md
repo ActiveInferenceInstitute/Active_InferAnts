@@ -11,6 +11,7 @@ Shell — Unix scripting implementation
 - 📄 `AGENTS.md`
 - 📄 `Active_Shellference.sh`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `config.sh`
 - 📄 `run.sh`
 

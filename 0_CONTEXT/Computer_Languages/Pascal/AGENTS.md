@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Pascal — structured programming implementation
+Pascal — compiled compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.pas`
 - 📄 `run.sh`
 

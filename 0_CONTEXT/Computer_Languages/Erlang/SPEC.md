@@ -10,6 +10,7 @@ Erlang — distributed systems implementation on BEAM VM
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.erl`
 - 📄 `run.sh`
 

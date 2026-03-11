@@ -10,6 +10,7 @@ SQL — declarative database query implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `SQL.sql`
 - 📄 `run.sh`
 

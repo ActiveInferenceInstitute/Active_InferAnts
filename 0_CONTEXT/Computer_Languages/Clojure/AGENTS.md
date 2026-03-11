@@ -4,12 +4,15 @@
 
 ## Purpose
 
-Clojure — functional Lisp dialect on the JVM
+Clojure — functional implementation
 
 ## Directory Contents
 
 - 📁 `src/`
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `project.clj`
 - 📄 `run.sh`
 

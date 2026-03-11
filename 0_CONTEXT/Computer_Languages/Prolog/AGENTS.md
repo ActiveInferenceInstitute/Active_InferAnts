@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Prolog — logic programming implementation
+Prolog — logic implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.pl`
 - 📄 `run.sh`
 

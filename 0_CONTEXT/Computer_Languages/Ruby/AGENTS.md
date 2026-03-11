@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Ruby — dynamic, expressive implementation
+Ruby — scripting implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference_agent.rb`
 - 📄 `run.sh`
 

@@ -21,8 +21,13 @@ Active Inference is a framework for understanding perception, action, and learni
 | **Brainfuck** | ✅ Complete | Esoteric language implementation with sophisticated cognitive processes | Memory-efficient, minimalistic | None |
 | **C** | ✅ Complete | Low-level systems implementation | High performance, teacher-student model | Standard library only |
 | **C++** | ✅ Complete | Object-oriented implementation with templates | Generic programming, RAII, high performance | Standard library, Eigen (recommended) |
-| **C#** | 🔄 In Progress | .NET implementation with LINQ | Modern syntax, async support | .NET Standard |
+| **C#** | ✅ Complete | .NET implementation with LINQ | Modern syntax, async support | .NET Standard |
+| **COBOL** | ✅ Complete | Enterprise legacy structured implementation | Fixed-point arithmetic, data division | GnuCOBOL |
+| **Common Lisp** | ✅ Complete | Symbolic computation implementation | S-expressions, CLOS, macros | SBCL/CLISP/ECL |
+| **D** | ✅ Complete | Systems metaprogramming implementation | Compile-time features, templates | DMD/LDC2/GDC |
+| **Dart** | ✅ Complete | Flutter ecosystem implementation | Null safety, class system | Dart SDK 2.12+ |
 | **Golang** | ✅ Complete | Concurrent agent-based simulation | Goroutines, channels, ant colony simulation | Standard library only |
+| **Groovy** | ✅ Complete | JVM scripting implementation | GDK enhancements, closures | Groovy 3.0+ |
 | **Haskell** | ✅ Complete | Functional programming approach | Pure functions, monads, type safety, lazy evaluation | Haskell Platform |
 | **Java** | ✅ Complete | Object-oriented ant colony simulation | JVM ecosystem, Bayesian inference | Standard library only |
 | **JavaScript** | ✅ Complete | Node.js implementation | Event-driven, npm ecosystem, ant colony simulation | Node.js, mathjs, plotly.js |
@@ -30,16 +35,21 @@ Active Inference is a framework for understanding perception, action, and learni
 | **Julia** | ✅ Complete | Scientific computing implementation | High-performance, RxInfer integration | Julia ecosystem |
 | **Kotlin** | ✅ Complete | Modern JVM language implementation | Concise syntax, coroutines, type safety | Kotlin/JVM, Gradle |
 | **MATLAB/Octave** | ✅ Complete | Matrix-based implementation | Signal processing, visualization, control systems | MATLAB/Octave |
+| **Objective-C** | ✅ Complete | Apple legacy Foundation implementation | NSMutableArray, message passing | Xcode CLT |
 | **Perl** | ✅ Complete | Dynamic language implementation | Text processing, CPAN modules | Standard library |
 | **PHP** | ✅ Complete | Web-oriented implementation | Web integration, Composer, modern PHP features | PHP 8.0+ |
+| **PowerShell** | ✅ Complete | Cross-platform automation implementation | .NET integration, pipeline | PowerShell 5.1+/pwsh |
 | **Python** | ✅ Complete | Scientific implementation with numpy | Rich ecosystem, Student-Teacher POMDP | numpy, scipy, matplotlib |
 | **R** | ✅ Complete | Statistical programming implementation | Statistical analysis, visualization, data export | R ecosystem |
 | **Ruby** | ✅ Complete | Dynamic object-oriented implementation | Elegant syntax, gems, metaprogramming | Ruby 2.5+ |
 | **Rust** | ✅ Complete | Systems programming implementation | Memory safety, performance | ndarray, thiserror |
 | **Scala** | ✅ Complete | Functional JVM language | Type system, functional programming | Scala ecosystem |
+| **Scheme** | ✅ Complete | SICP heritage functional implementation | R7RS, vectors, closures | Chibi-Scheme/Guile |
 | **Shell** | ✅ Complete | Command-line implementation | System integration, pipes | POSIX shell |
+| **Solidity** | ✅ Complete | Blockchain smart contract implementation | WAD fixed-point, events, EVM | solc 0.8+ |
 | **SQL** | ✅ Complete | Database-driven implementation | Declarative programming, queries | SQLite/PostgreSQL |
 | **Swift** | ✅ Complete | Modern systems programming | Type safety, performance, Apple ecosystem | Swift ecosystem |
+| **Tcl** | ✅ Complete | Extensible scripting implementation | Dicts, dynamic typing, Tk toolkit | Tcl 8.5+ |
 | **TypeScript** | ✅ Complete | Typed JavaScript implementation | Static typing, comprehensive error handling | Node.js, TypeScript, mathjs |
 | **Ada** | ✅ Complete | Safety-critical systems implementation | Strong typing, concurrency, reliability | GNAT, Ada standard library |
 | **Assembly** | ✅ Complete | Low-level hardware implementation | Direct hardware control, optimization | NASM/GAS assembler |
@@ -52,9 +62,11 @@ Active Inference is a framework for understanding perception, action, and learni
 | **Lua** | ✅ Complete | Lightweight embeddable implementation | Fast, simple, extensible | Lua standard library |
 | **Nim** | ✅ Complete | Python-like systems implementation | Performance, expressiveness, macros | Nim standard library |
 | **OCaml** | ✅ Complete | Functional systems implementation | Type inference, performance | OCaml standard library |
+| **Odin** | ✅ Complete | Modern systems alternative to C | Manual memory management, SIMD | Odin compiler |
 | **Pascal** | ✅ Complete | Educational structured implementation | Clear syntax, teaching focused | Free Pascal, Lazarus |
 | **Prolog** | ✅ Complete | Logic programming implementation | Declarative, constraint solving | SWI-Prolog, constraint libraries |
 | **Racket** | ✅ Complete | Lisp dialect educational implementation | Language-oriented programming | Racket standard library |
+| **V** | ✅ Complete | Simple fast compiled implementation | C interop, data-oriented | V compiler |
 | **Zig** | ✅ Complete | Modern systems implementation | Safety, performance, C replacement | Zig standard library |
 
 ## Implementation Patterns
@@ -102,11 +114,33 @@ npm install @types/node
 Each language directory contains:
 
 - Main implementation file(s)
-- Configuration files
-- Example usage
-- Documentation
+- `run.sh` — automated execution script
+- `README.md` — language-specific documentation
 
-See individual language directories for specific instructions.
+### CLI Usage
+
+```bash
+# Run all implementations sequentially
+./run_all.sh
+
+# Run a specific language
+./run_all.sh python
+./run_all.sh rust
+
+# List all available languages
+./run_all.sh --list
+
+# Run in parallel
+./run_all.sh --parallel
+
+# Python master controller (richer features)
+python3 master_controller.py status
+python3 master_controller.py run python
+python3 master_controller.py benchmark
+python3 master_controller.py deps
+```
+
+See `run_all.sh --help` or `python3 master_controller.py --help` for full options.
 
 ## Architecture Patterns
 
@@ -200,9 +234,10 @@ Several implementations support multiple agents:
 
 1. Create language directory: `LanguageName/`
 2. Implement core active inference algorithms
-3. Add configuration and example files
-4. Update this README with status
-5. Add tests and documentation
+3. Create `run.sh` (executable) and `README.md`
+4. Add the language to `languages.json` (canonical registry)
+5. Run `./run_all.sh <language>` to verify
+6. Update this README's language table
 
 ### Implementation Guidelines
 
@@ -260,7 +295,7 @@ Each implementation should include:
 
 ## License
 
-This collection of implementations is provided under the MIT License. Individual language implementations may have their own licensing terms.
+This collection of implementations is provided under the CC BY-NC-ND 4.0 License consistent with the parent Active InferAnts framework.
 
 ## Acknowledgments
 

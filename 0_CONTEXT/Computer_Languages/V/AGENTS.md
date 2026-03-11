@@ -4,11 +4,14 @@
 
 ## Purpose
 
-V — simple, fast compiled language implementation
+V — systems compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.v`
 - 📄 `run.sh`
 

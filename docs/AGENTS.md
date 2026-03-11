@@ -4,16 +4,20 @@
 
 ## Purpose
 
-Comprehensive modular documentation for the Active InferAnts framework. Organized by topic area for easy navigation.
+Comprehensive modular documentation for the Active InferAnts framework. 48 documents organized across 9 topic areas.
 
 ## Directory Contents
 
-- 📁 `architecture/` — System design, pipeline flow, data flow, generative model
-- 📁 `api/` — REST API reference and data models
-- 📁 `guides/` — Getting started, tutorials, contributing
-- 📁 `reference/` — Configuration, language matrix, glossary, dependencies
-- 📁 `security/` — Security architecture and cryptographic primitives
-- 📄 `README.md` — Documentation index
+- 📁 `architecture/` — System design, pipeline flow, data flow, generative model (5 docs)
+- 📁 `api/` — REST API reference, data models (3 docs)
+- 📁 `concepts/` — Active Inference primer, agent types, category theory, BOLTS (8 docs)
+- 📁 `guides/` — Getting started, tutorials, contributing (5 docs)
+- 📁 `operations/` — Deployment, monitoring, logging, governance (5 docs)
+- 📁 `reference/` — Configuration, language matrix, glossary, dependencies (5 docs)
+- 📁 `security/` — Security architecture, cryptographic primitives (2 docs)
+- 📁 `systems/` — P3IF, Cognitive Sovereignty, IC2S2, William Blake deep-dives (6 docs)
+- 📁 `testing/` — Testing strategy, cross-language tests, verification (3 docs)
+- 📁 `tutorials/` — First agent, pipeline, analysis, grant generation (6 docs)
 
 ## Agent Instructions
 
@@ -21,7 +25,6 @@ Comprehensive modular documentation for the Active InferAnts framework. Organize
 - Update docs when pipeline modules change.
 - Ensure all cross-references resolve correctly.
 - Follow the repository's CC BY-NC-ND 4.0 license.
-- Keep all documentation synchronized with actual contents.
 
 ## Quality Checklist
 

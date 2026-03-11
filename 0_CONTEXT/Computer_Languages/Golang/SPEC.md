@@ -13,6 +13,7 @@ Go — concurrent, statically-typed implementation
 - 📄 `GoLang_Description.md`
 - 📄 `GoLang_Thing.go`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `run.sh`
 
 ## Interfaces

@@ -11,6 +11,7 @@ Python — primary scientific computing implementation
 - 📁 `output/`
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `Student_Teacher.py`
 - 📄 `config_manager.py`
 - 📄 `run.sh`

@@ -4,13 +4,16 @@
 
 ## Purpose
 
-Jock — experimental language implementation
+Jock — esoteric implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `Active_Jockference.md`
 - 📄 `Jock_Documentation.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `Urbit_Active_Jockference.md`
 - 📄 `active_inference.jock`
 - 📄 `run.sh`

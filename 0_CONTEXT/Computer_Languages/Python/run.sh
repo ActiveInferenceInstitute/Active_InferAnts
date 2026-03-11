@@ -20,17 +20,17 @@ echo "✅ Python found: $(python3 --version)"
 echo "📦 Installing Python dependencies..."
 if ! pip3 install -r requirements.txt; then
     echo "⚠️ Warning: Could not install packages globally, trying user install..."
-    pip3 install --user -r requirements.txt
+    pip3 install --user -r requirements.txt || { echo "❌ Error: Could not install Python dependencies"; exit 1; }
 fi
 
 # Run the main implementation
 echo "🚀 Running Python active inference simulation..."
-python3 Student_Teacher.py
+python3 student_teacher.py
 
 # Generate visualizations
 echo "📊 Generating visualization plots..."
 python3 -c "
-from Student_Teacher import StudentTeacherPOMDP
+from student_teacher import StudentTeacherPOMDP
 import matplotlib.pyplot as plt
 
 # Create and visualize matrices

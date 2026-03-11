@@ -4,11 +4,14 @@
 
 ## Purpose
 
-R — statistical computing implementation
+R — scientific implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.R`
 - 📄 `run.sh`
 

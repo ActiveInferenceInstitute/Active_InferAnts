@@ -119,3 +119,6 @@ coverage.xml
 *.py,cover
 .hypothesis/
 /0_CONTEXT/Computer_Languages/Rust/target
+
+# Desloppify
+./desloppify

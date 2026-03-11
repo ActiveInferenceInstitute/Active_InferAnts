@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Crystal — Ruby-like syntax with compiled performance
+Crystal — systems compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.cr`
 - 📄 `run.sh`
 

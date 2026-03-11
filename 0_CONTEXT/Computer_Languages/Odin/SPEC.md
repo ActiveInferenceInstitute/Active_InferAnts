@@ -10,6 +10,7 @@ Odin — systems programming language implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.odin`
 - 📄 `run.sh`
 

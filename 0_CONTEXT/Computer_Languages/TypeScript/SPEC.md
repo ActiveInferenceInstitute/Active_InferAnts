@@ -11,6 +11,7 @@ TypeScript — type-safe JavaScript implementation
 - 📁 `src/`
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `package.json`
 - 📄 `run.sh`
 - 📄 `tsconfig.json`

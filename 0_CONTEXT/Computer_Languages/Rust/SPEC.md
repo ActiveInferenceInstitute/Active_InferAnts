@@ -15,6 +15,7 @@ Rust — memory-safe systems implementation
 - 📄 `Cargo.lock`
 - 📄 `Cargo.toml`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `Rust.README.md`
 - 📄 `config.json`
 - 📄 `run.sh`

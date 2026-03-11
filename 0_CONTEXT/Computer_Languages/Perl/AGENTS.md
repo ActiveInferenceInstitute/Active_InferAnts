@@ -4,12 +4,15 @@
 
 ## Purpose
 
-Perl — text processing and scripting implementation
+Perl — scripting implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `Perl_Agent.pl`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `run.sh`
 
 ## Agent Instructions

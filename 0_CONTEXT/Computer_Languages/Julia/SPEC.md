@@ -15,6 +15,7 @@ Julia — high-performance scientific computing implementation
 - 📄 `Clone_Julia_Repo.jl`
 - 📄 `Julia_InferAnts.jl`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `RxInfer.jl`
 - 📄 `RxInfer_Agent_Model.jl`
 - 📄 `run.sh`

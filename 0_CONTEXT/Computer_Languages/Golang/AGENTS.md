@@ -4,14 +4,17 @@
 
 ## Purpose
 
-Go — concurrent, statically-typed implementation
+Golang — systems compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `GoLang_Agent.go`
 - 📄 `GoLang_Description.md`
 - 📄 `GoLang_Thing.go`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `run.sh`
 
 ## Agent Instructions

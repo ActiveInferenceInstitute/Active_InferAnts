@@ -1,11 +1,16 @@
 #!/bin/bash
 
 # Active Inference Brainfuck Implementation Runner
+# NOTE: This implementation uses Python to simulate Active Inference concepts
+# inspired by Brainfuck's minimalistic computational model. The cognitive
+# architecture maps Brainfuck's 8 operations to Active Inference primitives
+# (sensory input, prediction, learning rate, etc.) rather than running a
+# native Brainfuck interpreter.
 
 set -e
 
-echo "🧠 Brainfuck Active Inference Demo"
-echo "==================================="
+echo "🧠 Brainfuck Active Inference Demo (Python simulation)"
+echo "======================================================="
 
 # Check if Python is installed
 if ! command -v python3 &> /dev/null; then

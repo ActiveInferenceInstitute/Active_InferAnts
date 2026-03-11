@@ -4,13 +4,16 @@
 
 ## Purpose
 
-Haskell — purely functional implementation with strong type system
+Haskell — functional implementation
 
 ## Directory Contents
 
 - 📁 `app/`
 - 📁 `src/`
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `package.yaml`
 - 📄 `run.sh`
 

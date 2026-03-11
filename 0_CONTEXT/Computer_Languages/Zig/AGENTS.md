@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Zig — low-level systems language implementation
+Zig — systems compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.zig`
 - 📄 `run.sh`
 

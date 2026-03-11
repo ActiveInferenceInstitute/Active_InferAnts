@@ -4,17 +4,25 @@
 
 ## Purpose
 
-Python — primary scientific computing implementation
+Python — scripting implementation
 
 ## Directory Contents
 
+- 📁 `.benchmarks/`
+- 📁 `.pytest_cache/`
+- 📁 `__pycache__/`
 - 📁 `output/`
+- 📄 `AGENTS.md`
 - 📄 `README.md`
-- 📄 `Student_Teacher.py`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `config_manager.py`
+- 📄 `requirements.txt`
 - 📄 `run.sh`
 - 📄 `serializer.py`
+- 📄 `student_teacher.py`
 - 📄 `teacher_wrapper.py`
+- 📄 `test_student_teacher.py`
 
 ## Agent Instructions
 

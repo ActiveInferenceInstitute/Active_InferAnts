@@ -11,6 +11,7 @@ F# — functional-first .NET implementation
 - 📄 `AGENTS.md`
 - 📄 `ActiveInference.fs`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `run.sh`
 
 ## Interfaces

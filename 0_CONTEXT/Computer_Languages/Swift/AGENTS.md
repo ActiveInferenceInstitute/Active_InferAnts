@@ -4,13 +4,16 @@
 
 ## Purpose
 
-Swift — Apple ecosystem implementation
+Swift — systems compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `ActiveInferenceAgent.swift`
 - 📄 `Package.swift`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `run.sh`
 
 ## Agent Instructions

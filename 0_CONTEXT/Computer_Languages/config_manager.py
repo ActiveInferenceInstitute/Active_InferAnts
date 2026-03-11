@@ -170,6 +170,101 @@ class DependencyChecker:
                 "checker": self._check_odin_deps,
                 "installer": self._install_odin_deps,
                 "required": ["odin"]
+            },
+            "kotlin": {
+                "checker": lambda: self._check_single_command("kotlin"),
+                "installer": lambda: self._print_install_url("Kotlin", "https://kotlinlang.org/docs/command-line.html"),
+                "required": ["kotlin"]
+            },
+            "scala": {
+                "checker": lambda: self._check_single_command("scala"),
+                "installer": lambda: self._print_install_url("Scala", "https://www.scala-lang.org/download/"),
+                "required": ["scala"]
+            },
+            "swift": {
+                "checker": lambda: self._check_single_command("swift"),
+                "installer": lambda: self._print_install_url("Swift", "https://www.swift.org/install/"),
+                "required": ["swift"]
+            },
+            "csharp": {
+                "checker": lambda: self._check_single_command("dotnet"),
+                "installer": lambda: self._print_install_url("C#/.NET", "https://dotnet.microsoft.com/download"),
+                "required": ["dotnet"]
+            },
+            "fsharp": {
+                "checker": lambda: self._check_single_command("dotnet"),
+                "installer": lambda: self._print_install_url("F#/.NET", "https://dotnet.microsoft.com/download"),
+                "required": ["dotnet"]
+            },
+            "matlab": {
+                "checker": lambda: self._check_single_command("matlab"),
+                "installer": lambda: self._print_install_url("MATLAB", "https://www.mathworks.com/products/matlab.html"),
+                "required": ["matlab"]
+            },
+            "ruby": {
+                "checker": lambda: self._check_single_command("ruby"),
+                "installer": lambda: self._print_install_url("Ruby", "https://www.ruby-lang.org/en/downloads/"),
+                "required": ["ruby"]
+            },
+            "php": {
+                "checker": lambda: self._check_single_command("php"),
+                "installer": lambda: self._print_install_url("PHP", "https://www.php.net/downloads.php"),
+                "required": ["php"]
+            },
+            "jock": {
+                "checker": lambda: self._check_single_command("urbit"),
+                "installer": lambda: self._print_install_url("Jock/Urbit", "https://urbit.org/getting-started"),
+                "required": ["urbit"]
+            },
+            "d": {
+                "checker": lambda: self._check_single_command("dmd"),
+                "installer": lambda: self._print_install_url("D", "https://dlang.org/download.html"),
+                "required": ["dmd"]
+            },
+            "dart": {
+                "checker": lambda: self._check_single_command("dart"),
+                "installer": lambda: self._print_install_url("Dart", "https://dart.dev/get-dart"),
+                "required": ["dart"]
+            },
+            "groovy": {
+                "checker": lambda: self._check_single_command("groovy"),
+                "installer": lambda: self._print_install_url("Groovy", "https://groovy-lang.org/install.html"),
+                "required": ["groovy"]
+            },
+            "commonlisp": {
+                "checker": lambda: self._check_single_command("sbcl"),
+                "installer": lambda: self._print_install_url("Common Lisp (SBCL)", "https://www.sbcl.org/"),
+                "required": ["sbcl"]
+            },
+            "objectivec": {
+                "checker": lambda: self._check_single_command("clang"),
+                "installer": lambda: self._print_install_url("Objective-C", "https://developer.apple.com/xcode/"),
+                "required": ["clang"]
+            },
+            "powershell": {
+                "checker": lambda: self._check_single_command("pwsh"),
+                "installer": lambda: self._print_install_url("PowerShell", "https://github.com/PowerShell/PowerShell"),
+                "required": ["pwsh"]
+            },
+            "scheme": {
+                "checker": lambda: self._check_single_command("chibi-scheme"),
+                "installer": lambda: self._print_install_url("Scheme", "https://github.com/ashinn/chibi-scheme"),
+                "required": ["chibi-scheme"]
+            },
+            "cobol": {
+                "checker": lambda: self._check_single_command("cobc"),
+                "installer": lambda: self._print_install_url("COBOL (GnuCOBOL)", "https://gnucobol.sourceforge.io/"),
+                "required": ["cobc"]
+            },
+            "solidity": {
+                "checker": lambda: self._check_single_command("solc"),
+                "installer": lambda: self._print_install_url("Solidity", "https://docs.soliditylang.org/"),
+                "required": ["solc"]
+            },
+            "tcl": {
+                "checker": lambda: self._check_single_command("tclsh"),
+                "installer": lambda: self._print_install_url("Tcl", "https://www.tcl-lang.org/"),
+                "required": ["tclsh"]
             }
         }
 
@@ -696,6 +791,16 @@ class DependencyChecker:
             return True
         except subprocess.CalledProcessError:
             return False
+
+    def _check_single_command(self, command: str) -> Tuple[bool, List[str], List[str]]:
+        """Check availability of a single command."""
+        exists = self._command_exists(command)
+        return (exists, [command] if exists else [], [] if exists else [command])
+
+    def _print_install_url(self, name: str, url: str) -> bool:
+        """Print install URL and return False (manual install required)."""
+        print(f"📦 Please install {name} from: {url}")
+        return False
 
     def check_all_dependencies(self) -> Dict[str, Tuple[bool, List[str], List[str]]]:
         """Check dependencies for all languages."""

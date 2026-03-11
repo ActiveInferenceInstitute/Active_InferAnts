@@ -12,6 +12,7 @@ Swift — Apple ecosystem implementation
 - 📄 `ActiveInferenceAgent.swift`
 - 📄 `Package.swift`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `run.sh`
 
 ## Interfaces

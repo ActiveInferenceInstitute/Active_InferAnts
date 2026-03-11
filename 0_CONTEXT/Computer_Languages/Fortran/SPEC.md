@@ -10,6 +10,7 @@ Fortran — scientific computing heritage implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.f90`
 - 📄 `run.sh`
 

@@ -13,6 +13,7 @@ C# — .NET ecosystem implementation
 - 📄 `Demo.cs`
 - 📄 `Program.cs`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 
 ## Interfaces
 

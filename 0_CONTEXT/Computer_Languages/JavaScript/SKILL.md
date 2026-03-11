@@ -1,0 +1,54 @@
+---
+name: Active Inference in JavaScript
+description: JavaScript implementation of Active Inference with belief updating, free energy minimization, and policy selection
+---
+
+# Active Inference in JavaScript
+
+## Overview
+
+This skill provides a complete Active Inference implementation in JavaScript,
+demonstrating Bayesian belief updating, variational free energy calculation,
+and expected free energy-based policy selection.
+
+## Core Algorithms
+
+1. **Belief Updating**: Bayesian inference using observation likelihoods to update posterior beliefs
+2. **Free Energy Calculation**: KL divergence between posterior beliefs and prior distribution
+3. **Policy Selection**: Softmax action selection over expected free energy per action
+4. **Perception-Action Loop**: Iterative sense → infer → act cycle with generative model
+
+## Key Files
+
+- `active_inference.js` — Source implementation
+- `ant_colony_demo.js` — Source implementation
+- `config.js` — Source implementation
+- `logger.js` — Source implementation
+- `serializer.js` — Source implementation
+- `test_active_inference.js` — Source implementation
+- `visualizer.js` — Source implementation
+- `run.sh` — Execution script (handles compilation if needed)
+- `README.md` — Usage documentation and requirements
+
+## Usage
+
+```bash
+cd 0_CONTEXT/Computer_Languages/JavaScript/
+./run.sh
+```
+
+## Language-Specific Features
+
+- Rapid prototyping and iteration
+- Dynamic typing flexibility
+- Rich standard library
+
+## Integration
+
+- Tested via `master_controller.py test javascript`
+- Benchmarked via `benchmark_suite.py`
+- Listed in `languages.json` under category "Scripting"
+
+## Prerequisites
+
+See `README.md` for JavaScript-specific installation requirements.

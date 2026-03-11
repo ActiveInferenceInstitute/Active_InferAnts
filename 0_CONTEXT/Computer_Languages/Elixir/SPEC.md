@@ -4,13 +4,16 @@
 
 ## Overview
 
-Elixir — concurrent, fault-tolerant implementation on BEAM VM
+Elixir — functional compiled implementation using OTP patterns
 
 ## Structure
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `demo.exs`
+- 📁 `lib/`
 - 📄 `mix.exs`
 - 📄 `run.sh`
 

@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Active Inference Multi-Language Runner
-
-set -e
+# Reads language definitions from languages.json (single source of truth)
 
 echo "🧠 Active Inference Multi-Language Demo"
 echo "======================================"
@@ -17,49 +16,27 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# List of all language implementations
-LANGUAGES=(
-    "Ada:Ada"
-    "Assembly:Assembly"
-    "Brainfuck:Brainfuck"
-    "C:C"
-    "CSharp:CSharp"
-    "Clojure:Clojure"
-    "Cpp:Cpp"
-    "Crystal:Crystal"
-    "Elixir:Elixir"
-    "Erlang:Erlang"
-    "Fortran:Fortran"
-    "FSharp:FSharp"
-    "Golang:Golang"
-    "Haskell:Haskell"
-    "Java:Java"
-    "JavaScript:JavaScript"
-    "Jock:Jock"
-    "Julia:Julia"
-    "Kotlin:Kotlin"
-    "Lua:Lua"
-    "MATLAB:MATLAB"
-    "Nim:Nim"
-    "OCaml:OCaml"
-    "Odin:Odin"
-    "Pascal:Pascal"
-    "Perl:Perl"
-    "PHP:PHP"
-    "Python:Python"
-    "Prolog:Prolog"
-    "Racket:Racket"
-    "R:R"
-    "Ruby:Ruby"
-    "Rust:Rust"
-    "Scala:Scala"
-    "Shell:Shell"
-    "Swift:Swift"
-    "SQL:SQL"
-    "TypeScript:TypeScript"
-    "V:V"
-    "Zig:Zig"
-)
+# Resolve script directory for reliable path resolution
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LANGUAGES_JSON="${SCRIPT_DIR}/languages.json"
+
+# Load language list from canonical languages.json
+if [ ! -f "$LANGUAGES_JSON" ]; then
+    echo -e "${RED}❌ Error: languages.json not found at ${LANGUAGES_JSON}${NC}"
+    exit 1
+fi
+
+# Parse languages.json into Name:Directory pairs (POSIX-compatible, no mapfile)
+LANGUAGES=()
+while IFS= read -r line; do
+    LANGUAGES+=("$line")
+done < <(python3 -c "
+import json, sys
+with open('${LANGUAGES_JSON}') as f:
+    data = json.load(f)
+for lang in data['languages']:
+    print(f\"{lang['name']}:{lang['directory']}\")
+")
 
 # Function to run a single language implementation
 run_language() {

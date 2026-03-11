@@ -379,7 +379,7 @@ class AdvancedBenchmarkSuite:
             # Add value labels on bars
             for bar, time in zip(bars, execution_times):
                 plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
-                        '.3f', ha='center', va='bottom', fontsize=10)
+                        f'{time:.3f}', ha='center', va='bottom', fontsize=10)
 
             plt.tight_layout()
             plt.savefig(self.plots_dir / 'execution_time_comparison.png', dpi=300, bbox_inches='tight')
@@ -397,7 +397,7 @@ class AdvancedBenchmarkSuite:
 
             for bar, mem in zip(bars, peak_memory):
                 plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
-                        '.1f', ha='center', va='bottom', fontsize=10)
+                        f'{mem:.1f}', ha='center', va='bottom', fontsize=10)
 
             plt.tight_layout()
             plt.savefig(self.plots_dir / 'memory_usage_comparison.png', dpi=300, bbox_inches='tight')
@@ -683,7 +683,7 @@ class AdvancedBenchmarkSuite:
             print("-" * 60)
 
             # Overall performance table
-            print("<20")
+            print(f"{'Language':<20s} {'Avg Time (s)':<15s} {'Avg Memory (MB)':<18s} {'Entropy':<10s}")
             print("-" * 60)
 
             for language, results in report.performance_results.items():
@@ -692,7 +692,7 @@ class AdvancedBenchmarkSuite:
                     avg_memory = statistics.mean([r.peak_memory_mb for r in results if r.peak_memory_mb > 0])
                     avg_entropy = statistics.mean([r.final_belief_entropy for r in results if r.final_belief_entropy > 0])
 
-                    print("<20")
+                    print(f"{language:<20s} {avg_time:<15.3f} {avg_memory:<18.1f} {avg_entropy:<10.4f}")
 
         if report.language_comparisons:
             print("\n🏆 PERFORMANCE RANKINGS:")
@@ -703,9 +703,9 @@ class AdvancedBenchmarkSuite:
                     print(f"\n{metric.replace('_', ' ').title()}:")
                     for i, (lang, value) in enumerate(comparison.rankings[:5]):  # Top 5
                         if metric == 'execution_time':
-                            print("2d")
+                            print(f"  {i+1:2d}. {lang:<15s} {value:.3f}s")
                         else:
-                            print("2d")
+                            print(f"  {i+1:2d}. {lang:<15s} {value:.1f}MB")
 
         if report.recommendations:
             print("\n💡 OPTIMIZATION RECOMMENDATIONS:")

@@ -10,6 +10,7 @@ R — statistical computing implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.R`
 - 📄 `run.sh`
 

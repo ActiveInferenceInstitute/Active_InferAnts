@@ -45,7 +45,7 @@ check_language_status() {
         # Check if main source file exists
         local main_file=""
         case "$lang" in
-            "Python") main_file="$lang_dir/Student_Teacher.py" ;;
+            "Python") main_file="$lang_dir/student_teacher.py" ;;
             "JavaScript") main_file="$lang_dir/active_inference.js" ;;
             "Java") main_file="$lang_dir/AntColony.java" ;;
             "C") main_file="$lang_dir/Active_Inference.c" ;;
@@ -113,39 +113,36 @@ show_statistics() {
     echo -e "${CYAN}📈 Implementation Statistics${NC}"
     echo -e "${WHITE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-    local total_langs=$(find . -maxdepth 1 -type d -not -name "." -not -name ".." | wc -l)
-    local readme_count=$(find . -name "README.md" -type f | wc -l)
-    local run_count=$(find . -name "run.sh" -type f | wc -l)
-    local exec_count=$(find . -name "run.sh" -type f -executable | wc -l)
+    # Dynamic counts from filesystem
+    local total_dirs exclude_dirs
+    exclude_dirs="test_results|__pycache__|output|visualizations|reports|benchmark_results|node_modules|build"
+    total_dirs=$(find . -maxdepth 1 -type d -not -name "." -not -name ".." | grep -vE "$exclude_dirs" | wc -l | tr -d ' ')
+    local readme_count=$(find . -maxdepth 2 -name "README.md" -type f | wc -l | tr -d ' ')
+    local run_count=$(find . -maxdepth 2 -name "run.sh" -type f | wc -l | tr -d ' ')
+    local exec_count=$(find . -maxdepth 2 -name "run.sh" -type f -perm +111 | wc -l | tr -d ' ')
+    local agents_count=$(find . -maxdepth 2 -name "AGENTS.md" -type f | wc -l | tr -d ' ')
+    local skill_count=$(find . -maxdepth 2 -name "SKILL.md" -type f | wc -l | tr -d ' ')
 
-    echo -e "  📁 Total Language Directories: $total_langs"
+    echo -e "  📁 Total Language Directories: $total_dirs"
     echo -e "  📖 README Files: $readme_count"
+    echo -e "  📋 AGENTS.md Files: $agents_count"
+    echo -e "  🔧 SKILL.md Files: $skill_count"
     echo -e "  🚀 Run Scripts: $run_count"
     echo -e "  ⚙️ Executable Scripts: $exec_count"
 
-    # Language categories (derived from show_implementations category lists)
-    local systems_langs
-    systems_langs=$(echo "Ada Assembly C CSharp Cpp Rust Zig Nim Crystal Odin V Swift Pascal" | wc -w | tr -d ' ')
-    local functional_langs
-    functional_langs=$(echo "Haskell OCaml FSharp Clojure Racket" | wc -w | tr -d ' ')
-    local concurrent_langs
-    concurrent_langs=$(echo "Golang Erlang Elixir" | wc -w | tr -d ' ')
-    local scripting_langs
-    scripting_langs=$(echo "Python JavaScript TypeScript Lua Perl Ruby PHP Shell" | wc -w | tr -d ' ')
-    local scientific_langs
-    scientific_langs=$(echo "Julia R Fortran MATLAB" | wc -w | tr -d ' ')
-    local jvm_langs
-    jvm_langs=$(echo "Java Kotlin Scala" | wc -w | tr -d ' ')
-    local logic_langs
-    logic_langs=$(echo "Prolog SQL Jock" | wc -w | tr -d ' ')
-
-    echo -e "  🏗️ Systems Languages: $systems_langs"
-    echo -e "  λ Functional Languages: $functional_langs"
-    echo -e "  ⚡ Concurrent Languages: $concurrent_langs"
-    echo -e "  📜 Scripting Languages: $scripting_langs"
-    echo -e "  🔬 Scientific Languages: $scientific_langs"
-    echo -e "  ☕ JVM Languages: $jvm_langs"
-    echo -e "  🧠 Logic Languages: $logic_langs"
+    # Category counts derived from the categories map
+    echo ""
+    echo -e "  🏷️  Language Categories:"
+    echo -e "     Systems:    14 (Ada, Assembly, C, C++, C#, Crystal, D, Nim, ObjectiveC, Odin, Pascal, Rust, V, Zig)"
+    echo -e "     Functional:  8 (Clojure, CommonLisp, Elixir, F#, Haskell, OCaml, Racket, Scheme)"
+    echo -e "     Scripting:  10 (Groovy, JavaScript, Lua, Perl, PHP, PowerShell, Python, Ruby, Shell, TypeScript)"
+    echo -e "     Scientific:  5 (Fortran, Julia, MATLAB, R, Tcl)"
+    echo -e "     JVM:         4 (Dart, Java, Kotlin, Scala)"
+    echo -e "     Compiled:    3 (Erlang, Golang, Swift)"
+    echo -e "     Logic:       3 (Jock, Prolog, SQL)"
+    echo -e "     Esoteric:    1 (Brainfuck)"
+    echo -e "     Blockchain:  1 (Solidity)"
+    echo -e "     Legacy:      1 (COBOL)"
 
     echo ""
 }
@@ -155,19 +152,24 @@ show_implementations() {
     echo -e "${CYAN}🧠 Language Implementations${NC}"
     echo -e "${WHITE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-    # Define language categories - map display names to actual directory names
+    # Define all 50 languages grouped by category
+    # Ordered array for deterministic display
+    local CATEGORY_ORDER=("Systems" "Functional" "Scripting" "Scientific" "JVM" "Compiled" "Logic" "Esoteric" "Blockchain" "Legacy")
+
     declare -A categories=(
-        ["Systems"]="Ada:Ada Assembly:Assembly C:C CSharp:CSharp Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V Swift:Swift Pascal:Pascal"
-        ["Functional"]="Haskell:Haskell OCaml:OCaml FSharp:FSharp Clojure:Clojure Racket:Racket"
-        ["Scripting"]="Python:Python JavaScript:JavaScript TypeScript:TypeScript Lua:Lua Perl:Perl Ruby:Ruby PHP:PHP Shell:Shell"
-        ["Scientific"]="Julia:Julia R:R Fortran:Fortran MATLAB:MATLAB"
-        ["JVM"]="Java:Java Kotlin:Kotlin Scala:Scala"
-        ["Logic"]="Prolog:Prolog SQL:SQL Jock:Jock"
+        ["Systems"]="Ada:Ada Assembly:Assembly C:C CSharp:CSharp Cpp:Cpp Crystal:Crystal D:D Nim:Nim ObjectiveC:ObjectiveC Odin:Odin Pascal:Pascal Rust:Rust V:V Zig:Zig"
+        ["Functional"]="Clojure:Clojure CommonLisp:CommonLisp Elixir:Elixir FSharp:FSharp Haskell:Haskell OCaml:OCaml Racket:Racket Scheme:Scheme"
+        ["Scripting"]="Groovy:Groovy JavaScript:JavaScript Lua:Lua Perl:Perl PHP:PHP PowerShell:PowerShell Python:Python Ruby:Ruby Shell:Shell TypeScript:TypeScript"
+        ["Scientific"]="Fortran:Fortran Julia:Julia MATLAB:MATLAB R:R Tcl:Tcl"
+        ["JVM"]="Dart:Dart Java:Java Kotlin:Kotlin Scala:Scala"
+        ["Compiled"]="Erlang:Erlang Golang:Golang Swift:Swift"
+        ["Logic"]="Jock:Jock Prolog:Prolog SQL:SQL"
         ["Esoteric"]="Brainfuck:Brainfuck"
-        ["Concurrent"]="Golang:Golang Erlang:Erlang Elixir:Elixir"
+        ["Blockchain"]="Solidity:Solidity"
+        ["Legacy"]="COBOL:COBOL"
     )
 
-    for category in "${!categories[@]}"; do
+    for category in "${CATEGORY_ORDER[@]}"; do
         echo -e "${PURPLE}$category Languages:${NC}"
         local langs="${categories[$category]}"
 

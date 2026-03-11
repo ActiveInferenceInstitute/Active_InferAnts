@@ -4,7 +4,7 @@
 
 ## Overview
 
-Multi-language Active Inference implementations across 32+ programming languages. Each subdirectory contains a complete Active Inference implementation in the respective language.
+Multi-language Active Inference implementations across 50 programming languages. Each subdirectory contains a complete Active Inference implementation in the respective language.
 
 ## Structure
 
@@ -12,15 +12,20 @@ Multi-language Active Inference implementations across 32+ programming languages
 - 📁 `Assembly/`
 - 📁 `Brainfuck/`
 - 📁 `C/`
-- 📁 `CSharp/`
-- 📁 `Clojure/`
+- 📁 `COBOL/`
+- 📁 `CommonLisp/`
 - 📁 `Cpp/`
 - 📁 `Crystal/`
+- 📁 `CSharp/`
+- 📁 `Clojure/`
+- 📁 `D/`
+- 📁 `Dart/`
 - 📁 `Elixir/`
 - 📁 `Erlang/`
 - 📁 `FSharp/`
 - 📁 `Fortran/`
 - 📁 `Golang/`
+- 📁 `Groovy/`
 - 📁 `Haskell/`
 - 📁 `Java/`
 - 📁 `JavaScript/`
@@ -30,25 +35,30 @@ Multi-language Active Inference implementations across 32+ programming languages
 - 📁 `Lua/`
 - 📁 `MATLAB/`
 - 📁 `Nim/`
+- 📁 `ObjectiveC/`
 - 📁 `OCaml/`
 - 📁 `Odin/`
-- 📁 `PHP/`
 - 📁 `Pascal/`
 - 📁 `Perl/`
+- 📁 `PHP/`
+- 📁 `PowerShell/`
 - 📁 `Prolog/`
 - 📁 `Python/`
 - 📁 `R/`
 - 📁 `Racket/`
 - 📁 `Ruby/`
 - 📁 `Rust/`
-- 📁 `SQL/`
 - 📁 `Scala/`
+- 📁 `Scheme/`
 - 📁 `Shell/`
+- 📁 `Solidity/`
+- 📁 `SQL/`
 - 📁 `Swift/`
+- 📁 `Tcl/`
 - 📁 `TypeScript/`
 - 📁 `V/`
 - 📁 `Zig/`
-- _…and 13 more items_
+- 📄 `languages.json` — Canonical language registry
 
 ## Version
 

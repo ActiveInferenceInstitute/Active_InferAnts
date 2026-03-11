@@ -11,6 +11,7 @@ Java — enterprise-grade JVM implementation
 - 📄 `AGENTS.md`
 - 📄 `AntColony.java`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `run.sh`
 
 ## Interfaces

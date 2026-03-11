@@ -10,6 +10,7 @@ Pascal — structured programming implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.pas`
 - 📄 `run.sh`
 

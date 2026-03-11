@@ -10,6 +10,7 @@ OCaml — strongly-typed functional programming implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.ml`
 - 📄 `run.sh`
 

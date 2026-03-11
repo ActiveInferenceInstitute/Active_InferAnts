@@ -4,12 +4,15 @@
 
 ## Purpose
 
-TypeScript — type-safe JavaScript implementation
+TypeScript — scripting implementation
 
 ## Directory Contents
 
 - 📁 `src/`
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `package.json`
 - 📄 `run.sh`
 - 📄 `tsconfig.json`

@@ -10,6 +10,7 @@ Ruby — dynamic, expressive implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference_agent.rb`
 - 📄 `run.sh`
 

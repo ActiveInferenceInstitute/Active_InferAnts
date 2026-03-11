@@ -12,6 +12,7 @@ Jock — experimental language implementation
 - 📄 `Active_Jockference.md`
 - 📄 `Jock_Documentation.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `Urbit_Active_Jockference.md`
 - 📄 `active_inference.jock`
 - 📄 `run.sh`

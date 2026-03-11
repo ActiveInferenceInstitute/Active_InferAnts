@@ -11,9 +11,12 @@ import os
 import sys
 import argparse
 import subprocess
+import logging
 from pathlib import Path
 from datetime import datetime
 import json
+
+logger = logging.getLogger(__name__)
 
 class ActiveInferenceController:
     """Master controller for all Active Inference implementations."""
@@ -22,6 +25,10 @@ class ActiveInferenceController:
         self.root_dir = Path(__file__).parent
         self.output_dir = self.root_dir / "output"
         self.output_dir.mkdir(exist_ok=True)
+
+        # Load language registry from canonical source
+        self.languages_json = self.root_dir / "languages.json"
+        self._language_dirs = self._load_language_dirs()
 
         # Available commands
         self.commands = {
@@ -36,15 +43,24 @@ class ActiveInferenceController:
             "setup": self.setup_environment
         }
 
+    def _load_language_dirs(self) -> dict:
+        """Load language name → directory mapping from languages.json."""
+        if self.languages_json.exists():
+            with open(self.languages_json) as f:
+                data = json.load(f)
+            return {lang['name'].lower(): lang['directory'] for lang in data['languages']}
+        else:
+            logger.warning("languages.json not found, falling back to directory discovery")
+            return {}
+
     def show_status(self, args):
         """Show comprehensive status dashboard."""
         print("🧠 Active Inference Multi-Language Status")
         print("=" * 50)
 
-        # Run status dashboard
         dashboard_script = self.root_dir / "status_dashboard.sh"
         if dashboard_script.exists():
-            os.system(str(dashboard_script))
+            subprocess.run(["bash", str(dashboard_script)], cwd=str(self.root_dir))
         else:
             print("❌ Status dashboard not found")
 
@@ -167,6 +183,7 @@ class ActiveInferenceController:
         # Make main scripts executable
         main_scripts = [
             "run_all.sh",
+            "setup_dependencies.sh",
             "status_dashboard.sh",
             "reporting_system.py",
             "config_manager.py",
@@ -183,20 +200,28 @@ class ActiveInferenceController:
         for dir_name in dirs:
             (self.root_dir / dir_name).mkdir(exist_ok=True)
 
-        print("✅ Environment setup complete")
+        # Run dependency installer check
+        setup_script = self.root_dir / "setup_dependencies.sh"
+        if setup_script.exists():
+            print("\n📦 Checking language dependencies...")
+            subprocess.run(["bash", str(setup_script), "--check"], cwd=str(self.root_dir))
+
+        print("\n✅ Environment setup complete")
+        print("💡 Run './setup_dependencies.sh' to install missing dependencies")
 
     def _run_language(self, language: str):
         """Run a specific language implementation."""
-        lang_dir = self.root_dir / language.capitalize()
+        # Look up directory name from languages.json
+        lang_lower = language.lower()
+        dir_name = self._language_dirs.get(lang_lower, language)
+        lang_dir = self.root_dir / dir_name
         run_script = lang_dir / "run.sh"
 
         if run_script.exists():
             print(f"🚀 Running {language} implementation...")
-            os.chdir(lang_dir)
-            subprocess.run(["./run.sh"])
-            os.chdir(self.root_dir)
+            subprocess.run(["bash", str(run_script)], cwd=str(lang_dir))
         else:
-            print(f"❌ {language} implementation not found")
+            print(f"❌ {language} implementation not found at {lang_dir}")
 
     def _run_all_languages(self):
         """Run all language implementations."""

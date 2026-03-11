@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Nim — efficient compiled language with Python-like syntax
+Nim — systems compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.nim`
 - 📄 `run.sh`
 

@@ -1,15 +1,18 @@
-# AGENTS.md — Active Inference in FSharp
+# AGENTS.md — Active Inference in F#
 
 > Agent guidance for the `0_CONTEXT/Computer_Languages/FSharp` directory within the Active InferAnts framework.
 
 ## Purpose
 
-F# — functional-first .NET implementation
+F# — functional compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `ActiveInference.fs`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `run.sh`
 
 ## Agent Instructions

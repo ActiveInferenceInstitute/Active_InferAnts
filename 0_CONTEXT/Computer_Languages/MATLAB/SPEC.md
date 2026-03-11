@@ -11,6 +11,7 @@ MATLAB — numerical computing and matrix operations
 - 📄 `AGENTS.md`
 - 📄 `ActiveInferenceAgent.m`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `demo.m`
 - 📄 `run.sh`
 

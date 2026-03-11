@@ -11,6 +11,7 @@ Brainfuck — esoteric minimalist language demonstrating Turing-completeness
 - 📄 `AGENTS.md`
 - 📄 `Brainfuck_ActiveInference.py`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `analysis.py`
 - 📄 `category_theory.py`
 - 📄 `config_schema.py`

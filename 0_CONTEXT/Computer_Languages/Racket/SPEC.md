@@ -10,6 +10,7 @@ Racket — Lisp-family language implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.rkt`
 - 📄 `run.sh`
 

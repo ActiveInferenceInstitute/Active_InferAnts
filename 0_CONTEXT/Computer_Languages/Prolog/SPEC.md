@@ -10,6 +10,7 @@ Prolog — logic programming implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.pl`
 - 📄 `run.sh`
 

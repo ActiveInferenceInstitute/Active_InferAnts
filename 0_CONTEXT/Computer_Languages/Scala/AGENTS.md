@@ -4,12 +4,15 @@
 
 ## Purpose
 
-Scala — functional/OO hybrid JVM implementation
+Scala — jvm/.net compiled implementation
 
 ## Directory Contents
 
 - 📁 `src/`
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `build.sbt`
 - 📄 `run.sh`
 

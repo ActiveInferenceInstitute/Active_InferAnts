@@ -11,6 +11,7 @@ PHP — server-side scripting implementation
 - 📄 `AGENTS.md`
 - 📄 `ActiveInferenceAgent.php`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `run.sh`
 
 ## Interfaces

@@ -12,6 +12,7 @@ Haskell — purely functional implementation with strong type system
 - 📁 `src/`
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `package.yaml`
 - 📄 `run.sh`
 

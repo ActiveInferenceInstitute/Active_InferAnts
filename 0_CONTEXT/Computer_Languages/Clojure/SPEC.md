@@ -11,6 +11,7 @@ Clojure — functional Lisp dialect on the JVM
 - 📁 `src/`
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `project.clj`
 - 📄 `run.sh`
 

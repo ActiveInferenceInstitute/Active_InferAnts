@@ -11,6 +11,7 @@ Perl — text processing and scripting implementation
 - 📄 `AGENTS.md`
 - 📄 `Perl_Agent.pl`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `run.sh`
 
 ## Interfaces

@@ -10,6 +10,7 @@ Nim — efficient compiled language with Python-like syntax
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.nim`
 - 📄 `run.sh`
 

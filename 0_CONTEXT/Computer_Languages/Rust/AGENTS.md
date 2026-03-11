@@ -4,17 +4,20 @@
 
 ## Purpose
 
-Rust — memory-safe systems implementation
+Rust — systems compiled implementation
 
 ## Directory Contents
 
 - 📁 `RustConfig/`
 - 📁 `RustThings/`
 - 📁 `src/`
+- 📄 `AGENTS.md`
 - 📄 `Cargo.lock`
 - 📄 `Cargo.toml`
 - 📄 `README.md`
 - 📄 `Rust.README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `config.json`
 - 📄 `run.sh`
 - 📄 `system_spec_RUST.txt`

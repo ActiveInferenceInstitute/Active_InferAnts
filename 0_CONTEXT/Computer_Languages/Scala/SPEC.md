@@ -11,6 +11,7 @@ Scala — functional/OO hybrid JVM implementation
 - 📁 `src/`
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `build.sbt`
 - 📄 `run.sh`
 

@@ -11,6 +11,7 @@ Kotlin — modern JVM language implementation
 - 📁 `src/`
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `build.gradle.kts`
 - 📄 `run.sh`
 

@@ -10,6 +10,7 @@ Lua — lightweight embeddable scripting implementation
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.lua`
 - 📄 `run.sh`
 

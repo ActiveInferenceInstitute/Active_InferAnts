@@ -68,14 +68,41 @@ class TestSuiteReport:
 class ActiveInferenceTestSuite:
     """Comprehensive test suite for Active Inference implementations"""
 
-    def __init__(self, project_root: str):
-        self.project_root = Path(project_root)
-        self.languages_dir = self.project_root / "0_CONTEXT" / "Computer_Languages"
-        self.results_dir = self.project_root / "test_results"
+    def __init__(self, project_root: str = None):
+        if project_root:
+            self.project_root = Path(project_root)
+            self.languages_dir = self.project_root / "0_CONTEXT" / "Computer_Languages"
+        else:
+            # Auto-detect: test_suite.py lives in 0_CONTEXT/Computer_Languages/
+            self.languages_dir = Path(__file__).parent
+            self.project_root = self.languages_dir.parent.parent
+        self.results_dir = self.languages_dir / "test_results"
         self.results_dir.mkdir(exist_ok=True)
 
-        # Define expected languages and their test configurations
-        self.expected_languages = {
+        # Load language definitions from canonical languages.json, with hardcoded fallback
+        self.expected_languages = self._load_expected_languages()
+
+    def _load_expected_languages(self) -> Dict[str, Dict[str, Any]]:
+        """Load expected languages from languages.json (canonical source)."""
+        languages_json = self.languages_dir / "languages.json"
+        if languages_json.exists():
+            try:
+                with open(languages_json) as f:
+                    data = json.load(f)
+                result = {}
+                for lang in data['languages']:
+                    result[lang['directory']] = {
+                        'extension': lang.get('extension', ''),
+                        'runner': lang.get('runner', 'bash run.sh'),
+                        'has_compilation': lang.get('category', '') in ('systems', 'compiled'),
+                    }
+                logger.info(f"Loaded {len(result)} languages from languages.json")
+                return result
+            except (json.JSONDecodeError, KeyError) as e:
+                logger.warning(f"Failed to parse languages.json: {e}, using hardcoded fallback")
+
+        # Hardcoded fallback (kept in sync manually if languages.json is missing)
+        return {
             'Python': {'extension': '.py', 'runner': 'python3', 'has_compilation': False},
             'Java': {'extension': '.java', 'runner': 'java', 'has_compilation': True},
             'JavaScript': {'extension': '.js', 'runner': 'node', 'has_compilation': False},
@@ -86,8 +113,6 @@ class ActiveInferenceTestSuite:
             'Haskell': {'extension': '.hs', 'runner': 'runhaskell', 'has_compilation': False},
             'R': {'extension': '.R', 'runner': 'Rscript', 'has_compilation': False},
             'Shell': {'extension': '.sh', 'runner': 'bash', 'has_compilation': False},
-
-            # Add all the additional languages that have implementations
             'Ada': {'extension': '.adb', 'runner': './', 'has_compilation': True},
             'Assembly': {'extension': '.asm', 'runner': './', 'has_compilation': True},
             'Brainfuck': {'extension': '.bf', 'runner': 'bf', 'has_compilation': False},
@@ -457,7 +482,7 @@ class ActiveInferenceTestSuite:
             print("-" * 40)
             for lang, metrics in report.language_metrics.items():
                 if metrics.execution_time > 0:
-                    print("20")
+                    print(f"  {lang:15s} {metrics.execution_time:.2f}s")
 
         if report.recommendations:
             print("\n💡 RECOMMENDATIONS:")

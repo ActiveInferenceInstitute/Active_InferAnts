@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Fortran — scientific computing heritage implementation
+Fortran — scientific compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.f90`
 - 📄 `run.sh`
 

@@ -4,7 +4,7 @@
 
 ## Overview
 
-Modular documentation organized into 5 topic areas with 15+ individual documents.
+Modular documentation organized into 9 topic areas with 48 individual documents.
 
 ## Structure
 
@@ -12,13 +12,18 @@ Modular documentation organized into 5 topic areas with 15+ individual documents
 |-----------|-----------|-------|
 | `architecture/` | 5 | Pipeline, components, data flow, generative model, integrations |
 | `api/` | 3 | Knowledge API, MetaInformAnt API, data models |
-| `guides/` | 5 | Getting started, languages, simulations, research, contributing |
-| `reference/` | 5 | Configuration, language matrix, systems, glossary, dependencies |
+| `concepts/` | 8 | Active Inference theory, agent taxonomy, category theory |
+| `guides/` | 5 | Getting started, language addition, simulations, research, contributing |
+| `operations/` | 5 | Simulation ops, API deployment, monitoring, logging, governance |
+| `reference/` | 5 | Configuration, 40-language matrix, systems, glossary, dependencies |
 | `security/` | 2 | Architecture, cryptographic primitives |
+| `systems/` | 6 | P3IF, Cognitive Sovereignty, IC2S2, William Blake, Active Data Sampling, Meta |
+| `testing/` | 3 | Strategy, cross-language, verification methods |
+| `tutorials/` | 6 | First agent, pipeline, analysis, systems, grants, benchmarking |
 
 ## Conventions
 
-- All documents use GitHub-flavored Markdown
-- Tables preferred for structured data
-- Code blocks with language tags for syntax highlighting
+- GitHub-flavored Markdown
+- Tables for structured data
+- Code blocks with language syntax highlighting
 - Relative links for cross-referencing within docs

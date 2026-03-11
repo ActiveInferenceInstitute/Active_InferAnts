@@ -11,6 +11,7 @@ C — systems-level implementation for maximum performance
 - 📄 `AGENTS.md`
 - 📄 `Active_Inference.c`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference`
 - 📄 `run.sh`
 - 📄 `teacher_model.c`

@@ -4,11 +4,14 @@
 
 ## Purpose
 
-SQL — declarative database query implementation
+SQL — logic implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `SQL.sql`
 - 📄 `run.sh`
 

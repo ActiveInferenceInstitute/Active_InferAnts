@@ -10,6 +10,7 @@ Ada — safety-critical systems language with strong typing
 
 - 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
 - 📄 `active_inference.adb`
 - 📄 `active_inference.ads`
 - 📄 `demo.adb`

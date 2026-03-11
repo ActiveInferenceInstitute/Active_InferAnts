@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Assembly — low-level machine-code implementations
+Assembly — systems compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.asm`
 - 📄 `run.sh`
 

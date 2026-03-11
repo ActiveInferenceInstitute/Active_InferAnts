@@ -4,11 +4,14 @@
 
 ## Purpose
 
-OCaml — strongly-typed functional programming implementation
+OCaml — functional implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.ml`
 - 📄 `run.sh`
 

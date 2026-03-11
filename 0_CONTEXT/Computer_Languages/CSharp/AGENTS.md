@@ -1,17 +1,21 @@
-# AGENTS.md — Active Inference in CSharp
+# AGENTS.md — Active Inference in C#
 
 > Agent guidance for the `0_CONTEXT/Computer_Languages/CSharp` directory within the Active InferAnts framework.
 
 ## Purpose
 
-C# — .NET ecosystem implementation
+C# — jvm/.net compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `ActiveInference.csproj`
 - 📄 `Demo.cs`
 - 📄 `Program.cs`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
+- 📄 `run.sh`
 
 ## Agent Instructions
 

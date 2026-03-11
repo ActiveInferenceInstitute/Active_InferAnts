@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Odin — systems programming language implementation
+Odin — systems compiled implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.odin`
 - 📄 `run.sh`
 

@@ -4,22 +4,44 @@ Comprehensive documentation for the Active InferAnts multi-language Active Infer
 
 ## Quick Navigation
 
-| Section | Description |
-|---------|-------------|
-| [Architecture](architecture/) | System design, pipeline flow, and component relationships |
-| [API Reference](api/) | REST API endpoints, data models, and integration contracts |
-| [Guides](guides/) | Getting started, development workflows, and tutorials |
-| [Reference](reference/) | Configuration, languages, and technical specifications |
-| [Security](security/) | Security architecture, cryptographic primitives, and threat model |
+| Section | Docs | Description |
+|---------|------|-------------|
+| [Architecture](architecture/) | 5 | System design, pipeline flow, generative model |
+| [API Reference](api/) | 3 | REST endpoints, data models, authentication |
+| [Concepts](concepts/) | 8 | Active Inference primer, agent types, category theory |
+| [Guides](guides/) | 5 | Getting started, adding languages, contributing |
+| [Operations](operations/) | 5 | Deployment, monitoring, logging, governance |
+| [Reference](reference/) | 5 | Configuration, 40-language matrix, glossary |
+| [Security](security/) | 2 | Security architecture, cryptographic primitives |
+| [Systems](systems/) | 6 | P3IF, Cognitive Sovereignty, IC2S2, William Blake |
+| [Testing](testing/) | 3 | Testing strategy, cross-language tests, verification |
+| [Tutorials](tutorials/) | 6 | First agent, pipeline, results analysis, benchmarking |
 
 ## Project Overview
 
-Active InferAnts implements Active Inference algorithms across **40 programming languages** with a **6-phase operational pipeline** (0_CONTEXT → 1_PREPARE → 2_OPERATE → 3_MEASURE → 4_REPORT → 5_FOLLOWUP) and external API layer (6_API). Third-party integrations live in 9_OTHER.
+Active InferAnts implements Active Inference across **40 programming languages** with a **6-phase operational pipeline**:
 
-- **254 Python modules** across core pipeline and systems
-- **40 language implementations** with shared generative model architecture
-- **12 third-party integrations** (Kafka, Nostr, HoloChain, ActivityPub, etc.)
-- **17 research entity profiles** and **8 funding agency** documentation sets
+```
+0_CONTEXT → 1_PREPARE → 2_OPERATE → 3_MEASURE → 4_REPORT → 5_FOLLOWUP → 6_API
+```
+
+| Metric | Value |
+|--------|-------|
+| Python modules | 254 |
+| Language implementations | 40 |
+| Specialized systems | 10 |
+| Third-party integrations | 12 |
+| Research entity profiles | 17 |
+| Funding agency docs | 8 |
+| Documentation files | 7,100+ |
+
+## Getting Started
+
+1. **New to Active Inference?** → [Active Inference Primer](concepts/active_inference_primer.md)
+2. **Want to run code?** → [Getting Started](guides/getting_started.md)
+3. **Building an agent?** → [Your First Agent](tutorials/first_agent.md)
+4. **Understanding the pipeline?** → [Pipeline Overview](architecture/pipeline_overview.md)
+5. **Adding a language?** → [Adding a Language](guides/adding_a_language.md)
 
 ## License
 

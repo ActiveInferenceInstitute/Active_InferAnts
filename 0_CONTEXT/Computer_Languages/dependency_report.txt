@@ -2,17 +2,18 @@
 ==================================================
 
 📊 Summary:
-   Total Languages: 29
-   Fully Available: 8
-   Missing Some: 21
+   Total Languages: 48
+   Fully Available: 41
+   Missing Some: 7
 
 🔍 Detailed Results:
 ------------------------------
-✅ Python:
-   ✅ Available: numpy, scipy, matplotlib, seaborn, pandas
+❌ Python:
+   ✅ Available: numpy
+   ❌ Missing: scipy, matplotlib, seaborn, pandas
 
-❌ Java:
-   ❌ Missing: java, javac
+✅ Java:
+   ✅ Available: java, javac
 
 ✅ Javascript:
    ✅ Available: node, npm
@@ -23,60 +24,61 @@
 ✅ Rust:
    ✅ Available: cargo, rustc
 
-❌ Go:
-   ❌ Missing: go
+✅ Go:
+   ✅ Available: go
 
 ❌ Haskell:
-   ❌ Missing: stack, ghc
+   ✅ Available: stack
+   ❌ Missing: ghc
 
-❌ Clojure:
-   ❌ Missing: lein
+✅ Clojure:
+   ✅ Available: lein
 
-❌ Elixir:
-   ❌ Missing: elixir
+✅ Elixir:
+   ✅ Available: elixir
 
-❌ Erlang:
-   ❌ Missing: erl
+✅ Erlang:
+   ✅ Available: erl
 
-❌ Lua:
-   ❌ Missing: lua
+✅ Lua:
+   ✅ Available: lua
 
 ✅ Perl:
    ✅ Available: perl
 
-❌ R:
-   ❌ Missing: R
+✅ R:
+   ✅ Available: R
 
-❌ Racket:
-   ❌ Missing: racket
+✅ Racket:
+   ✅ Available: racket
 
-❌ Fortran:
-   ❌ Missing: gfortran
+✅ Fortran:
+   ✅ Available: gfortran
 
 ❌ Ada:
    ❌ Missing: gnat
 
-❌ Assembly:
-   ✅ Available: ld
-   ❌ Missing: nasm
+✅ Assembly:
+   ✅ Available: nasm, ld
 
-✅ Brainfuck:
-   ✅ Available: numpy, scipy, matplotlib, seaborn, pandas
+❌ Brainfuck:
+   ✅ Available: numpy
+   ❌ Missing: scipy, matplotlib, seaborn, pandas
 
-❌ Crystal:
-   ❌ Missing: crystal
+✅ Crystal:
+   ✅ Available: crystal
 
-❌ Nim:
-   ❌ Missing: nim
+✅ Nim:
+   ✅ Available: nim
 
-❌ Ocaml:
-   ❌ Missing: ocaml
+✅ Ocaml:
+   ✅ Available: ocaml
 
-❌ Pascal:
-   ❌ Missing: fpc
+✅ Pascal:
+   ✅ Available: fpc
 
-❌ Prolog:
-   ❌ Missing: swipl
+✅ Prolog:
+   ✅ Available: swipl
 
 ✅ Shell:
    ✅ Available: bash, bc, awk
@@ -84,16 +86,72 @@
 ✅ Sql:
    ✅ Available: sqlite3
 
-❌ Typescript:
-   ✅ Available: node, npm
-   ❌ Missing: tsc
+✅ Typescript:
+   ✅ Available: node, npm, tsc
 
-❌ Zig:
-   ❌ Missing: zig
+✅ Zig:
+   ✅ Available: zig
 
-❌ V:
-   ❌ Missing: v
+✅ V:
+   ✅ Available: v
 
-❌ Odin:
-   ❌ Missing: odin
+✅ Odin:
+   ✅ Available: odin
+
+✅ Kotlin:
+   ✅ Available: kotlin
+
+✅ Scala:
+   ✅ Available: scala
+
+✅ Swift:
+   ✅ Available: swift
+
+✅ Csharp:
+   ✅ Available: dotnet
+
+✅ Fsharp:
+   ✅ Available: dotnet
+
+❌ Matlab:
+   ❌ Missing: matlab
+
+✅ Ruby:
+   ✅ Available: ruby
+
+✅ Php:
+   ✅ Available: php
+
+❌ Jock:
+   ❌ Missing: urbit
+
+❌ D:
+   ❌ Missing: dmd
+
+✅ Dart:
+   ✅ Available: dart
+
+✅ Groovy:
+   ✅ Available: groovy
+
+✅ Commonlisp:
+   ✅ Available: sbcl
+
+✅ Objectivec:
+   ✅ Available: clang
+
+✅ Powershell:
+   ✅ Available: pwsh
+
+✅ Scheme:
+   ✅ Available: chibi-scheme
+
+✅ Cobol:
+   ✅ Available: cobc
+
+✅ Solidity:
+   ✅ Available: solc
+
+✅ Tcl:
+   ✅ Available: tclsh
 

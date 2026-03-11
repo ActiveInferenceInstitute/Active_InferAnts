@@ -4,11 +4,14 @@
 
 ## Purpose
 
-Lua — lightweight embeddable scripting implementation
+Lua — scripting implementation
 
 ## Directory Contents
 
+- 📄 `AGENTS.md`
 - 📄 `README.md`
+- 📄 `SKILL.md`
+- 📄 `SPEC.md`
 - 📄 `active_inference.lua`
 - 📄 `run.sh`
 
