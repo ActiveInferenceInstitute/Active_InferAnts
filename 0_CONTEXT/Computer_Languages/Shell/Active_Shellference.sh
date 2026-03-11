@@ -19,12 +19,7 @@ declare -A simulation
 declare -i time_steps
 declare -i precision
 
-#########################################################################
-# Initialize simulation parameters
-# Sets up the simulation environment, initial beliefs, preferences,
-# transition probabilities, time steps, and precision based on the
-# configuration provided in config.sh.
-#########################################################################
+# Load CONFIG_* values into simulation associative array and scalar variables.
 initialize_simulation() {
     simulation[environment]="${CONFIG_ENVIRONMENT}"
     simulation[beliefs]="${CONFIG_INITIAL_BELIEFS}"
@@ -34,16 +29,7 @@ initialize_simulation() {
     precision="${CONFIG_PRECISION}"
 }
 
-#########################################################################
-# Calculate Kullback-Leibler Divergence
-# Computes the KL divergence between the agent's current beliefs and
-# its preferences.
-# Arguments:
-#   $1 - Name reference to the beliefs array
-#   $2 - Name reference to the preferences array
-# Returns:
-#   The calculated KL divergence value
-#########################################################################
+# KL divergence: sum of belief_i * log(belief_i / preference_i) across states.
 calculate_kl_divergence() {
     local -n beliefs_ref=$1
     local -n preferences_ref=$2
@@ -58,35 +44,8 @@ calculate_kl_divergence() {
     echo "$kl_divergence"
 }
 
-#########################################################################
-# Calculate Variational Free Energy
-# Computes the Variational Free Energy based on current beliefs and preferences.
-# Arguments:
-#   $1 - Name reference to the beliefs array
-#   $2 - Name reference to the preferences array
-# Returns:
-#   The calculated Variational Free Energy
-#########################################################################
-calculate_vfe() {
-    local -n beliefs_ref=$1
-    local -n preferences_ref=$2
-    local vfe
-
-    vfe=$(calculate_kl_divergence beliefs_ref preferences_ref)
-    echo "$vfe"
-}
-
-#########################################################################
-# Calculate Expected Free Energy
-# Computes the Expected Free Energy based on beliefs, preferences,
-# and transition probabilities.
-# Arguments:
-#   $1 - Name reference to the beliefs array
-#   $2 - Name reference to the preferences array
-#   $3 - Name reference to the transition_probs array
-# Returns:
-#   The calculated Expected Free Energy
-#########################################################################
+# Expected free energy: sum over states of belief_i * expected_surprise_i,
+# where expected_surprise uses transition probs and log-preferences.
 calculate_efe() {
     local -n beliefs_ref=$1
     local -n preferences_ref=$2
@@ -106,18 +65,7 @@ calculate_efe() {
     echo "$efe"
 }
 
-#########################################################################
-# Update Beliefs
-# Updates the agent's beliefs based on current beliefs, preferences,
-# and transition probabilities. Normalizes the updated beliefs to ensure
-# they sum to 1.
-# Arguments:
-#   $1 - Name reference to the current_beliefs array
-#   $2 - Name reference to the current_preferences array
-#   $3 - Name reference to the current_transition_probs array
-# Returns:
-#   A space-separated string of updated beliefs
-#########################################################################
+# Bayes update: new_belief_i = sum_j(belief_j * T[j,i]) * preference_i, then normalize.
 update_beliefs() {
     local -n beliefs_ref=$1
     local -n preferences_ref=$2
@@ -146,17 +94,7 @@ update_beliefs() {
     echo "${updated_beliefs[*]}"
 }
 
-#########################################################################
-# Select Action Based on Expected Free Energy
-# Chooses the action that minimizes the Expected Free Energy.
-# Arguments:
-#   $1 - Name reference to the current_beliefs array
-#   $2 - Name reference to the current_preferences array
-#   $3 - Name reference to the current_transition_probs array
-#   $4 - Name reference to the environment array
-# Returns:
-#   The selected action with the lowest Expected Free Energy
-#########################################################################
+# Pick action minimizing EFE; each action uses its own transition-prob slice.
 select_action() {
     local -n beliefs_ref=$1
     local -n preferences_ref=$2
@@ -164,25 +102,30 @@ select_action() {
     local -n environment_ref=$4
     local min_efe=1000000
     local selected_action=""
+    local env_size=${#beliefs_ref[@]}
+    local action_idx=0
 
     for action in "${environment_ref[@]}"; do
+        # Extract transition probs for this action (offset = action_idx * env_size^2)
+        local action_offset=$(( action_idx * env_size * env_size ))
+        local action_trans=()
+        for k in $(seq 0 $(( env_size * env_size - 1 ))); do
+            action_trans+=("${transition_probs_ref[$((action_offset + k))]}")
+        done
+
         local efe
-        efe=$(calculate_efe beliefs_ref preferences_ref transition_probs_ref)
+        efe=$(calculate_efe beliefs_ref preferences_ref action_trans)
         if (( $(echo "$efe < $min_efe" | bc -l) )); then
             min_efe=$efe
             selected_action=$action
         fi
+        (( action_idx++ )) || true
     done
 
     echo "$selected_action"
 }
 
-#########################################################################
-# Run Simulation
-# Executes the main simulation loop for the specified number of time steps.
-# Initializes the simulation, updates beliefs, calculates free energies,
-# and selects actions at each step.
-#########################################################################
+# Main loop: update beliefs, compute VFE, select action at each time step.
 run_simulation() {
     initialize_simulation
 
@@ -205,7 +148,7 @@ run_simulation() {
 
         # Calculate Variational Free Energy
         local vfe
-        vfe=$(calculate_vfe beliefs preferences)
+        vfe=$(calculate_kl_divergence beliefs preferences)
         echo "Variational Free Energy: $vfe"
 
         # Select action based on Expected Free Energy

@@ -148,14 +148,14 @@ show_implementations() {
 
     # Define language categories - map display names to actual directory names
     declare -A categories=(
-        ["Systems"]="Ada:Ada Assembly:Assembly C:C Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V Swift:Swift"
-        ["Functional"]="Haskell:Haskell OCaml:OCaml FSharp:FSharp Clojure:Clojure Elixir:Elixir Erlang:Erlang Racket:Racket"
+        ["Systems"]="Ada:Ada Assembly:Assembly C:C Cpp:Cpp Rust:Rust Zig:Zig Nim:Nim Crystal:Crystal Odin:Odin V:V Swift:Swift Pascal:Pascal"
+        ["Functional"]="Haskell:Haskell OCaml:OCaml FSharp:FSharp Clojure:Clojure Racket:Racket"
         ["Scripting"]="Python:Python JavaScript:JavaScript TypeScript:TypeScript Lua:Lua Perl:Perl Ruby:Ruby PHP:PHP Shell:Shell"
         ["Scientific"]="Julia:Julia R:R Fortran:Fortran MATLAB:MATLAB"
         ["JVM"]="Java:Java Kotlin:Kotlin Scala:Scala"
         ["Logic"]="Prolog:Prolog SQL:SQL Jock:Jock"
         ["Esoteric"]="Brainfuck:Brainfuck"
-        ["Compiled"]="Golang:Golang"
+        ["Concurrent"]="Golang:Golang Erlang:Erlang Elixir:Elixir"
     )
 
     for category in "${!categories[@]}"; do
@@ -222,13 +222,32 @@ show_recommendations() {
         done
     fi
 
-    # Suggest improvements
+    # Suggest improvements based on actual repo state
     echo -e "  🚀 Suggested Improvements:"
-    echo -e "     ${BLUE}• Add more language implementations${NC}"
-    echo -e "     ${BLUE}• Create comprehensive testing suite${NC}"
-    echo -e "     ${BLUE}• Add performance benchmarking${NC}"
-    echo -e "     ${BLUE}• Implement language comparison tools${NC}"
-    echo -e "     ${BLUE}• Add continuous integration${NC}"
+
+    # Languages that have a directory but no run.sh
+    local no_runner=$(find . -maxdepth 1 -type d -not -name "." -not -name ".." -not -name "test_results" -not -name ".desloppify" | while read -r dir; do
+        if [ ! -f "$dir/run.sh" ]; then
+            basename "$dir"
+        fi
+    done)
+    if [ -n "$no_runner" ]; then
+        echo -e "     ${BLUE}• Add run.sh to: $(echo "$no_runner" | tr '\n' ' ')${NC}"
+    fi
+
+    # Count implementations
+    local impl_count
+    impl_count=$(find . -name "run.sh" -maxdepth 2 | wc -l | tr -d ' ')
+    if (( impl_count < 40 )); then
+        echo -e "     ${BLUE}• Add more language implementations (currently $impl_count)${NC}"
+    fi
+
+    # Check for test directories
+    local has_tests
+    has_tests=$(find . -name "test_*.py" -o -name "*_test.go" -o -name "*.test.ts" 2>/dev/null | wc -l | tr -d ' ')
+    if (( has_tests < 5 )); then
+        echo -e "     ${BLUE}• Add correctness tests for belief update and free energy computation${NC}"
+    fi
 
     echo ""
 }
