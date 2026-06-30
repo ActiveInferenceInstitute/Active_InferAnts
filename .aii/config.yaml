@@ -1,0 +1,36 @@
+# AII sidecar — InstituteOS metadata. Schema: instituteos.platform.aii_sidecar
+meta:
+  updated: '2026-06-30'
+repo:
+  name: ActiveInferAnts
+  slug: activeinferants
+  full_name: ActiveInferenceInstitute/ActiveInferAnts
+  description: Active Inference models of/for Ants
+institute:
+  category: research-software
+  maturity: released
+  steward: Active Inference Institute
+ecosystem:
+  links:
+    github: https://github.com/ActiveInferenceInstitute/ActiveInferAnts
+    website: https://www.activeinference.org
+artifacts:
+- path: README.md
+  kind: doc
+  description: Repository overview.
+- path: LICENSE
+  kind: doc
+  description: License.
+provenance:
+  license: see-license-file
+instituteos:
+  tags:
+  - activeinferants
+  - inference
+  - models
+  - ants
+  - python
+capabilities:
+- tested
+- documentation
+- dataset
