@@ -117,9 +117,41 @@ class GitHubRepoSecurity:
             raise ValueError("GitHub token is required. Please provide it or set the GITHUB_TOKEN environment variable.")
         self.github = Github(self.github_token)
         self.logger = self._setup_logger()
-        self.encryption_key = os.getenv('ENCRYPTION_KEY') or Fernet.generate_key()
+        self.encryption_key = self._load_or_create_encryption_key()
         self.fernet = Fernet(self.encryption_key)
         self.sensitive_data_scanner = self._setup_sensitive_data_scanner()
+
+    @staticmethod
+    def _load_or_create_encryption_key() -> bytes:
+        """Return a durable Fernet key.
+
+        Uses ``ENCRYPTION_KEY`` if set; otherwise loads a persisted key from
+        ``~/.active_inferants_encryption.key``, creating it (mode 0600) on first
+        run. This keeps the key stable across runs so encrypted findings remain
+        decryptable — a freshly generated ephemeral key would silently destroy
+        the scanner's own evidence.
+        """
+        configured = os.getenv('ENCRYPTION_KEY')
+        if configured:
+            return configured.encode()
+        key_file = os.path.expanduser('~/.active_inferants_encryption.key')
+        try:
+            if os.path.exists(key_file):
+                with open(key_file, 'rb') as fh:
+                    return fh.read().strip()
+            key = Fernet.generate_key()
+            with open(key_file, 'wb') as fh:
+                fh.write(key)
+            os.chmod(key_file, 0o600)
+            return key
+        except OSError as e:
+            # Could not persist; fall back to an ephemeral key but warn loudly
+            # so the operator knows encrypted findings are non-recoverable.
+            logging.getLogger('GitHubRepoSecurity').warning(
+                "Could not persist encryption key (%s); encrypted findings are "
+                "non-recoverable this run.", e
+            )
+            return Fernet.generate_key()
 
     @staticmethod
     def _setup_logger() -> logging.Logger:
@@ -423,7 +455,10 @@ class GitHubRepoSecurity:
         }
 
     def _count_lines_of_code(self, repo_name: str) -> int:
-        # Placeholder implementation
+        """Placeholder implementation."""
+        return 0
+
+
 # Example usage:
 # security = GitHubRepoSecurity()
 # report = security.generate_security_report("owner/repo")

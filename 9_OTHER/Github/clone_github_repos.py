@@ -48,7 +48,14 @@ def clone_repo(git_url: str, target_dir: str) -> None:
     - target_dir (str): The directory to clone the repository into.
     """
     repo_name = git_url.split('/')[-1]  # Extracts repo name from URL
-    full_path = os.path.join(target_dir, repo_name)
+    # Sanitize + contain: never allow a repo name to escape the target dir.
+    if repo_name.endswith('.git'):
+        repo_name = repo_name[:-4]
+    if repo_name in ('', '.', '..') or '/' in repo_name or os.sep in repo_name:
+        raise ValueError(f"Unsafe repository name derived from URL: {git_url!r}")
+    full_path = os.path.abspath(os.path.join(target_dir, repo_name))
+    if os.path.commonpath([os.path.abspath(target_dir), full_path]) != os.path.abspath(target_dir):
+        raise ValueError(f"Clone target escapes target directory: {full_path}")
     clone_command = ["git", "clone", git_url, full_path]
     
     execute_command(clone_command)

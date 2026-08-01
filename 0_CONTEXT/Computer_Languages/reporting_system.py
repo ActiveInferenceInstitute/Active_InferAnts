@@ -54,30 +54,50 @@ class LanguageImplementation:
 
         try:
             start_time = time.time()
-            start_memory = psutil.Process().memory_info().rss
 
-            # Run the implementation
-            result = subprocess.run(
+            process: Optional[subprocess.Popen] = subprocess.Popen(
                 [str(self.run_script)],
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
-                timeout=300,  # 5 minute timeout
-                cwd=self.directory
+                cwd=self.directory,
             )
 
-            end_time = time.time()
-            end_memory = psutil.Process().memory_info().rss
+            # Sample peak RSS across the whole process tree (the language binary
+            # runs as a child of the run.sh wrapper, so the wrapper's own RSS is
+            # not a meaningful memory metric).
+            memory_samples = []
+            while process.poll() is None:
+                try:
+                    proc = psutil.Process(process.pid)
+                    total = proc.memory_info().rss
+                    for child in proc.children(recursive=True):
+                        try:
+                            total += child.memory_info().rss
+                        except psutil.NoSuchProcess:
+                            pass
+                    memory_samples.append(total / (1024 * 1024))
+                except psutil.NoSuchProcess:
+                    break
+                time.sleep(0.1)
+
+            stdout, stderr = process.communicate(timeout=300)  # 5 minute timeout
+            peak_memory = max(memory_samples) if memory_samples else 0.0
 
             return {
-                "success": result.returncode == 0,
-                "execution_time": end_time - start_time,
-                "memory_used": end_memory - start_memory,
-                "stdout": result.stdout,
-                "stderr": result.stderr,
-                "return_code": result.returncode
+                "success": process.returncode == 0,
+                "execution_time": time.time() - start_time,
+                "memory_used_mb": peak_memory,
+                "stdout": stdout,
+                "stderr": stderr,
+                "return_code": process.returncode,
             }
 
         except subprocess.TimeoutExpired:
+            try:
+                process.kill()
+            except Exception:  # pragma: no cover
+                pass
             return {"error": "Timeout"}
         except Exception as e:
             return {"error": str(e)}

@@ -20,7 +20,7 @@ Python — scripting implementation
 - 📄 `requirements.txt`
 - 📄 `run.sh`
 - 📄 `serializer.py`
-- 📄 `student_teacher.py`
+- 📄 `Student_Teacher.py`
 - 📄 `teacher_wrapper.py`
 - 📄 `test_student_teacher.py`
 

@@ -19,7 +19,17 @@ class GitHubRepoCloner:
         - target_dir (str): The directory to clone the repository into.
         """
         repo_name = git_url.split('/')[-1]  # Extracts repo name from URL
-        full_path = os.path.join(target_dir, repo_name)
+        # Sanitize: strip a trailing .git and reject anything that could escape
+        # the target directory (e.g. a traversal/special name from an
+        # attacker-influenced URL).
+        if repo_name.endswith('.git'):
+            repo_name = repo_name[:-4]
+        if repo_name in ('', '.', '..') or '/' in repo_name or os.sep in repo_name:
+            raise ValueError(f"Unsafe repository name derived from URL: {git_url!r}")
+        full_path = os.path.abspath(os.path.join(target_dir, repo_name))
+        target_abs = os.path.abspath(target_dir)
+        if os.path.commonpath([target_abs, full_path]) != target_abs:
+            raise ValueError(f"Clone target escapes target directory: {full_path}")
         clone_command = ["git", "clone", git_url, full_path]
         
         try:

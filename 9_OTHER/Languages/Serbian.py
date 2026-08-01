@@ -221,7 +221,10 @@ def analyze_cases(text: str) -> Dict[str, int]:
         if word.endswith('a'):
             cases["genitive"] += 1
         elif word.endswith('u'):
-            cases["dative"] += 1 if word.endswith('ama') else cases["accusative"] += 1
+            if word.endswith('ama'):
+                cases["dative"] += 1
+            else:
+                cases["accusative"] += 1
         elif word.endswith('e'):
             cases["vocative"] += 1
         elif word.endswith('om') or word.endswith('em'):

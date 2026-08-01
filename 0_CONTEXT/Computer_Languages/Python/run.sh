@@ -25,12 +25,12 @@ fi
 
 # Run the main implementation
 echo "🚀 Running Python active inference simulation..."
-python3 student_teacher.py
+python3 Student_Teacher.py
 
 # Generate visualizations
 echo "📊 Generating visualization plots..."
 python3 -c "
-from student_teacher import StudentTeacherPOMDP
+from Student_Teacher import StudentTeacherPOMDP
 import matplotlib.pyplot as plt
 
 # Create and visualize matrices

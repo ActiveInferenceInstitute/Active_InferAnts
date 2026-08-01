@@ -343,7 +343,6 @@ class ActivityPubAntSimulation:
         self.ap_helper.add_to_collection(ant.actor_id, json.dumps(add_data))
 
     def ant_remove(self, ant: AntAgent, object_id: str, target_collection: str):
-        remove_data = {
         """Remove an object from a collection."""
         self.ap_helper.remove_from_collection(ant.actor_id, object_id, target_collection)
 

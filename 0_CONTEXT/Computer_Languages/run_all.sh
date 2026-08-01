@@ -57,6 +57,7 @@ run_language() {
         fi
     else
         echo -e "${YELLOW}⚠️ $lang_name implementation not found or missing run.sh${NC}"
+        return 1
     fi
 
     echo ""

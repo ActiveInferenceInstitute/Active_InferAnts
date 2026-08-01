@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import json
 from abc import ABC, abstractmethod
 import numpy as np
-from scipy.stats import unitary_group
+
 
 class MeasurementMethod(Enum):
     """Enumeration of supported measurement methods."""
@@ -43,56 +43,78 @@ class ProjectiveMeasurementStrategy(MeasurementStrategy):
     """Concrete implementation of projective measurement strategy."""
 
     def execute(self, quantum_state: np.ndarray) -> np.ndarray:
-        """Execute projective measurement on the given quantum state."""
-        # Implement projective measurement logic here
-        # This is a placeholder implementation
-        dim = quantum_state.shape[0]
-        projection = unitary_group.rvs(dim)
-        return np.abs(projection @ quantum_state) ** 2
+        """Execute a projective measurement and return Born-rule outcome
+        probabilities.
+
+        For a state vector ``psi`` (1-D, length = dimension), the probability of
+        each outcome in the standard basis is ``|psi_i|^2``, normalised to a valid
+        probability distribution.
+        """
+        state = np.asarray(quantum_state, dtype=complex)
+        if state.ndim != 1 or state.size < 1:
+            raise ValueError("Projective measurement requires a 1-D state vector")
+        probabilities = np.abs(state) ** 2
+        total = probabilities.sum()
+        if total <= 0:
+            raise ValueError("State has zero norm; cannot measure")
+        return probabilities / total
 
 class POVMMeasurementStrategy(MeasurementStrategy):
     """Concrete implementation of POVM (Positive Operator-Valued Measure) measurement strategy."""
 
     def execute(self, quantum_state: np.ndarray) -> Dict[str, Any]:
-        """Execute POVM measurement on the given quantum state."""
-        # Implement POVM measurement logic here
-        # Placeholder implementation
-        povm_elements = [unitary_group.rvs(quantum_state.shape[0]) for _ in range(4)]
-        probabilities = [np.abs(element @ quantum_state) ** 2 for element in povm_elements]
-        return {"POVM_probabilities": probabilities}
+        """Execute a rank-1 POVM measurement.
+
+        Constructs a resolution of the identity from an orthonormal basis and
+        returns the Born-rule outcome probabilities, along with the associated
+        outcome labels — a real (simple) POVM, not a random projection.
+        """
+        state = np.asarray(quantum_state, dtype=complex)
+        if state.ndim != 1 or state.size < 1:
+            raise ValueError("POVM measurement requires a 1-D state vector")
+        probabilities = np.abs(state) ** 2
+        total = probabilities.sum()
+        if total <= 0:
+            raise ValueError("State has zero norm; cannot measure")
+        probabilities = probabilities / total
+        return {
+            "POVM_probabilities": probabilities.tolist(),
+            "outcomes": [f"o{i}" for i in range(state.size)],
+        }
 
 class WeakMeasurementStrategy(MeasurementStrategy):
     """Concrete implementation of weak measurement strategy."""
 
     def execute(self, quantum_state: np.ndarray) -> Dict[str, Any]:
-        """Execute weak measurement on the given quantum state."""
-        # Implement weak measurement logic here
-        # Placeholder implementation
-        weak_operator = unitary_group.rvs(quantum_state.shape[0])
-        weak_result = np.real(weak_operator @ quantum_state)
-        return {"Weak_measurement_result": weak_result}
+        """Weak measurement is not yet implemented; refuse rather than return a
+        fabricated random projection."""
+        raise NotImplementedError(
+            "WeakMeasurementStrategy is not implemented. Provide a weakly-coupled "
+            "observable and a coupling strength to implement it."
+        )
 
 class ContinuousMeasurementStrategy(MeasurementStrategy):
     """Concrete implementation of continuous measurement strategy."""
 
     def execute(self, quantum_state: np.ndarray) -> Dict[str, Any]:
-        """Execute continuous measurement on the given quantum state."""
-        # Implement continuous measurement logic here
-        # Placeholder implementation
-        continuous_operator = unitary_group.rvs(quantum_state.shape[0])
-        continuous_result = continuous_operator @ quantum_state
-        return {"Continuous_measurement_result": continuous_result}
+        """Continuous measurement is not yet implemented; refuse rather than
+        return a fabricated random result."""
+        raise NotImplementedError(
+            "ContinuousMeasurementStrategy is not implemented. Specify a stochastic "
+            "master-equation or measurement record to implement it."
+        )
 
 class AdaptiveMeasurementStrategy(MeasurementStrategy):
     """Concrete implementation of adaptive measurement strategy."""
 
     def execute(self, quantum_state: np.ndarray) -> Dict[str, Any]:
-        """Execute adaptive measurement on the given quantum state."""
-        # Implement adaptive measurement logic here
-        # Placeholder implementation
-        adaptive_operator = unitary_group.rvs(quantum_state.shape[0])
-        adaptive_result = np.abs(adaptive_operator @ quantum_state) ** 2
-        return {"Adaptive_measurement_result": adaptive_result}
+        """Adaptive measurement is not yet implemented; refuse rather than
+        return a fabricated random result."""
+        raise NotImplementedError(
+            "AdaptiveMeasurementStrategy is not implemented. Provide a feedback "
+            "policy to implement it."
+        )
+
 
 class QuantumCognitiveMeasure:
     """

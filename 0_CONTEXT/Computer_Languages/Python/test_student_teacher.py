@@ -15,7 +15,7 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(__file__))
 
-from student_teacher import TeacherModel, StudentTeacherPOMDP
+from Student_Teacher import TeacherModel, StudentTeacherPOMDP
 
 
 def test_belief_update_normalization():

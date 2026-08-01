@@ -106,21 +106,40 @@ class NetworkUtils:
             return []
 
     @staticmethod
-    def fetch_website_content(url: str, timeout: int = 10) -> Optional[str]:
+    def fetch_website_content(url: str, timeout: int = 10, max_bytes: int = 2 * 1024 * 1024) -> Optional[str]:
         """
         Fetches and returns the content of a website.
+
+        Only ``http``/``https`` URLs are accepted (prevents SSRF against internal
+        schemes such as ``file://``), and the response body is capped at
+        ``max_bytes`` so a large or malicious response cannot exhaust memory.
 
         Args:
             url (str): The URL of the website to fetch.
             timeout (int): The timeout for the request in seconds. Defaults to 10.
+            max_bytes (int): Maximum response body size to accept. Defaults to 2 MiB.
 
         Returns:
             Optional[str]: The content of the website, or None if an error occurred.
         """
         try:
-            response = requests.get(url, timeout=timeout)
-            response.raise_for_status()
-            return response.text
+            parsed = urllib.parse.urlparse(url)
+            if parsed.scheme not in ("http", "https"):
+                logging.error(f"Refusing to fetch non-http(s) URL scheme: {parsed.scheme or '<none>'}")
+                return None
+            with requests.get(url, timeout=timeout, stream=True) as response:
+                response.raise_for_status()
+                chunks = []
+                size = 0
+                for chunk in response.iter_content(chunk_size=65536):
+                    chunks.append(chunk)
+                    size += len(chunk)
+                    if size > max_bytes:
+                        raise ValueError(f"Response exceeds the {max_bytes} byte limit")
+                return b"".join(chunks).decode("utf-8", errors="replace")
+        except ValueError as e:
+            logging.error(f"Error fetching website content: {e}")
+            return None
         except requests.RequestException as e:
             logging.error(f"Error fetching website content: {e}")
             return None

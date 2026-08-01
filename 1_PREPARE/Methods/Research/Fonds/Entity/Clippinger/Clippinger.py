@@ -282,3 +282,5 @@ class ClippingerWorldview:
                     "Adaptability to changing environments", "Scalability across different levels of organization",
                     "Transparency and accountability", "Participatory decision-making"
                 ],
+            },
+        }

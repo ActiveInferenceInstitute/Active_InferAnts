@@ -6,7 +6,7 @@ Research context, specifications, multi-language implementations, and foundation
 
 | Directory | Description |
 |---|---|
-| `Computer_Languages/` | 32+ language implementations of Active Inference algorithms |
+| `Computer_Languages/` | 50 language implementations of Active Inference algorithms |
 | `Systems/` | Specialized systems: BOLTS, P3IF, Cognitive Sovereignty, William Blake, and more |
 | `specs_and_prompts/` | System specifications, architectural prompts, and design documents |
 

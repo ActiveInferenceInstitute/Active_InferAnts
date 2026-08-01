@@ -1,3 +1,4 @@
+import ipaddress
 import json
 from datetime import datetime, timedelta
 from typing import List, Dict
@@ -57,10 +58,23 @@ class SecurityAuditAnalyzer:
         return suspicious_ips
 
     def _is_malicious_ip(self, ip: str) -> bool:
-        """Check cached threat intelligence or query external API"""
+        """Check cached threat intelligence or query external API.
+
+        The ``ip`` value originates from log metadata (source_ip), so it is
+        validated as a real IP address before it is interpolated into the request
+        URL — this prevents header/path injection from attacker-influenced logs
+        and avoids sending the Bearer key to an unintended host.
+        """
+        try:
+            ipaddress.ip_address(ip)
+        except ValueError:
+            # Not a valid IP (possibly attacker-influenced) — never query external
+            # threat-intel with it.
+            return False
+
         if ip in self.threat_intel_cache:
             return self.threat_intel_cache[ip]
-            
+
         if self.threat_api_key:
             try:
                 response = requests.get(
@@ -106,16 +120,25 @@ class SecurityAuditAnalyzer:
             score += len(findings['suspicious_ips'])
         return min(5, score)
 
-    def detect_brute_force(self, logs):
-        """Identify rapid successive failures"""
+    def detect_brute_force(self, logs) -> bool:
+        """Identify rapid successive failures.
+
+        Returns a bool (``False`` when not a brute force) and does NOT fire the
+        incident response itself — ``analyze_logs`` orchestrates incident
+        activation once it holds the complete findings dict.
+        """
         failures = [log for log in logs if 'FAILURE' in log['event_type']]
         time_window = self.anomaly_thresholds['time_window']
-        
+
         if len(failures) > self.anomaly_thresholds['failed_attempts']:
-            first = datetime.fromisoformat(failures[0]['timestamp'])
-            last = datetime.fromisoformat(failures[-1]['timestamp'])
+            try:
+                first = datetime.fromisoformat(failures[0]['timestamp'])
+                last = datetime.fromisoformat(failures[-1]['timestamp'])
+            except (KeyError, ValueError):
+                return False
             if (last - first) < time_window:
-                self.trigger_incident_response()
+                return True
+        return False
 
     def _disable_affected_services(self):
         """Implementation of disabling affected services"""

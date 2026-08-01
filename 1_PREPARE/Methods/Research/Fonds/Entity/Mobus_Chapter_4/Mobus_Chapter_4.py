@@ -133,3 +133,5 @@ class MobusWorldview:
                 "Adaptive systems can change and evolve in response to their environment.",
                 "Holistic thinking is essential for understanding complex systems.",
                 "Modeling and simulation are powerful tools for studying the behavior of complex systems.",
+            ]
+        }

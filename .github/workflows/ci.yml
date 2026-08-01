@@ -1,0 +1,32 @@
+# GitHub Actions CI for Active InferAnts
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install core deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Compile-sweep all Python sources
+        run: |
+          failed=0
+          while IFS= read -r -d '' f; do
+            python -m py_compile "$f" || { echo "COMPILE FAIL: $f"; failed=1; }
+          done < <(git ls-files -z '*.py')
+          exit $failed
+      - name: Run unit tests
+        run: python -m pytest -q

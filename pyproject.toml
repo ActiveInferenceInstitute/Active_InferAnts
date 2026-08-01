@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "active-inferants"
+version = "1.0.0"
+description = "Multi-language Active Inference framework for advanced AI research and applications."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "CC BY-NC-ND 4.0" }
+authors = [{ name = "Active Inference Institute" }]
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "pandas>=2.0.0",
+    "networkx>=3.0",
+    "pyyaml>=6.0",
+    "tqdm>=4.60",
+    "cryptography>=41.0.0",
+    "argon2-cffi>=23.1.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+api = [
+    "pymongo>=4.0.0",
+    "redis>=5.0.0",
+    "elasticsearch>=8.0.0",
+    "neo4j>=5.0.0",
+    "motor>=3.0.0",
+    "aiocache>=0.12.0",
+    "aioredis>=2.0.0",
+]
+dev = [
+    "pytest>=7.0",
+    "httpx>=0.24.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+active-inferants = "active_infer_ants.model:main"
+
+[tool.setuptools.packages.find]
+include = ["active_infer_ants*", "3_MEASURE*", "1_PREPARE*", "6_API*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

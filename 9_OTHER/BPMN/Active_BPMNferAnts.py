@@ -1,3 +1,4 @@
+"""
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
@@ -149,3 +150,4 @@
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </definitions>
+"""

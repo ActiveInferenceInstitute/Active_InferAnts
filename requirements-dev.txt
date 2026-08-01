@@ -1,0 +1,6 @@
+# Development dependencies for Active InferAnts.
+# Install with:  pip install -r requirements-dev.txt
+-e .
+pytest>=7.0
+httpx>=0.24.0
+ruff>=0.4.0

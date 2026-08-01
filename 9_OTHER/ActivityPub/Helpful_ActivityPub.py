@@ -438,4 +438,4 @@ class ActivityPubHelper:
         return response.json()
 
     def answer_question(self, actor_id: str, question_id: str, answer: str) -> Dict:
-        
+        pass

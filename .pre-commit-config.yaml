@@ -1,0 +1,15 @@
+# Pre-commit hooks for Active InferAnts.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.5
+    hooks:
+      - id: ruff
+        args: [check, --fix]
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: py-compile
+        name: py-compile all sources
+        entry: ./scripts/check_compile.sh
+        language: script
+        pass_filenames: false

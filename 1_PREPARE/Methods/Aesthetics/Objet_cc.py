@@ -1,4 +1,4 @@
-https://objet.cc/manifesto
+"""https://objet.cc/manifesto
 
 manifesto
 “LE NEW CONSUMER”
@@ -35,3 +35,4 @@ Finally, le new consumer seeks out other new consumers.
 That’s what made Sapiens singular in the first place. We only truly become someone when in relationship with others. We don’t lock meaningful objects inside vaults, we share them and celebrate them together. We believe in collective intelligence. We believe our rationales — why we have decided to nurture these specific possessions — can serve the public. We believe the stories and meaning of our objects should have a net positive effect on society.
 “Tell me, what is it you plan to do with your one wild and precious life?”
 — Mary Oliver
+"""

@@ -2,9 +2,8 @@ import hashlib
 import hmac
 import logging
 from typing import Callable, Optional
-from .security_base import SecurityServiceBase
+from .security_base import SecurityServiceBase, SecurityConfigurationError
 import argon2
-from functools import lru_cache
 import requests
 
 class HashingService(SecurityServiceBase):
@@ -90,21 +89,26 @@ class HashingService(SecurityServiceBase):
             self.logger.error(f"Hash computation failed: {str(e)}")
             raise
 
-    @lru_cache(maxsize=128)
     def _safe_compare(self, a: str, b: str) -> bool:
         """Constant-time comparison for security-sensitive checks"""
         return hmac.compare_digest(a, b)
 
-    def check_password_breach(self, password_hash: str) -> bool:
-        """Check password against HaveIBeenPwned database"""
-        prefix = password_hash[:5]
+    def check_password_breach(self, password: str) -> bool:
+        """Check a password against the HaveIBeenPwned database.
+
+        Implements HIBP's k-anonymity model: only the first 5 characters of the
+        SHA-1 digest of the password are sent to the API; the plaintext password
+        itself is never transmitted.
+        """
+        sha1_digest = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
+        prefix = sha1_digest[:5]
         try:
             response = requests.get(
                 f"https://api.pwnedpasswords.com/range/{prefix}",
                 headers={"Add-Padding": "true"},
                 timeout=2
             )
-            return password_hash[5:] in response.text
+            return sha1_digest[5:] in response.text
         except Exception as e:
             self.log_audit_event("BREACH_CHECK_FAILED", {"error": str(e)})
             return False
@@ -121,9 +125,29 @@ class HashingService(SecurityServiceBase):
         return super().hash_password(password)
 
     def _calculate_password_complexity(self, password: str) -> int:
-        """zxcvbn-inspired password complexity scoring"""
-        # Implementation would use zxcvbn library
-        return 4  # Placeholder value
+        """Score password complexity on a 0-4 scale (zxcvbn-inspired).
+
+        Scores based on length plus the number of distinct character classes
+        (lowercase, uppercase, digits, symbols), so the check is meaningful
+        rather than a hardcoded constant.
+        """
+        if not password:
+            return 0
+        classes = 0
+        if any(c.islower() for c in password):
+            classes += 1
+        if any(c.isupper() for c in password):
+            classes += 1
+        if any(c.isdigit() for c in password):
+            classes += 1
+        if any(not c.isalnum() for c in password):
+            classes += 1
+        length = len(password)
+        if length < 8:
+            return min(classes, 2)
+        if length < 12:
+            return min(classes, 3)
+        return classes
 
     def verify_password(self, password: str, hashed: str) -> bool:
         """Timing-attack resistant verification"""

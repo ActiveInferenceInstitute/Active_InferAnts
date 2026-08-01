@@ -221,11 +221,12 @@ class HipolitoWorldview:
         ]
         self.enactivist_approach = True
         self.reject_representationalism = True
-        self.cognition = {key: True for key in [
-            "permeates_everything", "shaped_by_culture", "not_reducible_to_mental_representations", "enactive_dynamic",
-            "situated_in_epistemic_community", "embodied", "embedded", "extended", "enactive", "affective",
-            "socially_distributed", "circular_causality", "developmental_perspective", "contextual_sensitivity",
-            "relational_autonomy", "interconnected_with_environment", "emergent_properties", "dynamic_systems_approach",
+        # (abandoned truncated fragment - superseded by full dict below)
+        # self.cognition = {key: True for key in [
+        #     "permeates_everything", "shaped_by_culture", "not_reducible_to_mental_representations", "enactive_dynamic",
+        #     "situated_in_epistemic_community", "embodied", "embedded", "extended", "enactive", "affective",
+        #     "socially_distributed", "circular_causality", "developmental_perspective", "contextual_sensitivity",
+        #     "relational_autonomy", "interconnected_with_environment", "emergent_properties", "dynamic_systems_approach",
         self.cognition = {
             "permeates_everything": True,
             "shaped_by_culture": True,

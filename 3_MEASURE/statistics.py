@@ -210,8 +210,12 @@ class EnhancedSimulationStatistics(StatisticalAnalysis):  # Inherit from Statist
         food_trends = food_trends.to_frame(name='food_collected_per_step')
         
         agent_counts = self.results.query("category == 'agents'").groupby('simulation_steps').size()
-        food_efficiency = food_trends['food_collected_per_step'] / agent_counts
-        food_trends['collection_efficiency'] = food_efficiency
+        # Reindex the agent counts onto the food-trend index so the division below
+        # can never produce NaN from misaligned index sets (steps present in one
+        # grouping but not the other). Missing counts become 0.
+        agent_counts = agent_counts.reindex(food_trends.index).fillna(0)
+        food_efficiency = food_trends['food_collected_per_step'] / agent_counts.replace(0, np.nan)
+        food_trends['collection_efficiency'] = food_efficiency.fillna(0)
         
         efficiency_stats = food_trends['collection_efficiency'].agg(['mean', 'median', 'std', 'min', 'max'])
         

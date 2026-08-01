@@ -176,13 +176,25 @@ class EnhancedSimulationSummary:
 
     def _agents_entropy(self) -> float:
         """
-        Calculate the entropy of agent energies in the simulation.
+        Calculate the entropy of the agent-energy distribution in the simulation.
+
+        Shannon entropy requires a valid probability distribution. scipy.stats.entropy
+        interprets its input as probabilities, but raw energies (e.g. [10, 12, …]) are
+        not normalized, so first normalise to a valid distribution.
 
         Returns:
-            float: The entropy of agent energies.
+            float: The entropy of agent energies (0 for a degenerate distribution).
         """
         energies = [agent.energy for agent in self.data.agents]
-        return entropy(energies) if energies else 0
+        if not energies:
+            return 0.0
+        energies = np.asarray(energies, dtype=float)
+        total = np.sum(energies)
+        if total <= 0:
+            # No energy anywhere (or all-zero) → degenerate distribution, entropy 0.
+            return 0.0
+        distribution = energies / total
+        return float(entropy(distribution))
 
     def _food_distribution(self) -> Dict[str, float]:
         """

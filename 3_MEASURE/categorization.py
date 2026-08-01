@@ -361,8 +361,21 @@ class CategoryTheoryAnalyzer:
         Returns:
             Any: The colimit object.
         """
-        # Implementation of colimit computation
-        colimit = reduce(lambda x, y: x | y, diagram.values())
+        if not diagram:
+            raise ValueError("Cannot compute colimit of an empty diagram")
+
+        values = list(diagram.values())
+        # A colimit merges/unions the objects of the diagram. The set/dict union
+        # operator `|` is only defined for dict/set/frozenset values, so fall back to
+        # a pair-tuple for other object types rather than raising. The result is both
+        # stored (self.colimits) and returned so the computed value is never discarded.
+        if all(isinstance(v, (dict, set, frozenset)) for v in values):
+            colimit = reduce(lambda x, y: x | y, values)
+        else:
+            colimit = reduce(lambda x, y: (x, y), values)
+
+        self.colimits[str(diagram)] = colimit
+        return colimit
 # Example usage
 if __name__ == "__main__":
     analyzer = CategoryTheoryAnalyzer()

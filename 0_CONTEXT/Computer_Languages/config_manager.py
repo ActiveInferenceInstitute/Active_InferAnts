@@ -360,16 +360,39 @@ class DependencyChecker:
 
         return len(missing) == 0, available, missing
 
+    def _download_and_run(self, url: str, argv: List[str], timeout: int = 300) -> None:
+        """Download a remote setup script to a temp file, then execute it.
+
+        The original code tried to pass a literal ``"|"`` as an argv element, which
+        curl treats as a real argument rather than a shell pipe, so the piped
+        installer never ran. We instead fetch the script to a temp file and run it
+        with the given interpreter/args (a real pipe). For installers that run as
+        root (NodeSource), argv should begin with ``sudo``.
+        """
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(suffix=".sh", delete=False) as tmp:
+            tmp_path = tmp.name
+        try:
+            subprocess.run(
+                ["curl", "-fsSL", url, "-o", tmp_path],
+                check=True, capture_output=True, timeout=timeout)
+            subprocess.run(argv + [tmp_path], check=True, capture_output=True, timeout=timeout)
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+
     def _install_nodejs_deps(self) -> bool:
         """Install Node.js dependencies."""
         if self.system == "linux":
             try:
-                subprocess.run(["curl", "-fsSL", "https://deb.nodesource.com/setup_lts.x", "|", "sudo", "-E", "bash", "-"],
-                             check=True, capture_output=True)
+                self._download_and_run(
+                    "https://deb.nodesource.com/setup_lts.x",
+                    ["sudo", "-E", "bash"])
                 subprocess.run(["sudo", "apt-get", "install", "-y", "nodejs"],
                              check=True, capture_output=True)
                 return True
-            except subprocess.CalledProcessError:
+            except (subprocess.CalledProcessError, OSError):
                 return False
         else:
             print("❌ Automatic Node.js installation not supported on this platform")
@@ -426,11 +449,11 @@ class DependencyChecker:
     def _install_rust_deps(self) -> bool:
         """Install Rust dependencies."""
         try:
-            subprocess.run(["curl", "--proto", "=https", "--tlsv1.2", "-sSf",
-                          "https://sh.rustup.rs", "|", "sh", "-s", "--", "-y"],
-                         check=True, capture_output=True)
+            self._download_and_run(
+                "https://sh.rustup.rs",
+                ["sh", "-s", "--", "-y"])
             return True
-        except subprocess.CalledProcessError:
+        except (subprocess.CalledProcessError, OSError):
             return False
 
     def _check_go_deps(self) -> Tuple[bool, List[str], List[str]]:

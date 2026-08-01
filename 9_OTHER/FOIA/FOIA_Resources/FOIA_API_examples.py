@@ -3,6 +3,7 @@ Example 1: Basic FOIA Request
 This example shows how to make a basic FOIA request using the Python requests library.
 """
 
+import os
 import requests
 import json
 
@@ -10,7 +11,7 @@ def make_basic_foia_request():
     url = "https://foia-api.agency.gov/components/234/requests"
     headers = {
         "Content-Type": "application/json",
-        "FOIA-API-SECRET": "your_secret_token_here"
+        "FOIA-API-SECRET": os.environ.get("FOIA_API_SECRET", "your_secret_token_here")
     }
 
     data = {
@@ -46,7 +47,7 @@ def make_foia_request_with_attachments():
     url = "https://foia-api.agency.gov/components/234/requests"
     headers = {
         "Content-Type": "application/json",
-        "FOIA-API-SECRET": "your_secret_token_here"
+        "FOIA-API-SECRET": os.environ.get("FOIA_API_SECRET", "your_secret_token_here")
     }
 
     # Read file and encode it
@@ -92,7 +93,7 @@ def make_foia_request_with_fee_waiver_and_expedited_processing():
     url = "https://foia-api.agency.gov/components/234/requests"
     headers = {
         "Content-Type": "application/json",
-        "FOIA-API-SECRET": "your_secret_token_here"
+        "FOIA-API-SECRET": os.environ.get("FOIA_API_SECRET", "your_secret_token_here")
     }
 
     data = {
@@ -131,7 +132,7 @@ def make_foia_request_with_error_handling():
     url = "https://foia-api.agency.gov/components/234/requests"
     headers = {
         "Content-Type": "application/json",
-        "FOIA-API-SECRET": "your_secret_token_here"
+        "FOIA-API-SECRET": os.environ.get("FOIA_API_SECRET", "your_secret_token_here")
     }
 
     data = {
@@ -170,7 +171,7 @@ def authenticate_api_request():
     url = "https://foia-api.agency.gov/components/234/requests"
     headers = {
         "Content-Type": "application/json",
-        "FOIA-API-SECRET": "your_secret_token_here"
+        "FOIA-API-SECRET": os.environ.get("FOIA_API_SECRET", "your_secret_token_here")
     }
 
     data = {

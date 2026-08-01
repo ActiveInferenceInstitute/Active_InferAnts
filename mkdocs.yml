@@ -1,0 +1,26 @@
+site_name: Active InferAnts
+repo_url: https://github.com/ActiveInferenceInstitute/ActiveInferAnts
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Architecture:
+      - architecture/index.md
+  - API:
+      - api/index.md
+  - Concepts:
+      - concepts/index.md
+  - Guides:
+      - guides/index.md
+  - Operations:
+      - operations/index.md
+  - Reference:
+      - reference/index.md
+  - Security:
+      - security/index.md
+  - Systems:
+      - systems/index.md
+  - Testing:
+      - testing/index.md
+  - Tutorials:
+      - tutorials/index.md

@@ -295,3 +295,5 @@ class ClippingerWorldview:
                     "Transparency and accountability",
                     "Participatory decision-making"
                 ],
+            },
+        }

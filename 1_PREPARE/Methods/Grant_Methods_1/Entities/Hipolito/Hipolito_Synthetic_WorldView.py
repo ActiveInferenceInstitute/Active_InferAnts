@@ -218,6 +218,7 @@ class HipolitoWorldview:
             "Develop mechanisms for accountability in AI decision-making",
             "Consider the 'sponge-like' learning capacity of AI and its implications",
             "Critically analyze the philosophical assumptions underlying AI models",
+        ]
         self.enactivist_approach = True
         self.reject_representationalism = True
         self.cognition = {

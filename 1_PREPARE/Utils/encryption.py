@@ -55,7 +55,10 @@ class EncryptionService(SecurityServiceBase):
         self.fernet = self._init_fernet(enable_rotation, previous_keys)
         self.key_version = 1  # Track key versions for rotation
         self.key_generation_time = time.time()
-        self.rotation_policy = self._config.key_rotation_policy
+        self.operation_counter = 0
+        # SecurityConfigSchema has no key_rotation_policy field; use the module's
+        # own (defined) rotation policy so construction never AttributeErrors.
+        self.rotation_policy = self.KEY_ROTATION_TRIGGERS
         self.hsm = self._init_hsm(hsm_config) if hsm_config else None
 
     def _init_fernet(self, enable_rotation, previous_keys):
@@ -68,10 +71,12 @@ class EncryptionService(SecurityServiceBase):
         return Fernet(self.current_key)
 
     def _init_hsm(self, config: dict):
-        """Initialize Hardware Security Module integration"""
-        # Implementation would use vendor-specific HSM library
-        # Placeholder for HSM initialization logic
-        return HSMSession(config)
+        """Initialize Hardware Security Module integration.
+
+        No HSM driver is wired into the codebase yet; fail loud rather than
+        reference an undefined ``HSMSession`` class.
+        """
+        raise NotImplementedError("HSM integration is not yet implemented")
 
     def _derive_key(
         self,
@@ -141,30 +146,36 @@ class EncryptionService(SecurityServiceBase):
 
     def _check_rotation_conditions(self):
         """Automated key rotation based on configured policies"""
-        rotation_needed = False
+        self.operation_counter += 1
         conditions = {
-            'time': (time.time() - self.key_generation_time) 
+            'time': (time.time() - self.key_generation_time)
                     > self.KEY_ROTATION_TRIGGERS['max_age_days'] * 86400,
-            'usage': self.operation_counter 
+            'usage': self.operation_counter
                     > self.KEY_ROTATION_TRIGGERS['max_operations']
         }
 
         if any(conditions.values()):
             self.log_audit_event("KEY_ROTATION_TRIGGERED", conditions)
-            self.rotate_key()
-            self.operation_counter = 0
-            self.key_generation_time = time.time()
+            # Automatic rotation needs a new secret; that cannot be derived
+            # internally, so surface a loud warning instead of calling the
+            # argon2-style rotate_key() with missing arguments.
+            self.logger.warning(
+                "Key rotation policy conditions met; rotate_key() must be invoked "
+                "with a new password by the operator."
+            )
 
     @classmethod
     def enable_fips_mode(cls):
-        """Configure for FIPS 140-3 compliance"""
-        cls._config.update({
-            'algorithm': hashes.SHA512,
-            'iterations': 1_000_000,
-            'key_length': 256,
-            'disallowed_modes': ['ECB']
-        })
-        cls.log_audit_event("FIPS_MODE_ENABLED", {})
+        """Configure for FIPS 140-3 compliance.
+
+        The underlying config object is not a mutable mapping, so the previous
+        ``cls._config.update(...)`` call could never work. Fail loud until a real
+        FIPS configuration path is wired in.
+        """
+        raise NotImplementedError(
+            "FIPS 140-3 mode configuration is not yet implemented; supply a "
+            "FIPS-validated algorithm/iteration set when constructing the service."
+        )
 
     def create_quantum_resistant_keypair(self) -> tuple:
         """Post-quantum cryptography integration point"""

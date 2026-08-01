@@ -1,3 +1,4 @@
+"""
 https://www.foia.gov/developer/agency-api/
 
 
@@ -344,4 +345,4 @@ Individual annual reports, in XML format, are available via an API endpoint:
 For example, to receive the Department of Justice (DOJ) annual report for 2021, you could use this:
 
 curl -H 'X-API-Key: <your-api-key>' https://api.foia.gov/api/annual-report-xml/DOJ/2021
-
+"""

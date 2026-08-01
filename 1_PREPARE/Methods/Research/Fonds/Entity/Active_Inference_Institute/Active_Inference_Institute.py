@@ -222,20 +222,22 @@ class ActiveInferenceInstitute:
                 "project": "As an Active Inference Institute Research Fellow, the research program I will pursue is a continuation of the work I describe in a book and in two series of concept papers. That program explores the science-driven, de novo development of new cognitive architectures that are, by design, fit for purpose. The first series describes how the approach can be applied to the creation of new societal systems (e.g., new economic and governance systems), which are viewed as components of a society's cognitive architecture. The second series describes how the approach can be applied to creation of an online ecosystem that facilitates cognition in the large-group setting.",
             }
         ]
-"Online, Hybrid, and In-person events",
-                "Organizational partnerships", "Dynamical Systems Theory", "Information Theory",
-                "Neuroscientific Methods", "Computational Psychiatry", "Neurophenomenology",
-                "Variational Methods", "RxInfer.jl for Multiscale Modeling", "Action Research",
-                "Volunteer Programs", "Internships", "Mentorship Programs", "Open Science",
-                "Open Source", "Textbook and Learning Groups", "Technical and Scientific skill development",
-                "Participatory Global Research", "Knowledge Engineering", "Symbolic Cognitive Robotics"
-            ],
-            "perspectives": [
-                "Holistic", "Interdisciplinary", "Systems Thinking", "Open Science",
-                "Participatory Global Research", "Inclusive Communication",
-                "Neurodiversity-Affirming", "Sustainability-Oriented", "Ethical AI Development"
-            ]
-        }
+
+        # (orphaned fragment - preserved verbatim)
+        # "Online, Hybrid, and In-person events",
+        #     "Organizational partnerships", "Dynamical Systems Theory", "Information Theory",
+        #     "Neuroscientific Methods", "Computational Psychiatry", "Neurophenomenology",
+        #     "Variational Methods", "RxInfer.jl for Multiscale Modeling", "Action Research",
+        #     "Volunteer Programs", "Internships", "Mentorship Programs", "Open Science",
+        #     "Open Source", "Textbook and Learning Groups", "Technical and Scientific skill development",
+        #     "Participatory Global Research", "Knowledge Engineering", "Symbolic Cognitive Robotics"
+        # ],
+        # "perspectives": [
+        #     "Holistic", "Interdisciplinary", "Systems Thinking", "Open Science",
+        #     "Participatory Global Research", "Inclusive Communication",
+        #     "Neurodiversity-Affirming", "Sustainability-Oriented", "Ethical AI Development"
+        # ]
+        # }
 
     def _define_implications(self):
         return {

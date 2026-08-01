@@ -2,6 +2,7 @@ import ast
 import functools
 import importlib
 import inspect
+import os
 import sys
 import types
 from typing import (
@@ -101,20 +102,46 @@ class MetaProgramming:
         setattr(cls, method_name, method)
 
     @staticmethod
-    def modify_function(func: Callable[..., T], new_code: str) -> Callable[..., T]:
+    def _exec_enabled(allow_exec: bool) -> bool:
+        """Whether arbitrary code execution is permitted.
+
+        ``modify_function`` / ``compile_ast`` materialise and can execute
+        caller-supplied source, which is a full code-execution primitive. It is
+        gated behind an explicit opt-in: pass ``allow_exec=True`` OR set the
+        ``META_PROGRAMMING_ALLOW_EXEC`` environment variable. Without one of
+        these, the call refuses rather than silently executing untrusted code.
         """
-        Replace the implementation of an existing function with new code.
+        if allow_exec:
+            return True
+        return bool(os.environ.get("META_PROGRAMMING_ALLOW_EXEC"))
+
+    @staticmethod
+    def modify_function(func: Callable[..., T], new_code: str,
+                        allow_exec: bool = False) -> Callable[..., T]:
+        """Replace the implementation of an existing function with new code.
+
+        Warning: this compiles and installs ``new_code`` as a live callable,
+        which is an arbitrary-code-execution primitive. Calling it executes the
+        supplied source; it is refused unless ``allow_exec=True`` or the
+        ``META_PROGRAMMING_ALLOW_EXEC`` environment variable is set.
 
         Args:
             func (Callable[..., T]): The function to modify.
             new_code (str): The new code for the function.
+            allow_exec (bool): Explicitly opt in to code execution.
 
         Returns:
             Callable[..., T]: The modified function.
 
         Raises:
+            RuntimeError: If code execution is not explicitly enabled.
             SyntaxError: If the new code contains invalid Python syntax.
         """
+        if not MetaProgramming._exec_enabled(allow_exec):
+            raise RuntimeError(
+                "modify_function() would execute arbitrary code. Refusing unless "
+                "allow_exec=True or META_PROGRAMMING_ALLOW_EXEC is set."
+            )
         try:
             compiled_code = compile(new_code, "<string>", "exec")
         except SyntaxError as e:
@@ -184,17 +211,31 @@ class MetaProgramming:
         return transformer_instance.visit(tree)
 
     @staticmethod
-    def compile_ast(tree: ast.AST, filename: str = "<ast>") -> types.CodeType:
-        """
-        Compile an AST into a code object.
+    def compile_ast(tree: ast.AST, filename: str = "<ast>",
+                    allow_exec: bool = False) -> types.CodeType:
+        """Compile an AST into a code object.
+
+        Warning: compiling an AST into ``"exec"`` mode produces executable code;
+        if that object is later run it is an arbitrary-code-execution primitive.
+        Refused unless ``allow_exec=True`` or ``META_PROGRAMMING_ALLOW_EXEC`` is
+        set.
 
         Args:
             tree (ast.AST): The AST to compile.
-            filename (str, optional): The filename to associate with the compiled code. Defaults to "<ast>".
+            filename (str, optional): The filename to associate with the code.
+            allow_exec (bool): Explicitly opt in to compiling executable code.
 
         Returns:
             types.CodeType: The compiled code object.
+
+        Raises:
+            RuntimeError: If exec compilation is not explicitly enabled.
         """
+        if not MetaProgramming._exec_enabled(allow_exec):
+            raise RuntimeError(
+                "compile_ast() would compile an executable code object. Refusing "
+                "unless allow_exec=True or META_PROGRAMMING_ALLOW_EXEC is set."
+            )
         return compile(tree, filename, "exec")
 
     @staticmethod

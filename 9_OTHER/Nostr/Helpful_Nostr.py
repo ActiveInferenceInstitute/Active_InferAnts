@@ -441,7 +441,6 @@ class NostrHelper:
         )
         return zap_request
 
-    @staticmethod
 def create_event(private_key: str, kind: int, content: str, tags: List[List[str]] = None, created_at: int = None) -> Event:
     """
     Create a Nostr event.
@@ -819,6 +818,9 @@ def create_badge_definition(private_key: str, name: str, description: str, image
     :param name: The name of the badge
     :param description: A description of the badge
     :param image_url: URL of the badge image
+    """
+    pass
+
 # Example usage
 async def example_usage():
     relay_urls = ["wss://relay.damus.io", "wss://relay.nostr.info"]

@@ -4,10 +4,10 @@
 
 [![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Multi-Language](https://img.shields.io/badge/languages-32+-green.svg)](#multi-language-support)
+[![Multi-Language](https://img.shields.io/badge/languages-50-green.svg)](#multi-language-support)
 [![Active Inference](https://img.shields.io/badge/AI-Active_Inference-purple.svg)](https://en.wikipedia.org/wiki/Active_inference)
 
-Welcome to **Active InferAnts** - a comprehensive, multi-language framework that implements Active Inference algorithms across 32+ programming languages. This project serves as both a research platform for studying active inference mechanisms and a practical toolkit for building sophisticated AI applications that can learn, adapt, and make decisions in complex environments.
+Welcome to **Active InferAnts** - a comprehensive, multi-language framework that implements Active Inference algorithms across 50 programming languages. This project serves as both a research platform for studying active inference mechanisms and a practical toolkit for building sophisticated AI applications that can learn, adapt, and make decisions in complex environments.
 
 ## Table of Contents
 
@@ -35,7 +35,7 @@ Welcome to **Active InferAnts** - a comprehensive, multi-language framework that
 
 **Active InferAnts** represents a groundbreaking approach to implementing Active Inference algorithms - a mathematical framework for understanding perception, learning, and decision-making in biological and artificial agents. Our system uniquely combines:
 
-- **Multi-Language Implementation**: Core Active Inference algorithms implemented in 32+ programming languages
+- **Multi-Language Implementation**: Core Active Inference algorithms implemented in 50 programming languages
 - **Ant Colony Optimization**: Nature-inspired optimization strategies integrated with Active Inference principles
 - **Modular Architecture**: Clean separation of concerns across 6 operational phases
 - **Research-to-Production Pipeline**: From theoretical models to deployable applications
@@ -67,7 +67,7 @@ By implementing the same algorithms in multiple programming languages, we ensure
 
 ### 🏗️ Architecture & Design
 - **Modular Pipeline**: 6-phase operational framework (Prepare → Operate → Measure → Report → Follow-up → API)
-- **Multi-Language Support**: 32+ programming languages with consistent APIs
+- **Multi-Language Support**: 50 programming languages with consistent APIs
 - **Plugin Architecture**: Extensible design for custom algorithms and integrations
 - **Configuration Management**: Flexible parameter system with JSON-based configuration
 - **Security-First**: Built-in encryption, hashing, and secure communication utilities
@@ -145,7 +145,7 @@ python3 0_CONTEXT/Computer_Languages/master_controller.py status
 
 - **Python 3.8+** (for core functionality and master controller)
 - **Git** (for cloning and version control)
-- **32+ Programming Languages** (optional, for multi-language implementations)
+- **50 Programming Languages** (optional, for multi-language implementations)
 
 ### Core Installation
 
@@ -359,7 +359,7 @@ graph LR
 #### Core Directory Structure
 
 - **`0_CONTEXT/`** - Research context, specifications, and multi-language implementations
-  - [`Computer_Languages/`](0_CONTEXT/Computer_Languages/) - 32+ language implementations
+  - [`Computer_Languages/`](0_CONTEXT/Computer_Languages/) - 50 language implementations
   - [`specs_and_prompts/`](0_CONTEXT/specs_and_prompts/) - System specifications and prompts
   - [`Systems/`](0_CONTEXT/Systems/) - Specialized Active Inference systems
   - [`README.md`](0_CONTEXT/Computer_Languages/README.md) - Language implementation guide
@@ -408,7 +408,7 @@ graph LR
 
 #### Multi-Language Support
 
-Active InferAnts implements Active Inference algorithms in 32+ programming languages, ensuring:
+Active InferAnts implements Active Inference algorithms in 50 programming languages, ensuring:
 
 - **Algorithm Validation**: Cross-language verification of mathematical correctness
 - **Performance Benchmarking**: Direct comparison across language implementations
@@ -474,7 +474,7 @@ Advanced API for managing meta-information about Active Inference processes and 
 Active InferAnts includes a sophisticated testing framework that ensures reliability across all implementations:
 
 **Key Components:**
-- **Multi-Language Testing**: Automated testing across 32+ programming languages
+- **Multi-Language Testing**: Automated testing across 50 programming languages
 - **Performance Benchmarking**: Cross-language performance comparisons
 - **Algorithm Validation**: Mathematical correctness verification
 - **Integration Testing**: End-to-end system validation
@@ -505,7 +505,8 @@ python3 0_CONTEXT/Computer_Languages/test_suite.py --report
 
 ### Quality Metrics
 
-- **Code Coverage**: >90% across all implementations
+- **Code Coverage**: unit tests cover the core `active_infer_ants` package, both REST APIs, and the correctness/security fixes (see `tests/`); run `pytest --cov` to measure a specific target
+- **Correctness**: every tracked Python source is compile-checked in CI (no syntax errors)
 - **Performance Consistency**: <5% variance across language implementations
 - **Algorithm Accuracy**: Verified against reference implementations
 - **Documentation Coverage**: 100% API documentation
@@ -558,8 +559,8 @@ pip install -r requirements-dev.txt
 # Run linting and code quality checks
 pre-commit run --all-files
 
-# Run tests in watch mode
-python3 -m pytest --watch
+# Run the unit test suite
+python3 -m pytest -q
 
 # Build documentation
 mkdocs build

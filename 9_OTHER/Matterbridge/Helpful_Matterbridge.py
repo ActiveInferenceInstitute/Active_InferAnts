@@ -1,3 +1,4 @@
+"""
 Matterbridge: Open-source chat bridge for multiple messaging platforms
 
 Key features:
@@ -209,3 +210,4 @@ whatsapp - https://github.com/Rhymen/go-whatsapp
 whatsapp - https://github.com/tulir/whatsmeow
 xmpp - https://github.com/mattn/go-xmpp
 zulip - https://github.com/ifo/gozulipbot
+"""

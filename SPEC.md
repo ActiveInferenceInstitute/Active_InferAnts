@@ -4,7 +4,7 @@
 
 ## Overview
 
-Multi-language Active Inference framework for advanced AI research and applications. Implements Active Inference algorithms across 32+ programming languages with a 6-phase operational pipeline.
+Multi-language Active Inference framework for advanced AI research and applications. Implements Active Inference algorithms across 50 programming languages with a 6-phase operational pipeline.
 
 ## Structure
 
@@ -51,7 +51,7 @@ Global parameters in `config.json`:
 - **Python 3.8+** (core orchestration)
 - **NumPy, SciPy** (mathematical operations)
 - **FastAPI, uvicorn** (API services)
-- **32+ language runtimes** (optional, for multi-language implementations)
+- **50 language runtimes** (optional, for multi-language implementations)
 - See per-language subdirectories for language-specific dependencies
 
 ## Version

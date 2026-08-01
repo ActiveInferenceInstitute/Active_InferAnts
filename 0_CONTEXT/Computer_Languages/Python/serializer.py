@@ -9,9 +9,38 @@ import os
 import gzip
 import bz2
 import lzma
+import io
 from datetime import datetime
 from typing import Any, Dict, Optional, Union
 import numpy as np
+
+
+class RestrictedUnpickler(pickle.Unpickler):
+    """Unpickler that refuses to instantiate arbitrary classes.
+
+    Pickle can execute arbitrary code when loading untrusted data, so only a small
+    allowlist of plain-data types (which is all the agent checkpoint payloads use,
+    since numpy arrays are converted to dicts during serialization) is permitted.
+    """
+
+    _SAFE_GLOBALS = {
+        "builtins": {"str", "int", "float", "bool", "bytes", "list", "dict", "tuple", "set", "frozenset"},
+        "numpy": {"int64", "int32", "float64", "float32", "bool_", "ndarray", "dtype"},
+        "numpy.core.multiarray": {"scalar", "_reconstruct"},
+        "numpy._core.multiarray": {"scalar", "_reconstruct"},
+        "numpy.core.numeric": {"_frombuffer"},
+        "numpy._core.numeric": {"_frombuffer"},
+    }
+
+    def find_class(self, module: str, name: str):
+        if name not in self._SAFE_GLOBALS.get(module, set()):
+            raise pickle.UnpicklingError(f"global '{module}.{name}' is forbidden")
+        return super().find_class(module, name)
+
+
+def restricted_loads(data: bytes) -> Any:
+    """pickle.loads() restricted to the safe allowlist (RCE guard)."""
+    return RestrictedUnpickler(io.BytesIO(data)).load()
 
 
 class Serializer:
@@ -80,8 +109,7 @@ class Serializer:
             state = json.loads(data)
         elif isinstance(data, bytes):
             if self.format == 'pickle':
-                import pickle
-                state = pickle.loads(data)
+                state = restricted_loads(data)
             elif self.format == 'compressed':
                 state = self._deserialize_from_compressed(data)
             else:
@@ -89,8 +117,7 @@ class Serializer:
                 try:
                     state = json.loads(data.decode('utf-8'))
                 except UnicodeDecodeError:
-                    import pickle
-                    state = pickle.loads(data)
+                    state = restricted_loads(data)
         else:
             raise ValueError("Unknown serialization format")
 

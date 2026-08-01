@@ -191,6 +191,7 @@ class AlbarracinWorldview:
         
         for _ in range(num_iterations):
             # Individual cognitive responses to cultural state
+            pass
 # Example usage
 albarracin = AlbarracinWorldview()
 print(albarracin.worldview())

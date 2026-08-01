@@ -45,7 +45,7 @@ check_language_status() {
         # Check if main source file exists
         local main_file=""
         case "$lang" in
-            "Python") main_file="$lang_dir/student_teacher.py" ;;
+            "Python") main_file="$lang_dir/Student_Teacher.py" ;;
             "JavaScript") main_file="$lang_dir/active_inference.js" ;;
             "Java") main_file="$lang_dir/AntColony.java" ;;
             "C") main_file="$lang_dir/Active_Inference.c" ;;

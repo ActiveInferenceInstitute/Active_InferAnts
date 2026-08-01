@@ -1,0 +1,32 @@
+# Core scientific stack (Active Inference implementations, 3_MEASURE analysis)
+numpy>=1.24.0
+scipy>=1.10.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+pandas>=2.0.0
+networkx>=3.0
+pyyaml>=6.0
+tqdm>=4.60
+
+# Security / crypto utilities (1_PREPARE/Utils)
+cryptography>=41.0.0
+argon2-cffi>=23.1.0
+
+# REST APIs (6_API)
+fastapi>=0.100.0
+uvicorn>=0.23.0
+sqlalchemy>=2.0.0
+pydantic>=2.0.0
+requests>=2.31.0
+
+# Multi-database backends used by the Knowledge API
+pymongo>=4.0.0
+redis>=5.0.0
+elasticsearch>=8.0.0
+neo4j>=5.0.0
+motor>=3.0.0
+aiocache>=0.12.0
+aioredis>=2.0.0
+
+# Benchmarking / profiling
+psutil>=5.9.0

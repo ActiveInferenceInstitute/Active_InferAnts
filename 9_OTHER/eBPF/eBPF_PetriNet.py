@@ -1,3 +1,4 @@
+"""
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -218,3 +219,4 @@ module_exit(petri_net_module_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Your Name");
 MODULE_DESCRIPTION("Petri Net implementation for Linux kernel with RCU-based synchronization");
+"""

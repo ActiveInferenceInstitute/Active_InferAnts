@@ -146,15 +146,28 @@ class AdvancedBenchmarkSuite:
         }
 
     def measure_memory_usage(self, process: subprocess.Popen) -> Tuple[float, float]:
-        """Monitor memory usage of a process"""
+        """Monitor peak/average memory of a process AND its descendants.
+
+        The language implementation usually runs as a child (or deeper descendant)
+        of the ``run.sh`` wrapper, so sampling only the wrapper PID would measure
+        the shell, not the program. Summing RSS over the whole process tree yields
+        the real memory footprint of the implementation.
+        """
         try:
-            proc = psutil.Process(process.pid)
             memory_samples = []
+
+            def tree_rss_mb(proc: psutil.Process) -> float:
+                total = proc.memory_info().rss
+                for child in proc.children(recursive=True):
+                    try:
+                        total += child.memory_info().rss
+                    except psutil.NoSuchProcess:
+                        pass
+                return total / (1024 * 1024)
 
             while process.poll() is None:
                 try:
-                    memory_mb = proc.memory_info().rss / (1024 * 1024)
-                    memory_samples.append(memory_mb)
+                    memory_samples.append(tree_rss_mb(psutil.Process(process.pid)))
                     time.sleep(0.1)
                 except psutil.NoSuchProcess:
                     break
@@ -312,8 +325,10 @@ class AdvancedBenchmarkSuite:
         if not language_averages:
             return LanguageComparison(metric_name, [], "", "", {}, {})
 
-        # Sort by performance (ascending for time, descending for diversity/accuracy)
-        reverse_order = metric_name in ['action_selection_diversity', 'final_belief_entropy']
+        # Sort by performance (ascending for time; descending only for metrics where
+        # higher is genuinely better). Belief entropy is a measure of uncertainty, so
+        # LOWER entropy (more certain beliefs) is better — do not rank it in reverse.
+        reverse_order = metric_name in ['action_selection_diversity']
         rankings = sorted(language_averages.items(), key=lambda x: x[1], reverse=reverse_order)
 
         best_performer = rankings[0][0] if rankings else ""

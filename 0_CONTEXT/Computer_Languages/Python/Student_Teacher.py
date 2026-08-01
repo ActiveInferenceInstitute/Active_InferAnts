@@ -67,10 +67,18 @@ class StudentTeacherPOMDP:
         D: Prior belief over initial states, shape (n_states,)
     """
 
-    def __init__(self, n_states: int, n_observations: int, n_actions: int) -> None:
+    def __init__(self, n_states: int, n_observations: int, n_actions: int,
+                 seed: Optional[int] = None) -> None:
         self.n_states = n_states
         self.n_observations = n_observations
         self.n_actions = n_actions
+
+        # Deterministic reproducibility: the random draws that build the generative
+        # model below (and the stochastic transitions/observations in step()) follow
+        # the global NumPy RNG. Seeding at init makes a given (n_states, n_obs,
+        # n_actions, seed) combination reproduce identical beliefs and trajectories.
+        if seed is not None:
+            np.random.seed(seed)
 
         # Generative model matrices
         self.A: NDArray[np.float64] = np.random.rand(n_observations, n_states)

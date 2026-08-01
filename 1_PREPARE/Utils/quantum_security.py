@@ -2,6 +2,8 @@ from cryptography.hazmat.primitives.asymmetric import x448, x25519
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
+import hashlib
+
 
 class PostQuantumCrypto:
     """Quantum-resistant cryptographic primitives"""
@@ -12,7 +14,7 @@ class PostQuantumCrypto:
         
     def _validate_algorithm(self):
         if self.algorithm not in ['X448', 'X25519']:
-            raise SecurityConfigurationError(
+            raise ValueError(
                 f"Unsupported quantum-resistant algorithm: {self.algorithm}"
             )
 

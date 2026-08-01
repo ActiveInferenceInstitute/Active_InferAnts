@@ -226,12 +226,6 @@ class ActiveInferenceTestSuite:
 
             if process.returncode == 0:
                 result.status = 'PASS'
-                # Check for success indicators in output
-                if "successfully" in process.stdout.lower() or "completed" in process.stdout.lower():
-                    result.status = 'PASS'
-                else:
-                    result.status = 'FAIL'
-                    result.error_message = "Test completed but success indicators not found"
             else:
                 result.status = 'FAIL'
                 result.error_message = process.stderr

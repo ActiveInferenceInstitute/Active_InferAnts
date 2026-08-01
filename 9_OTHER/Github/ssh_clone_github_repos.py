@@ -27,7 +27,12 @@ def clone_repo(git_url: str, target_dir: str, use_ssh: bool = False) -> None:
     - use_ssh (bool): Whether to use SSH for cloning instead of HTTPS.
     """
     repo_name = git_url.split('/')[-1].split('.')[0]  # Extracts repo name from URL
-    full_path = os.path.join(target_dir, repo_name)
+    # Sanitize + contain: never allow a repo name to escape the target dir.
+    if repo_name in ('', '.', '..') or '/' in repo_name or os.sep in repo_name:
+        raise ValueError(f"Unsafe repository name derived from URL: {git_url!r}")
+    full_path = os.path.abspath(os.path.join(target_dir, repo_name))
+    if os.path.commonpath([os.path.abspath(target_dir), full_path]) != os.path.abspath(target_dir):
+        raise ValueError(f"Clone target escapes target directory: {full_path}")
     
     if use_ssh:
         # Convert HTTPS URL to SSH URL

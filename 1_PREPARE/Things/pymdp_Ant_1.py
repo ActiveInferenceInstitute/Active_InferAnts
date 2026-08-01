@@ -224,20 +224,53 @@ class AntAgent:
     def load_agent_state(cls, filepath: str) -> 'AntAgent':
         """
         Loads an agent state from a file and returns a new AntAgent instance.
-        
+
+        Warning: the checkpoint is unpickled (``allow_pickle=True``), which can
+        execute code in a tampered file. Only load checkpoints that were written
+        by this agent / from a trusted source.
+
         Args:
             filepath (str): The path to load the agent state from.
-        
+
         Returns:
             AntAgent: A new AntAgent instance with the loaded state.
+
+        Raises:
+            ValueError: If the checkpoint is missing required keys or malformed.
         """
+        import warnings
+
+        warnings.warn(
+            "load_agent_state() unpickles the checkpoint (allow_pickle=True); "
+            "only load files from a trusted source.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
         state = np.load(filepath, allow_pickle=True).item()
+
+        # Fail closed on malformed/tampered checkpoints: require every key the
+        # reconstruction below depends on, with the right container shapes.
+        required_gm = (
+            'observation_model', 'transition_model', 'preference_model',
+            'initial_state_distribution', 'policy_prior',
+        )
+        if not isinstance(state, dict):
+            raise ValueError("Checkpoint root is not a dict; refusing to load")
+        for key in ('generative_model', 'posterior_states', 'policy_length',
+                    'inference_depth', 'controllable_factors',
+                    'possible_policies', 'learning_rate'):
+            if key not in state:
+                raise ValueError(f"Checkpoint missing required key: {key}")
+        gm = state.get('generative_model')
+        if not isinstance(gm, dict) or any(k not in gm for k in required_gm):
+            raise ValueError("Checkpoint generative_model is malformed")
+
         agent = cls(
-            observation_model=state['generative_model']['observation_model'],
-            transition_model=state['generative_model']['transition_model'],
-            preference_model=state['generative_model']['preference_model'],
-            initial_state_distribution=state['generative_model']['initial_state_distribution'],
-            policy_prior=state['generative_model']['policy_prior'],
+            observation_model=gm['observation_model'],
+            transition_model=gm['transition_model'],
+            preference_model=gm['preference_model'],
+            initial_state_distribution=gm['initial_state_distribution'],
+            policy_prior=gm['policy_prior'],
             policy_length=state['policy_length'],
             inference_depth=state['inference_depth'],
             controllable_factors=state['controllable_factors'],
