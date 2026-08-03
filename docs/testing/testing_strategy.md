@@ -8,7 +8,7 @@ Testing approach for the Active InferAnts framework.
 |-------|-------|-------|
 | **Unit** | Individual functions, matrix operations | pytest |
 | **Integration** | Module interactions, pipeline phases | pytest + fixtures |
-| **Cross-language** | 50 language implementations | `test_suite.py`, `benchmark_suite.py` |
+| **Cross-language** | Registered language implementations | `test_suite.py`, `benchmark_suite.py` |
 | **System** | Full pipeline end-to-end | Shell scripts |
 | **Security** | Vault, encryption, hashing | `1_PREPARE/Utils/` test modules |
 

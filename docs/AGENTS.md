@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Comprehensive modular documentation for the Active InferAnts framework. 48 documents organized across 9 topic areas.
+Comprehensive modular documentation for the Active InferAnts framework. 48 documents organized across 10 topic areas.
 
 ## Directory Contents
 

@@ -7,11 +7,11 @@ Directory-to-module mapping for the Active InferAnts framework.
 ```
 activeinferants/
 ├── 0_CONTEXT/                    # Foundation Layer
-│   ├── Computer_Languages/       # 40 language implementations
+│   ├── Computer_Languages/       # 50 registered language implementations
 │   │   ├── Python/              # Reference implementation
 │   │   ├── Rust/                # Systems-level implementation
 │   │   ├── Julia/               # Scientific computing (RxInfer)
-│   │   └── ... (37 more)
+│   │   └── ... (47 more, see languages.json)
 │   ├── Systems/                 # Specialized systems
 │   │   ├── Active_Inference/    # Core PyMDP utilities
 │   │   ├── P3IF/               # Privacy/Policy/Procedure framework

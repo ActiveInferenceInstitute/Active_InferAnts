@@ -12,5 +12,5 @@ Foundational concepts behind the Active InferAnts framework.
 | [Digital Twins](digital_twins.md) | Async digital twin architecture and design processes |
 | [Pheromone Signaling](pheromone_signaling.md) | Chemical communication in stigmergic coordination |
 | [Category Theory in Active Inference](category_theory.md) | PolyFunctor, CategoryTheoryAnalyzer, and compositional structure |
-| [Multi-Language Design](multi_language_design.md) | Why 40 languages: design philosophy and cross-paradigm insights |
+| [Multi-Language Design](multi_language_design.md) | Why 50 languages: design philosophy and cross-paradigm insights |
 | [BOLTS Framework](bolts_framework.md) | Business, Operations, Legal, Technical, Social analysis |

@@ -1,6 +1,6 @@
 # Multi-Language Design Philosophy
 
-Why Active InferAnts implements Active Inference in 40 programming languages.
+Why Active InferAnts implements Active Inference in 50 programming languages.
 
 ## Design Goals
 
@@ -35,7 +35,7 @@ All implementations must provide:
 
 | Script | Purpose |
 |--------|---------|
-| `run_all.sh` | Sequential execution of all 40 implementations |
+| `run_all.sh` | Sequential execution of the registered implementations |
 | `master_controller.py` | Python-based orchestration |
 | `benchmark_suite.py` | Cross-language performance benchmarking |
 | `test_suite.py` | Cross-language correctness tests |

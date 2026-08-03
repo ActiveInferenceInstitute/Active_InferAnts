@@ -4,17 +4,19 @@ All configuration parameters for the Active InferAnts framework.
 
 ## Root Configuration (`config.json`)
 
+Simulation values are nested under `initial_values`; runtime/output settings are top-level:
+
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sensory_input` | int | 10 | Dimensionality of sensory input |
-| `prediction` | int | 10 | Prediction horizon steps |
-| `learning_rate` | float | 3.0 | Learning rate for belief updating |
-| `precision` | float | 5.0 | Precision (inverse variance) of beliefs |
-| `temporal_integration` | int | 1 | Temporal integration window |
-| `exploration_factor` | float | 2.0 | Exploration-exploitation balance |
-| `model_complexity` | int | 3 | Generative model complexity level |
-| `goal_directed_behavior` | int | 4 | Goal-directedness parameter |
-| `uncertainty` | float | 2.0 | Initial uncertainty level |
+| `initial_values.sensory_input` | int | 10 | Dimensionality of sensory input |
+| `initial_values.prediction` | int | 10 | Prediction horizon steps |
+| `initial_values.learning_rate` | float | 3.0 | Learning rate for belief updating |
+| `initial_values.precision` | float | 5.0 | Precision (inverse variance) of beliefs |
+| `initial_values.temporal_integration` | int | 1 | Temporal integration window |
+| `initial_values.exploration_factor` | float | 2.0 | Exploration-exploitation balance |
+| `initial_values.model_complexity` | int | 3 | Generative model complexity level |
+| `initial_values.goal_directed_behavior` | int | 4 | Goal-directedness parameter |
+| `initial_values.uncertainty` | float | 2.0 | Initial uncertainty level |
 | `max_iterations` | int | 1000 | Maximum simulation iterations |
 | `visualization_enabled` | bool | true | Enable matplotlib output |
 | `output_directory` | string | "./simulation_output" | Output directory path |

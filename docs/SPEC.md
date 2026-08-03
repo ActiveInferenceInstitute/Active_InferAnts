@@ -4,7 +4,7 @@
 
 ## Overview
 
-Modular documentation organized into 9 topic areas with 48 individual documents.
+Modular documentation organized into 10 topic areas with 48 individual documents.
 
 ## Structure
 
@@ -15,7 +15,7 @@ Modular documentation organized into 9 topic areas with 48 individual documents.
 | `concepts/` | 8 | Active Inference theory, agent taxonomy, category theory |
 | `guides/` | 5 | Getting started, language addition, simulations, research, contributing |
 | `operations/` | 5 | Simulation ops, API deployment, monitoring, logging, governance |
-| `reference/` | 5 | Configuration, 40-language matrix, systems, glossary, dependencies |
+| `reference/` | 5 | Configuration, 50-language matrix, systems, glossary, dependencies |
 | `security/` | 2 | Architecture, cryptographic primitives |
 | `systems/` | 6 | P3IF, Cognitive Sovereignty, IC2S2, William Blake, Active Data Sampling, Meta |
 | `testing/` | 3 | Strategy, cross-language, verification methods |

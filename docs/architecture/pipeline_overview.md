@@ -19,7 +19,7 @@ Foundation layer providing language implementations, system definitions, and spe
 
 | Component | Purpose |
 |-----------|---------|
-| `Computer_Languages/` | 40 language implementations of Active Inference agents |
+|| `Computer_Languages/` | 50 registered language implementations of Active Inference agents |
 | `Systems/` | Specialized systems (P3IF, IC2S2, Cognitive Sovereignty, William Blake, BOLTS) |
 | `specs_and_prompts/` | System specification documents (v1, v2, v3) |
 
@@ -82,7 +82,8 @@ Analysis and quantification of simulation outputs.
 
 ## Configuration
 
-Root `config.json` defines simulation parameters:
+Root `config.json` defines simulation parameters (simulation values are nested
+under `initial_values`; runtime/output settings are top-level):
 
 ```json
 {

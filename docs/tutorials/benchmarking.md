@@ -1,6 +1,6 @@
 # Tutorial: Cross-Language Benchmarking
 
-Running and interpreting the benchmark suite across 40 language implementations.
+Running and interpreting the benchmark suite across the registered language implementations.
 
 ## Running Benchmarks
 
@@ -34,8 +34,11 @@ python3 benchmark_suite.py
 
 ## Configuration
 
-Use `config_manager.py` for cross-language configuration:
+Use `config_manager.py` for dependency checks and installation:
 
 ```bash
-python3 config_manager.py --set max_iterations=500
+python3 config_manager.py --all                  # Check all dependencies
+python3 config_manager.py --install <language>   # Install a language's dependencies
 ```
+
+Per-run parameters are controlled by the root `config.json` (e.g. `max_iterations`).

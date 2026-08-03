@@ -32,7 +32,7 @@ How data transforms as it moves through the Active InferAnts pipeline.
 
 ### Generative Model (A/B/C/D Matrices)
 
-Every agent across all 40 languages uses the same generative model:
+The language implementations use a shared A/B/C/D generative-model vocabulary where applicable; the canonical registry is `0_CONTEXT/Computer_Languages/languages.json`.
 
 | Matrix | Name | Shape | Description |
 |--------|------|-------|-------------|

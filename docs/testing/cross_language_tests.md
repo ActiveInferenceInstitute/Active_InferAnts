@@ -1,6 +1,6 @@
 # Cross-Language Tests
 
-Testing 50 language implementations for correctness and consistency.
+Testing the registered language implementations for correctness and consistency.
 
 ## Test Infrastructure
 
