@@ -41,11 +41,11 @@ Runtime simulation execution.
 
 | Module | Class | Purpose |
 |--------|-------|---------|
-| `plan_Simulation.py` | — | Configure state spaces and transition matrices |
+| `plan_Simulation.py` | `SimulationPlanner` (alias `SimulationSetup`) | Configure environment and agents; build the simulation |
 | `execute_Simulation.py` | `SimulationExecutor` | Time-stepped simulation loop |
 | `render_Simulation.py` | `SimulationRenderer` | Matplotlib animation and display |
 | `cognitive_utilities.py` | `CognitiveUtilities` | Behavioral analysis, cognitive load, export |
-| `situational_Antwareness.py` | `AgentVisualizer` | Matrix visualization, eigenvalue analysis |
+| `situational_Antwareness.py` | `AgentVisualizer` / `ConcreteAgentVisualizer` | Matrix visualization, eigenvalue analysis |
 
 ### Phase 3: Measure (`3_MEASURE/`)
 

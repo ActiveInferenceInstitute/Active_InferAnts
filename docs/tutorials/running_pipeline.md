@@ -2,12 +2,10 @@
 
 Execute the full 6-phase pipeline end-to-end.
 
-> **Status**: the `2_OPERATE` scripts (`plan_Simulation.py`,
-> `execute_Simulation.py`, `render_Simulation.py`) are under repair
-> (repository `TODO.md`, item M-4) — they reference modules that do not exist
-> in the tree yet. The commands below document the intended pipeline; for a
-> working simulation today, use the `active_infer_ants` package
-> ([Getting Started](../guides/getting_started.md)).
+> The `2_OPERATE` scripts (`plan_Simulation.py`, `execute_Simulation.py`,
+> `render_Simulation.py`) are wired to the `active_infer_ants` package and run
+> end-to-end; see `tests/test_simulation_pipeline.py` for the integration
+> suite.
 
 ## Phase 1: Prepare
 

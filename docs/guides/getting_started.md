@@ -67,11 +67,18 @@ Edit `config.json` to customize simulation parameters:
 ## A Note on the 2_OPERATE Pipeline
 
 The `2_OPERATE/plan_Simulation.py → execute_Simulation.py →
-render_Simulation.py` pipeline is currently **under repair** (see the
-repository `TODO.md`, item M-4): the scripts reference modules that do not yet
-exist in the tree and cannot be run end-to-end. For a working simulation
-experience today, use the `active_infer_ants` package above or the
-multi-language orchestration scripts.
+render_Simulation.py` pipeline is wired to the `active_infer_ants` package and
+the 2_OPERATE support modules (environment, data logging, performance
+monitoring, reporting). It runs end-to-end and is covered by the integration
+suite in `tests/test_simulation_pipeline.py`. For a quick simulation, either
+use the `active_infer_ants` package above or run the pipeline:
+
+```bash
+cd 2_OPERATE
+python3 plan_Simulation.py
+python3 execute_Simulation.py
+python3 render_Simulation.py
+```
 
 ## Running a Language Implementation
 
