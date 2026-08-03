@@ -5,22 +5,22 @@ theme:
 nav:
   - Home: index.md
   - Architecture:
-      - architecture/index.md
+      - architecture/README.md
   - API:
-      - api/index.md
+      - api/README.md
   - Concepts:
-      - concepts/index.md
+      - concepts/README.md
   - Guides:
-      - guides/index.md
+      - guides/README.md
   - Operations:
-      - operations/index.md
+      - operations/README.md
   - Reference:
-      - reference/index.md
+      - reference/README.md
   - Security:
-      - security/index.md
+      - security/README.md
   - Systems:
-      - systems/index.md
+      - systems/README.md
   - Testing:
-      - testing/index.md
+      - testing/README.md
   - Tutorials:
-      - tutorials/index.md
+      - tutorials/README.md

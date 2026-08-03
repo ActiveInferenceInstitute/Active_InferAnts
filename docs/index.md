@@ -10,16 +10,16 @@ algorithms in **50 programming languages**, with a 6-phase operational pipeline
 ## Quick links
 
 - [Repository README](../README.md) — overview, quick start, architecture, APIs.
-- [Architecture](architecture/index.md) — pipeline flow and system design.
-- [API reference](api/index.md) — the Knowledge and MetaInformAnt REST APIs.
-- [Concepts](concepts/index.md) — Active Inference primer and agent types.
-- [Guides](guides/index.md) — getting started and tutorials.
-- [Operations](operations/index.md) — deployment, monitoring, governance.
-- [Reference](reference/index.md) — configuration, language matrix, glossary.
-- [Security](security/index.md) — security architecture and crypto primitives.
-- [Systems](systems/index.md) — P3IF, Cognitive Sovereignty, IC2S2, and more.
-- [Testing](testing/index.md) — testing strategy and cross-language verification.
-- [Tutorials](tutorials/index.md) — first agent, pipeline, analysis, grants.
+- [Architecture](architecture/README.md) — pipeline flow and system design.
+- [API reference](api/README.md) — the Knowledge and MetaInformAnt REST APIs.
+- [Concepts](concepts/README.md) — Active Inference primer and agent types.
+- [Guides](guides/README.md) — getting started and tutorials.
+- [Operations](operations/README.md) — deployment, monitoring, governance.
+- [Reference](reference/README.md) — configuration, language matrix, glossary.
+- [Security](security/README.md) — security architecture and crypto primitives.
+- [Systems](systems/README.md) — P3IF, Cognitive Sovereignty, IC2S2, and more.
+- [Testing](testing/README.md) — testing strategy and cross-language verification.
+- [Tutorials](tutorials/README.md) — first agent, pipeline, analysis, grants.
 
 ## The `active_infer_ants` package
 
