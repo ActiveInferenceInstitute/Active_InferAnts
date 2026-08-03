@@ -36,10 +36,42 @@ DOCS-DEEP review of the repository root documentation, `docs/`, MkDocs configura
 2. The configuration/dependency documentation diverged from `pyproject.toml`, `requirements.txt`, and the actual root `config.json` shape.
 3. A few pages repeated the old 40-language wording and needed cross-linking to the canonical language registry and section indexes.
 
-## Implementation plan
+## M-4 implementation — 2026-08-02 (second pass, "do all improvements comprehensively")
 
-- Replace missing MkDocs section indexes with the existing section README files.
-- Repair all broken internal documentation links found by the repository-wide scan.
-- Correct language/count/configuration/API/tooling claims against source and manifests.
-- Clarify deferred simulation-pipeline status and provide a verified package/API quickstart.
-- Re-run link, anchor, documentation build, Ruff, compile, and pytest checks; commit logical documentation changes and push `main`.
+Closed the last open Major item: the `2_OPERATE` plan→execute→render pipeline
+was rebuilt on the real `active_infer_ants` API instead of the ~10 modules it
+referenced that did not exist anywhere in the tree.
+
+- New support modules in `2_OPERATE/`: `environment.py` (2D grid world with
+  pheromone field matching the renderer contract), `MetaInformAnt_Simulation.py`
+  (`MetaInformAntSimulation` — `active_infer_ants` agents acting in the grid),
+  `data_logging.py`, `performance_monitor.py`, `performance_metrics.py`,
+  `error_handling.py`, `exception_handling.py`, `report_generator.py`,
+  `computational_resources.py`, `visualization.py`.
+- `plan_Simulation.py`: defines `SimulationPlanner` (executor's import) with
+  `SimulationSetup` retained as an alias; reads the real `1_PREPARE/configs`
+  dictionaries via a path bootstrap; explicit seed (default 0), no unseeded
+  RNG; parallel-execution setting validated and reported (runs sequential).
+- `execute_Simulation.py`: imports only existing modules; `max_steps`,
+  `output_dir`, and interval parameters exposed; optional per-agent
+  visualizer guarded (the `ConcreteAgentVisualizer` requires matrix
+  attributes the `active_infer_ants` agents do not carry — logged, non-fatal).
+- `render_Simulation.py`: added the executor-facing methods
+  (`initialize_environment`, `refresh_visualization`,
+  `visualize_post_simulation`).
+- `tests/conftest.py`: added `2_OPERATE` and `1_PREPARE/configs` to the
+  flat-module `sys.path` bootstrap.
+- New `tests/test_simulation_pipeline.py` (7 tests): environment contract,
+  seeded reproducibility, planner/executor end-to-end, support modules.
+- Verification: full pytest suite 31 passed; compile-sweep over all tracked
+  `.py` clean; ruff check+format clean on all new/changed files (pre-existing
+  2_OPERATE files still have baseline ruff findings, untouched).
+- Docs updated: `docs/guides/getting_started.md`,
+  `docs/guides/running_simulations.md`, `docs/tutorials/running_pipeline.md`
+  now describe the pipeline as runnable (the "under repair" flags from the
+  first pass are removed); `docs/architecture/pipeline_overview.md` lists the
+  real classes; `TODO.md` M-4 marked CLOSED.
+
+Heavy suites not run: full cross-language execution and mkdocs build (mkdocs
+not installed in the repo venv); the pipeline integration is covered by pytest
+with the Agg matplotlib backend instead.

@@ -126,18 +126,26 @@ Severity definitions: **Minor** = typo, broken link, formatting, or small factua
 ## Major — open / deferred
 
 - **M-4 — `2_OPERATE` plan→execute→render pipeline references non-existent
-  modules; deferred.**
-  Affected: `2_OPERATE/plan_Simulation.py`, `2_OPERATE/execute_Simulation.py`,
-  `2_OPERATE/render_Simulation.py`.
-  Why it matters: `execute_Simulation.py` imports
-  `from plan_Simulation import SimulationPlanner` (the file defines
-  `SimulationSetup`), and both files import ~8 modules
-  (`MetaInformAnt_Simulation`, `data_logging`, `performance_monitor`,
-  `error_handling`, `report_generator`, `computational_resources`,
-  `performance_metrics`, `exception_handling`, `config`, `metaconfig`) that do
-  not exist anywhere in the tree; `plan_Simulation.py` also draws an unseeded
-  seed. Suggested fix: build those modules and reconcile the class/renderer
-  contracts (or wire the pipeline to the now-realisable `active_infer_ants`
-  simulation API), add a seed, then add an integration test. Deferred because
-  this is a large, untestable-here scaffolding build and fabricating
-  non-existent modules without a test gate was judged worse than deferring.
+  modules; **CLOSED 2026-08-02**.** The pipeline was rebuilt and wired to the
+  now-realisable `active_infer_ants` simulation API:
+  - Built the missing support modules in `2_OPERATE/`: `environment.py`
+    (grid world with pheromone field), `MetaInformAnt_Simulation.py`
+    (`MetaInformAntSimulation` driving `active_infer_ants` agents),
+    `data_logging.py`, `performance_monitor.py`, `performance_metrics.py`,
+    `error_handling.py`, `exception_handling.py`, `report_generator.py`,
+    `computational_resources.py`, `visualization.py`.
+  - `plan_Simulation.py` now defines the `SimulationPlanner` class the
+    executor imports (with `SimulationSetup` retained as an alias), reads the
+    real `1_PREPARE/configs` dictionaries, and seeds randomness explicitly
+    (no unseeded `np.random`).
+  - `execute_Simulation.py` imports only existing modules, runs the
+    plan → execute → render lifecycle, and guards the optional per-agent
+    visualizer (which expects matrix attributes the `active_infer_ants`
+    agents do not carry).
+  - `render_Simulation.py` gained the executor-facing methods
+    (`initialize_environment`, `refresh_visualization`,
+    `visualize_post_simulation`).
+  - Integration suite `tests/test_simulation_pipeline.py` (7 tests) covers
+    environment contract, seeded reproducibility, planner/executor end-to-end
+    runs, and the support modules. Full suite: 31 passed; compile-sweep and
+    ruff (new files) clean. ✓ (fix: rebuild 2_OPERATE pipeline on active_infer_ants)
