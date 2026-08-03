@@ -4,7 +4,7 @@
 
 **Owner:** Daniel Ari Friedman (Active Inference Institute)
 **Status:** Active / Maintained
-**Last reviewed:** 2026-08-01 (fix-and-push pass; red-team review completed, fixes implemented)
+**Last reviewed:** 2026-08-02 (documentation deep review; D-1 … D-8 scoped and closed, see below)
 
 ---
 
@@ -101,6 +101,27 @@ before the fix-and-push pass (the two API files were then reworked as M-1/M-2,
 the 35 broken files as M-3).
 
 ---
+
+## Documentation deep review — 2026-08-02
+
+Severity definitions: **Minor** = typo, broken link, formatting, or small factual correction; **Medium** = stale section rewrite, documentation restructure, or missing guide; **Major** = large documentation-system or cross-cutting documentation refactor.
+
+### Minor
+
+- [closed] **D-1 — Keep the root README's operational promises source-backed.** Removed unsupported response-time guarantees and coverage/performance/security percentages; dependencies overview corrected against `requirements.txt`; stale internal links repaired. Affected: `README.md`. ✓ (docs: align README with repository reality)
+- [closed] **D-2 — Align configuration and dependency prose with the manifests and root `config.json`.** `docs/reference/dependencies.md` rewritten against `pyproject.toml`/`requirements.txt`; `config.json` `initial_values` nesting documented in `docs/api/data_models.md`, `docs/architecture/pipeline_overview.md`, and `docs/reference/configuration.md`. Affected: `docs/reference/configuration.md`, `docs/reference/dependencies.md`, `docs/architecture/pipeline_overview.md`. ✓ (docs: align config/dependency references with manifests)
+- [closed] **D-3 — Correct stale CLI examples.** `test_suite.py --report` and `config_manager.py --check/--update/--set` replaced with the actual flags; `run_all.sh --setup` replaced with `master_controller.py setup`. Affected: `README.md`, `docs/tutorials/benchmarking.md`. ✓ (docs: correct CLI examples)
+
+### Medium
+
+- [closed] **D-4 — Replace stale 40-language and repository-count claims with registry/source-backed values.** `languages.json` (50) is now the cited source everywhere; tracked counts updated to 266 Python files / 7,262 Markdown files; the language matrix now lists all 50 registered languages with verified main files. Affected: `docs/README.md`, `docs/SPEC.md`, `docs/reference/language_matrix.md`, `docs/concepts/multi_language_design.md`, `docs/architecture/` and `docs/testing/` pages. ✓ (docs: 50-language and count claims match registry)
+- [closed] **D-5 — Repair broken API source links and deployment examples.** Source links now resolve to root `6_API/`; Swagger paths corrected to `/api/docs` + `/api/redoc`; curl example fixed; auth semantics documented as env-enabled. Affected: `docs/api/knowledge_api.md`, `docs/api/metainformant_api.md`, `docs/operations/api_deployment.md`. ✓ (docs: fix API documentation)
+- [closed] **D-6 — Replace stale root tooling claims and missing contribution/legal links.** Ruff/MkDocs/GitHub Actions replace Black/Flake8/MyPy/Bandit/Sphinx; links to absent `docs/CONTRIBUTING.md`, `docs/CODE_OF_CONDUCT.md`, `docs/THIRD_PARTY_LICENSES.md` repointed to the existing contribution guide. Affected: `README.md`. ✓ (docs: align README with repository reality)
+
+### Major
+
+- [closed] **D-7 — Repair the MkDocs documentation navigation.** `mkdocs.yml` and `docs/index.md` now reference the existing section `README.md` indexes; validated that every nav target resolves. Affected: `mkdocs.yml`, `docs/index.md`. ✓ (docs: fix MkDocs navigation)
+- [closed] **D-8 — Make the simulation quickstart honest about the deferred 2_OPERATE pipeline and provide a verified package/API path.** The getting-started guide now leads with the working `active_infer_ants` package and CLI; the deferred M-4 status is flagged in the guide and pipeline pages. Affected: `docs/guides/getting_started.md`, `docs/guides/running_simulations.md`, `docs/tutorials/running_pipeline.md`, `docs/architecture/pipeline_overview.md`. ✓ (docs: honest simulation quickstart)
 
 ## Major — open / deferred
 
