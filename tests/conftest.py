@@ -23,11 +23,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 _PATHS = [
     ROOT,
+    os.path.join(ROOT, "2_OPERATE"),
     os.path.join(ROOT, "3_MEASURE"),
     os.path.join(ROOT, "6_API"),
     os.path.join(ROOT, "0_CONTEXT", "Computer_Languages"),
     os.path.join(ROOT, "0_CONTEXT", "Computer_Languages", "Python"),
     os.path.join(ROOT, "1_PREPARE", "General"),
+    os.path.join(ROOT, "1_PREPARE", "configs"),
 ]
 
 for _p in _PATHS:
