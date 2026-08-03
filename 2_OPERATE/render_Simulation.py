@@ -102,6 +102,31 @@ class SimulationRenderer:
         
         return self.ax.get_children()
     
+    def initialize_environment(self) -> None:
+        """(Re)initialize the plot environment.
+
+        Called by the executor before the simulation loop; clears any stale
+        artists so a fresh run starts from a clean figure.
+        """
+        logging.debug("SimulationRenderer.initialize_environment called.")
+        self._refresh_environment()
+
+    def refresh_visualization(self, step: Optional[int] = None) -> List[plt.Artist]:
+        """Refresh the current visualization for the given step.
+
+        Public wrapper around :meth:`_refresh_environment` used by the
+        executor's per-step loop.
+        """
+        return self._refresh_environment(step)
+
+    def visualize_post_simulation(self, simulation_results: Dict[str, Any]) -> None:
+        """Render the post-simulation analysis view.
+
+        Public wrapper around :meth:`render_post_simulation` used by the
+        executor's conclusion phase.
+        """
+        self.render_post_simulation(simulation_results)
+
     def animate_simulation(self, steps: int) -> animation.FuncAnimation:
         """Animate the simulation over a given number of steps."""
         self.animation = animation.FuncAnimation(self.fig, self._refresh_environment, frames=steps, interval=200, blit=True)
