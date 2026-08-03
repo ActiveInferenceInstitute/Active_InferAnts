@@ -13,7 +13,7 @@ pip install numpy pymdp
 ```python
 import numpy as np
 
-# Observation likelihood: 3 observations, 4 hidden states
+# Observation likelihood: 3 observations, 4 hidden states (columns sum to 1)
 A = np.array([
     [0.8, 0.1, 0.05, 0.05],
     [0.1, 0.8, 0.05, 0.05],

@@ -4,6 +4,12 @@ Configuring and running Active Inference simulations in the pipeline.
 
 ## Simulation Pipeline
 
+> **Status**: the `2_OPERATE` pipeline is under repair (repository `TODO.md`,
+> item M-4) — the scripts reference modules that do not exist in the tree yet.
+> The descriptions below document the intended contracts. For a working
+> simulation today, use the `active_infer_ants` package (see
+> [Getting Started](getting_started.md)).
+
 ```
 plan_Simulation.py → execute_Simulation.py → render_Simulation.py
 ```

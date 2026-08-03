@@ -2,6 +2,13 @@
 
 Execute the full 6-phase pipeline end-to-end.
 
+> **Status**: the `2_OPERATE` scripts (`plan_Simulation.py`,
+> `execute_Simulation.py`, `render_Simulation.py`) are under repair
+> (repository `TODO.md`, item M-4) — they reference modules that do not exist
+> in the tree yet. The commands below document the intended pipeline; for a
+> working simulation today, use the `active_infer_ants` package
+> ([Getting Started](../guides/getting_started.md)).
+
 ## Phase 1: Prepare
 
 ```bash
@@ -63,5 +70,5 @@ python3 execute_followup.py
 ```bash
 cd ../6_API
 uvicorn Knowledge_API:app --reload
-# Visit http://localhost:8000/docs for Swagger UI
+# Visit http://localhost:8000/api/docs for the Swagger UI
 ```
