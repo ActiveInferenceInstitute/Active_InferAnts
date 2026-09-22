@@ -12,8 +12,8 @@ The installable `active_infer_ants` package is the supported entry point:
 
 ```bash
 # Clone the repository
-git clone https://github.com/ActiveInferenceInstitute/ActiveInferAnts.git
-cd ActiveInferAnts
+git clone https://github.com/ActiveInferenceInstitute/Active_InferAnts.git
+cd Active_InferAnts
 
 # Install Python dependencies
 pip install -r requirements.txt

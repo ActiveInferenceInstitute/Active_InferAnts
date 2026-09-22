@@ -43,7 +43,7 @@ The implementation uses a complete generative model:
 
 ```bash
 # Clone and navigate to the directory
-cd ActiveInferAnts/0_CONTEXT/Computer_Languages/Cpp
+cd Active_InferAnts/0_CONTEXT/Computer_Languages/Cpp
 
 # Create build directory
 mkdir build && cd build

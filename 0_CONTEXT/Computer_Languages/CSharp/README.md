@@ -42,7 +42,7 @@ The implementation uses a complete generative model:
 
 ```bash
 # Navigate to the C# directory
-cd ActiveInferAnts/0_CONTEXT/Computer_Languages/CSharp
+cd Active_InferAnts/0_CONTEXT/Computer_Languages/CSharp
 
 # Restore packages
 dotnet restore
