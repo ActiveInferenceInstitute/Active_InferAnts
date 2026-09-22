@@ -43,7 +43,7 @@ The implementation uses a complete generative model:
 
 ```bash
 # Navigate to the Haskell directory
-cd ActiveInferAnts/0_CONTEXT/Computer_Languages/Haskell
+cd Active_InferAnts/0_CONTEXT/Computer_Languages/Haskell
 
 # Install dependencies and build
 stack build

@@ -98,8 +98,8 @@ Get up and running with Active InferAnts in under 5 minutes:
 ### Option 1: Run All Language Implementations
 ```bash
 # Clone the repository
-git clone https://github.com/ActiveInferenceInstitute/ActiveInferAnts.git
-cd ActiveInferAnts
+git clone https://github.com/ActiveInferenceInstitute/Active_InferAnts.git
+cd Active_InferAnts
 
 # Set up environment and run all implementations
 python3 0_CONTEXT/Computer_Languages/master_controller.py setup
@@ -151,8 +151,8 @@ python3 0_CONTEXT/Computer_Languages/master_controller.py status
 
 ```bash
 # Clone the repository
-git clone https://github.com/ActiveInferenceInstitute/ActiveInferAnts.git
-cd ActiveInferAnts
+git clone https://github.com/ActiveInferenceInstitute/Active_InferAnts.git
+cd Active_InferAnts
 
 # Install Python dependencies
 pip install -r requirements.txt
@@ -677,9 +677,9 @@ tail -f 0_CONTEXT/Computer_Languages/test_results/test_suite.log
 
 ### Getting Help
 
-1. **Check Existing Issues**: Search [GitHub Issues](https://github.com/ActiveInferenceInstitute/ActiveInferAnts/issues)
+1. **Check Existing Issues**: Search [GitHub Issues](https://github.com/ActiveInferenceInstitute/Active_InferAnts/issues)
 2. **Run Diagnostics**: Use the built-in status dashboard
-3. **Review Documentation**: Check [detailed docs](https://github.com/ActiveInferenceInstitute/ActiveInferAnts/wiki)
+3. **Review Documentation**: Check [detailed docs](https://github.com/ActiveInferenceInstitute/Active_InferAnts/wiki)
 4. **Community Support**: Join our [Discord community](https://discord.gg/active-inference)
 
 ## 🤝 Contributing
@@ -688,8 +688,8 @@ We welcome contributions from researchers, developers, and enthusiasts! Here's h
 
 ### Ways to Contribute
 
-- **🐛 Bug Reports**: Found a bug? [Open an issue](https://github.com/ActiveInferenceInstitute/ActiveInferAnts/issues/new?template=bug_report.md)
-- **💡 Feature Requests**: Have an idea? [Submit a feature request](https://github.com/ActiveInferenceInstitute/ActiveInferAnts/issues/new?template=feature_request.md)
+- **🐛 Bug Reports**: Found a bug? [Open an issue](https://github.com/ActiveInferenceInstitute/Active_InferAnts/issues/new?template=bug_report.md)
+- **💡 Feature Requests**: Have an idea? [Submit a feature request](https://github.com/ActiveInferenceInstitute/Active_InferAnts/issues/new?template=feature_request.md)
 - **🔧 Code Contributions**: Ready to code? See our development workflow below
 - **📚 Documentation**: Help improve documentation and tutorials
 - **🧪 Testing**: Add test cases or improve test coverage
@@ -699,8 +699,8 @@ We welcome contributions from researchers, developers, and enthusiasts! Here's h
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/your-username/ActiveInferAnts.git
-   cd ActiveInferAnts
+   git clone https://github.com/your-username/Active_InferAnts.git
+   cd Active_InferAnts
    git checkout -b feature/your-amazing-feature
    ```
 
@@ -735,7 +735,7 @@ We welcome contributions from researchers, developers, and enthusiasts! Here's h
    git commit -m "feat: add amazing new feature"
    git push origin feature/your-amazing-feature
    ```
-   Then create a [pull request](https://github.com/ActiveInferenceInstitute/ActiveInferAnts/pulls)
+   Then create a [pull request](https://github.com/ActiveInferenceInstitute/Active_InferAnts/pulls)
 
 ### Contribution Guidelines
 
@@ -756,7 +756,7 @@ Contributors are recognized through:
 
 ### Communication
 
-- **Discussions**: Join [GitHub Discussions](https://github.com/ActiveInferenceInstitute/ActiveInferAnts/discussions) for questions
+- **Discussions**: Join [GitHub Discussions](https://github.com/ActiveInferenceInstitute/Active_InferAnts/discussions) for questions
 - **Discord**: Real-time chat in our [Discord community](https://discord.gg/active-inference)
 - **Newsletter**: Subscribe for updates and research highlights
 
@@ -840,8 +840,8 @@ This project has been supported by:
 ### Get In Touch
 
 - **📧 Email**: [blanket@activeinference.institute](mailto:blanket@activeinference.institute)
-- **🐛 Issues**: [GitHub Issues](https://github.com/ActiveInferenceInstitute/ActiveInferAnts/issues)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/ActiveInferenceInstitute/ActiveInferAnts/discussions)
+- **🐛 Issues**: [GitHub Issues](https://github.com/ActiveInferenceInstitute/Active_InferAnts/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/ActiveInferenceInstitute/Active_InferAnts/discussions)
 - **💻 Discord**: [Active Inference Community](https://discord.gg/active-inference)
 - **📱 Twitter**: [@ActiveInferAnts](https://twitter.com/ActiveInferAnts)
 - **🔬 Research**: [Active Inference Institute](https://activeinference.institute)

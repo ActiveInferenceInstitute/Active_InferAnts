@@ -13,8 +13,8 @@
     <Authors>ActiveInferAnts</Authors>
     <Version>1.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/your-repo/ActiveInferAnts</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/your-repo/ActiveInferAnts</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/your-repo/Active_InferAnts</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/your-repo/Active_InferAnts</PackageProjectUrl>
     <PackageTags>active-inference,free-energy,bayesian,artificial-intelligence</PackageTags>
   </PropertyGroup>
 

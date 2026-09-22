@@ -2,9 +2,9 @@
 meta:
   updated: '2026-06-30'
 repo:
-  name: ActiveInferAnts
+  name: Active_InferAnts
   slug: activeinferants
-  full_name: ActiveInferenceInstitute/ActiveInferAnts
+  full_name: ActiveInferenceInstitute/Active_InferAnts
   description: Active Inference models of/for Ants
 institute:
   category: research-software
@@ -18,7 +18,7 @@ ecosystem:
   - repo: ActiveInferenceInstitute/Active_Inference_Ontology
     note: Uses Active Inference Ontology terms.
   links:
-    github: https://github.com/ActiveInferenceInstitute/ActiveInferAnts
+    github: https://github.com/ActiveInferenceInstitute/Active_InferAnts
     website: https://www.activeinference.org
 artifacts:
 - path: README.md

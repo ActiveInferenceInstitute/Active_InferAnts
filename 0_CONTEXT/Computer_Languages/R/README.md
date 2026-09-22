@@ -50,7 +50,7 @@ install.packages("Matrix")
 
 ```bash
 # Navigate to the R directory
-cd ActiveInferAnts/0_CONTEXT/Computer_Languages/R
+cd Active_InferAnts/0_CONTEXT/Computer_Languages/R
 
 # Run single agent demo
 Rscript active_inference.R single-agent
