@@ -16,6 +16,7 @@ Multi-language Active Inference framework for advanced AI research and applicati
 - 📁 `5_FOLLOWUP/`
 - 📁 `6_API/`
 - 📁 `9_OTHER/`
+- 📁 `gnn/`
 - 📄 `LICENSE`
 - 📄 `README.md`
 - 📄 `config.json`
@@ -26,6 +27,9 @@ Multi-language Active Inference framework for advanced AI research and applicati
 - This is the repository root. Coordinate across all phase directories.
 - Maintain the 6-phase operational pipeline consistency.
 - Ensure cross-language implementation parity.
+- Keep `gnn/gaussian_agent.gnn.md` in step with `active_infer_ants/agent.py`; validate it
+  with `python scripts/validate_gnn_spec.py` (needs the GNN checkout pinned in
+  `gnn/upstream.json`) or `python -m pytest tests/test_gnn_conformance.py`.
 - Follow the repository's CC BY-NC-ND 4.0 license.
 - Maintain consistency with parent and sibling directory conventions.
 - Keep all documentation synchronized with actual contents.

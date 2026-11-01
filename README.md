@@ -91,6 +91,47 @@ By implementing the same algorithms in multiple programming languages, we ensure
 - **Third-Party Integrations**: BPMN, Coda, ActivityPub, Nostr, Kafka, and more
 - **Container Ready**: Docker support for easy deployment and scaling
 
+## 🧬 Model specification (GNN)
+
+The framework's continuous Gaussian agent (`active_infer_ants/agent.py`) is specified in
+[`gnn/gaussian_agent.gnn.md`](gnn/gaussian_agent.gnn.md) in
+[Generalized Notation Notation](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation)
+(GNN): the identity dynamics and readout, the process and sensory covariances that carry the
+`prior_precision` / `sensory_precision` parameters, the preferred-state prior, and the
+`infer()` posterior update.
+
+The specification is validated against the GNN revision pinned in
+[`gnn/upstream.json`](gnn/upstream.json), read from that pinned commit (via `git archive`)
+rather than from the GNN checkout's working tree:
+
+```bash
+python scripts/validate_gnn_spec.py          # strict gate (needs the GNN checkout)
+python -m pytest tests/test_gnn_conformance.py -q
+```
+
+The gate parses the specification with the pinned GNN extractor and checks the extracted
+matrices and parameters against the framework agent, including that `infer()` performs
+exactly the declared Gaussian posterior update. The test module always runs the structural
+half (pin record, sections, declared dimensions against the agent) and skips only the
+pinned-parser half when the GNN checkout is unavailable. When editing the specification,
+start from GNN's [Start Here](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/START_HERE.md),
+[framework integration guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/gnn/integration/framework_integration_guide.md),
+and [syntax reference](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/gnn/reference/gnn_syntax.md).
+
+### 🔗 Related repositories
+
+- [Generalized_Notation_Notation](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation) —
+  the specification and implementation core this repository's agent spec is pinned to.
+- [ants](https://github.com/ActiveInferenceInstitute/ants) — the 2021 ant-colony foraging
+  model this framework grew out of; it owns that model's GNN specification.
+- [Active_Skillference](https://github.com/ActiveInferenceInstitute/Active_Skillference) —
+  the micro-learning platform whose discrete agent kernel is specified in its own `gnn/`
+  directory.
+
+Each model has one canonical home: this repository specifies its framework agent, while the
+ant-colony MDP and the discrete curriculum agent live with the repositories that implement
+them.
+
 ## 🚀 Quick Start
 
 Get up and running with Active InferAnts in under 5 minutes:
