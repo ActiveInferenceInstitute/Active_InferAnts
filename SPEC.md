@@ -16,6 +16,7 @@ Multi-language Active Inference framework for advanced AI research and applicati
 - 📁 `5_FOLLOWUP/` — Continuous improvement and follow-up
 - 📁 `6_API/` — REST APIs and external interfaces
 - 📁 `9_OTHER/` — Third-party integrations and experimental modules
+- 📁 `gnn/` — GNN (Generalized Notation Notation) specification of the Gaussian agent plus the pinned GNN revision
 - 📄 `config.json` — Global configuration parameters
 - 📄 `governance.md` — Project governance documentation
 - 📄 `LICENSE` — CC BY-NC-ND 4.0
@@ -37,6 +38,7 @@ Each phase receives structured output from the preceding phase and produces arti
 | Master Controller | `python3 0_CONTEXT/Computer_Languages/master_controller.py` | Cross-language orchestration |
 | Knowledge API | `python3 6_API/Knowledge_API.py` | REST API on port 8000 |
 | MetaInformAnt API | `python3 6_API/MetaInformAnt_API.py` | Meta-information API |
+| GNN conformance gate | `python scripts/validate_gnn_spec.py` | Validate `gnn/gaussian_agent.gnn.md` against the pinned GNN revision and `active_infer_ants/agent.py` |
 
 ### Configuration
 
