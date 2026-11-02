@@ -29,7 +29,10 @@ Multi-language Active Inference framework for advanced AI research and applicati
 - Ensure cross-language implementation parity.
 - Keep `gnn/gaussian_agent.gnn.md` in step with `active_infer_ants/agent.py`; validate it
   with `python scripts/validate_gnn_spec.py` (needs the GNN checkout pinned in
-  `gnn/upstream.json`) or `python -m pytest tests/test_gnn_conformance.py`.
+  `gnn/upstream.json`) or `python -m pytest tests/test_gnn_conformance.py`. GNN's
+  [downstream adoption
+  guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/main/docs/gnn/integration/downstream_adoption.md)
+  documents the adoption patterns, pin discipline, and drift-guard checks used here.
 - Follow the repository's CC BY-NC-ND 4.0 license.
 - Maintain consistency with parent and sibling directory conventions.
 - Keep all documentation synchronized with actual contents.
