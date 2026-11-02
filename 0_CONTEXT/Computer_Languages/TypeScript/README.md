@@ -251,8 +251,8 @@ npm run dev
 # Run all tests
 npm test
 
-# Run with coverage
-npm run test:coverage
+# Coverage needs a jest flag: this package.json has no test:coverage script
+npm test -- --coverage
 
 # Type checking only
 npm run type-check
@@ -264,8 +264,8 @@ npm run type-check
 # Check code style
 npm run lint
 
-# Auto-fix style issues
-npm run lint:fix
+# Auto-fix needs an eslint flag: this package.json has no lint:fix script
+npm run lint -- --fix
 ```
 
 ## Advanced Features
