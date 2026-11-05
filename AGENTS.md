@@ -30,7 +30,7 @@ Multi-language Active Inference framework for advanced AI research and applicati
 - Keep `gnn/gaussian_agent.gnn.md` in step with `active_infer_ants/agent.py`; validate it
   with `python scripts/validate_gnn_spec.py` (needs the GNN checkout pinned in
   `gnn/upstream.json`) or `python -m pytest tests/test_gnn_conformance.py`. CI runs both in
-  the `gnn conformance (pinned v5.0.3)` job, which fetches the pinned revision from the
+  the `gnn conformance (pinned)` job, which fetches the pinned revision from the
   public upstream repository and provisions its interpreter, so the pin is re-checked on
   every push and pull request. GNN's
   [downstream adoption
