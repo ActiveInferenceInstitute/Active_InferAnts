@@ -82,9 +82,9 @@ tasks:
     cmd: python -m pytest
     description: Run the test suite.
 docs:
-- .aii/README.md
-- .aii/AGENTS.md
-- .aii/docs/INTEGRATION.md
-- .aii/docs/README.md
-- .aii/docs/AGENTS.md
+- README.md
+- AGENTS.md
+- docs/README.md
+- docs/AGENTS.md
+- docs/INTEGRATION.md
 schema: aii-sidecar/v1
