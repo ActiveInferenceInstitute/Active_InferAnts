@@ -15,6 +15,7 @@ Welcome to **Active InferAnts** - a comprehensive, multi-language framework that
   - [Table of Contents](#table-of-contents)
   - [🎯 Overview](#-overview)
   - [✨ Key Features](#-key-features)
+  - [📚 Documentation](#-documentation)
   - [🚀 Quick Start](#-quick-start)
   - [📦 Installation](#-installation)
   - [🛠️ Usage](#️-usage)
@@ -135,6 +136,24 @@ linked on GNN's default branch because it landed after the v5.0.3 pin.
 Each model has one canonical home: this repository specifies its framework agent, while the
 ant-colony MDP and the discrete curriculum agent live with the repositories that implement
 them.
+
+## 📚 Documentation
+
+The modular documentation hub lives in [`docs/`](docs/README.md) and is published with
+MkDocs ([`mkdocs.yml`](mkdocs.yml)). Every document is indexed from
+[`docs/README.md`](docs/README.md); the rendered entry point is
+[`docs/index.md`](docs/index.md).
+
+| Start here | Document |
+|------------|----------|
+| New to Active Inference | [Active Inference Primer](docs/concepts/active_inference_primer.md) |
+| Run the code | [Getting Started](docs/guides/getting_started.md) |
+| Build an agent | [Your First Agent](docs/tutorials/first_agent.md) |
+| Understand the pipeline | [Pipeline Overview](docs/architecture/pipeline_overview.md) |
+| Use the APIs | [Knowledge API](docs/api/knowledge_api.md) · [MetaInformAnt API](docs/api/metainformant_api.md) |
+| Test and verify | [Testing Strategy](docs/testing/testing_strategy.md) |
+
+Build the site locally with `mkdocs build` (or `mkdocs serve` for a live preview).
 
 ## 🚀 Quick Start
 

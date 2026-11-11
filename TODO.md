@@ -4,7 +4,39 @@
 
 **Owner:** Daniel Ari Friedman (Active Inference Institute)
 **Status:** Active / Maintained
-**Last reviewed:** 2026-08-02 (documentation deep review; D-1 … D-8 scoped and closed, see below)
+**Last reviewed:** 2026-11-11 (documentation completion pass 3; no new defects — see below)
+
+---
+
+## Documentation completion pass 3 — 2026-11-11
+
+Verified, no new defects found:
+
+- [closed] **DOC-1 — `docs/` index completeness.** `docs/README.md` now carries a full
+  document index linking every content document in all ten sections; the tracked-file
+  counts in the metrics table were refreshed (280 Python / 7,269 Markdown, measured
+  2026-11-11). Affected: `docs/README.md`.
+- [closed] **DOC-2 — top-level README points at the docs hub.** Added a Documentation
+  section and TOC entry linking `docs/README.md`, `docs/index.md`, and the key guides;
+  re-verified every command, path, and relative link in `README.md` against the tree.
+  Affected: `README.md`.
+- [closed] **DOC-3 — root `AGENTS.md` layout and conventions.** Directory list corrected
+  to the real top-level layout; added the lint command (`pre-commit run --all-files`)
+  and a Documentation pointer. Affected: `AGENTS.md`.
+- [closed] **DOC-4 — folder guides for the remaining unguided folders.** Added
+  `README.md` + `AGENTS.md` to `active_infer_ants/` (5 files) and `tests/` (8 files).
+  `.desloppify/` is a tool artifact directory and was skipped; `gnn/` and `scripts/`
+  have fewer than three tracked files. Affected: `active_infer_ants/README.md`,
+  `active_infer_ants/AGENTS.md`, `tests/README.md`, `tests/AGENTS.md`.
+- [closed] **DOC-5 — sidecar accuracy.** Added the `6_API` entry point to
+  `artifacts[]` and hand-synced the rendered `.aii/docs/INTEGRATION.md` (the
+  `aii_platform` package is unavailable offline). Affected: `.aii/config.yaml`,
+  `.aii/docs/INTEGRATION.md`.
+
+Known environment gap (not fixed here): the checked-in `.venv` points at a Python
+3.14 runtime that no longer exists on this machine, so `python -m pytest -q` cannot
+start offline from the working copy; the suite is unaffected and runs in CI
+(`.github/workflows/ci.yml`, Python 3.10–3.12).
 
 ---
 

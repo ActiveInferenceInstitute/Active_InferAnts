@@ -44,6 +44,9 @@ artifacts:
 - path: active_infer_ants
   kind: code
   description: Core Python package (agent, environment, colony, model).
+- path: 6_API
+  kind: code
+  description: Knowledge and MetaInformAnt FastAPI services.
 - path: gnn
   kind: doc
   description: GNN specification of the Gaussian agent and the pinned upstream revision.

@@ -44,6 +44,7 @@
 | `AGENTS.md` | `doc` | Agent guidance. |
 | `pyproject.toml` | `code` | Python package configuration. |
 | `active_infer_ants` | `code` | Core Python package (agent, environment, colony, model). |
+| `6_API` | `code` | Knowledge and MetaInformAnt FastAPI services. |
 | `gnn` | `doc` | GNN specification of the Gaussian agent and the pinned upstream revision. |
 | `tests` | `test` | Test suite. |
 | `docs` | `doc` | Documentation tree. |
