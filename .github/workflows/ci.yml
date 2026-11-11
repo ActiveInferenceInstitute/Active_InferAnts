@@ -6,8 +6,16 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   test:
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -32,6 +40,7 @@ jobs:
         run: python -m pytest -q
 
   gnn-conformance:
+    timeout-minutes: 60
     # Validates gnn/gaussian_agent.gnn.md with the upstream parser revision
     # pinned in gnn/upstream.json. The pinned revision is fetched from the
     # public repository at the recorded SHA into its own runtime; the strict
