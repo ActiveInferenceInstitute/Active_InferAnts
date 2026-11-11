@@ -21,3 +21,23 @@ updates:
           - "*"
     cooldown:
       default-days: 7
+  - package-ecosystem: "npm"
+    directory: "/0_CONTEXT/Computer_Languages/JavaScript"
+    schedule:
+      interval: "weekly"
+    groups:
+      javascript-dependencies:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7
+  - package-ecosystem: "npm"
+    directory: "/0_CONTEXT/Computer_Languages/TypeScript"
+    schedule:
+      interval: "weekly"
+    groups:
+      typescript-dependencies:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7

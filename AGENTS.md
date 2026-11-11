@@ -17,10 +17,32 @@ Multi-language Active Inference framework for advanced AI research and applicati
 - 📁 `6_API/`
 - 📁 `9_OTHER/`
 - 📁 `gnn/`
+- 📁 `active_infer_ants/`
+- 📁 `tests/`
+- 📁 `scripts/`
+- 📁 `docs/`
+- 📁 `.aii/`
 - 📄 `LICENSE`
 - 📄 `README.md`
+- 📄 `SPEC.md`
 - 📄 `config.json`
 - 📄 `governance.md`
+- 📄 `pyproject.toml`
+- 📄 `requirements.txt`
+- 📄 `requirements-dev.txt`
+- 📄 `Dockerfile`
+- 📄 `mkdocs.yml`
+
+## Tests
+
+Run the unit suite from the repository root:
+
+```bash
+python -m pytest -q
+```
+
+The suite in `tests/` covers the `active_infer_ants/` package and both REST APIs; the GNN
+conformance test is described below.
 
 ## Agent Instructions
 

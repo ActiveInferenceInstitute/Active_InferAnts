@@ -17,6 +17,11 @@ Multi-language Active Inference framework for advanced AI research and applicati
 - 📁 `6_API/` — REST APIs and external interfaces
 - 📁 `9_OTHER/` — Third-party integrations and experimental modules
 - 📁 `gnn/` — GNN (Generalized Notation Notation) specification of the Gaussian agent plus the pinned GNN revision
+- 📁 `active_infer_ants/` — Core Python package (agent, environment, colony, model)
+- 📁 `tests/` — Pytest suite for the package, APIs, and GNN conformance
+- 📁 `scripts/` — Validation and compile-check scripts
+- 📁 `docs/` — MkDocs documentation hub
+- 📁 `.aii/` — InstituteOS sidecar metadata
 - 📄 `config.json` — Global configuration parameters
 - 📄 `governance.md` — Project governance documentation
 - 📄 `LICENSE` — CC BY-NC-ND 4.0
@@ -50,7 +55,7 @@ Global parameters in `config.json`:
 
 ## Dependencies
 
-- **Python 3.8+** (core orchestration)
+- **Python 3.9+** (core orchestration)
 - **NumPy, SciPy** (mathematical operations)
 - **FastAPI, uvicorn** (API services)
 - **50 language runtimes** (optional, for multi-language implementations)

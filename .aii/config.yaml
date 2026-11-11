@@ -1,7 +1,7 @@
 # AII sidecar — InstituteOS metadata. Schema: aii_platform.aii_sidecar
 meta:
   sidecar_version: 1.2.1
-  updated: '2026-11-10'
+  updated: '2026-11-11'
 repo:
   name: Active_InferAnts
   slug: activeinferants
@@ -41,6 +41,12 @@ artifacts:
 - path: pyproject.toml
   kind: code
   description: Python package configuration.
+- path: active_infer_ants
+  kind: code
+  description: Core Python package (agent, environment, colony, model).
+- path: gnn
+  kind: doc
+  description: GNN specification of the Gaussian agent and the pinned upstream revision.
 - path: tests
   kind: test
   description: Test suite.
@@ -73,9 +79,9 @@ tasks:
     cmd: python -m pytest
     description: Run the test suite.
 docs:
-- README.md
-- AGENTS.md
-- docs/INTEGRATION.md
-- docs/README.md
-- docs/AGENTS.md
+- .aii/README.md
+- .aii/AGENTS.md
+- .aii/docs/INTEGRATION.md
+- .aii/docs/README.md
+- .aii/docs/AGENTS.md
 schema: aii-sidecar/v1
