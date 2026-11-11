@@ -14,7 +14,7 @@ Verified, no new defects found:
 
 - [closed] **DOC-1 — `docs/` index completeness.** `docs/README.md` now carries a full
   document index linking every content document in all ten sections; the tracked-file
-  counts in the metrics table were refreshed (280 Python / 7,269 Markdown, measured
+  counts in the metrics table were refreshed (280 Python / 7,273 Markdown, measured
   2026-11-11). Affected: `docs/README.md`.
 - [closed] **DOC-2 — top-level README points at the docs hub.** Added a Documentation
   section and TOC entry linking `docs/README.md`, `docs/index.md`, and the key guides;
@@ -33,10 +33,11 @@ Verified, no new defects found:
   `aii_platform` package is unavailable offline). Affected: `.aii/config.yaml`,
   `.aii/docs/INTEGRATION.md`.
 
-Known environment gap (not fixed here): the checked-in `.venv` points at a Python
-3.14 runtime that no longer exists on this machine, so `python -m pytest -q` cannot
-start offline from the working copy; the suite is unaffected and runs in CI
-(`.github/workflows/ci.yml`, Python 3.10–3.12).
+Known environment gap (not fixed here): the working-copy `.venv` (untracked;
+`.venv/` is gitignored) points at a Python 3.14 runtime that no longer exists on
+this machine, so `python -m pytest -q` cannot start offline from the working copy;
+the suite is unaffected and runs in CI (`.github/workflows/ci.yml`, Python
+3.10–3.12).
 
 ---
 

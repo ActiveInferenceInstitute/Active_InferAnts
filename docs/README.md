@@ -106,7 +106,7 @@ Active InferAnts implements Active Inference across **50 programming languages**
 | Third-party integrations | 12 |
 | Research entity profiles | 17 |
 | Funding agency docs | 8 |
-| Tracked Markdown files | 7,269 |
+| Tracked Markdown files | 7,273 |
 
 ## Getting Started
 
