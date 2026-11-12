@@ -18,8 +18,8 @@ cd Active_InferAnts
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Optional: install in development mode (adds pytest + ruff)
-pip install -e ".[dev]"
+# Optional: development environment (adds pytest, ruff, mkdocs)
+./run.sh setup
 ```
 
 ```python

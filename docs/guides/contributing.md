@@ -28,11 +28,14 @@ Use emoji icons in AGENTS.md directory listings:
 
 ## Pull Request Checklist
 
+- [ ] `./run.sh gate` passes locally (lint, test-fast, docs, gnn — the same arms CI runs)
+- [ ] New behavior has a focused test; never weaken a test to make it pass
 - [ ] All 3 documentation files present for any new directories
 - [ ] AGENTS.md listings match actual directory contents
 - [ ] Python modules have docstrings and type hints
 - [ ] `run.sh` scripts are executable and tested
 - [ ] No phase-specific dependencies in shared modules
+- [ ] Generated pages refreshed (`python scripts/docgen/doc_index.py --write`, `./run.sh metrics`), never hand-edited
 
 ## License
 

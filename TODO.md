@@ -4,7 +4,46 @@
 
 **Owner:** Daniel Ari Friedman (Active Inference Institute)
 **Status:** Active / Maintained
-**Last reviewed:** 2026-11-11 (documentation completion pass 3; no new defects — see below)
+**Last reviewed:** 2026-11-12 (gate and documentation pass; see below)
+
+---
+
+## Gate and documentation pass — 2026-11-12
+
+- [closed] **G-1 — one gate entry point.** `./run.sh` with separately runnable
+  arms (`setup`, `lint`, `test-fast`, `test-full`, `docs`, `gnn`, `metrics`,
+  `gate`); `.github/workflows/ci.yml` calls those arms and nothing else. The
+  inline compile sweep in CI (a second copy of `scripts/check_compile.sh`) and
+  the second Ruff revision in `.pre-commit-config.yaml` are gone; the hook now
+  calls `./run.sh lint`. Affected: `run.sh`, `.github/workflows/ci.yml`,
+  `.pre-commit-config.yaml`, `pyproject.toml`, `requirements-dev.txt`.
+- [closed] **G-2 — one environment spec.** `requirements-dev.txt` is
+  `-e .[dev,docs]`; CI and local both install it with `./run.sh setup`, and the
+  pip downloads are cached on `pyproject.toml` + `requirements-dev.txt`.
+  `pyproject.toml` gained a `docs` extra and an explicit `[tool.ruff]` rule
+  selection with Ruff pinned, so a linter release cannot silently widen the gate.
+- [closed] **G-3 — lint surface made green.** 45 mechanical violations fixed
+  (unused imports, unused `except … as e`, unsorted imports), imports formatted,
+  and two `lambda` assignments in `3_MEASURE/categorization.py` rewritten as
+  `def`. The rule selection is explicit; the excluded trees and their measured
+  counts are in `docs/RUN_GUIDE.md` and `docs/_generated/gate_metrics.md`.
+- [closed] **G-4 — information now generated.** `docs/documentation-index.md`
+  (`scripts/docgen/doc_index.py`) and `docs/_generated/gate_metrics.md`
+  (`scripts/docgen/gate_metrics.py`) replace the hand-maintained per-section
+  counts and the stale inventory table in `docs/README.md`; `./run.sh docs`
+  fails when either is stale. `docs/_generated/gate_baseline.json` freezes the
+  pre-change measurements, re-measurable from an `origin/main` worktree.
+- [closed] **G-5 — docs hub and links.** `docs/README.md` is the hub,
+  `docs/documentation-index.md` the flat index, `mkdocs.yml` excludes the hub
+  (it collided with `index.md`), and links to files outside `docs/` are absolute
+  repository URLs so `mkdocs build --strict` passes. `scripts/check_doc_links.py`
+  checks every relative link in the tracked documentation.
+- [closed] **G-6 — GNN gate documented.** The conformance job key
+  (`gnn-conformance`, displayed `gnn conformance (pinned)`), the pin file
+  `gnn/upstream.json` (schema `gnn-importer-pin/v1`, `v5.0.3`,
+  `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`), and the `.github/GNN.md` pointer
+  are described in `docs/RUN_GUIDE.md`, `.github/GNN.md`, `README.md`, and
+  `AGENTS.md`.
 
 ---
 
@@ -33,11 +72,12 @@ Verified, no new defects found:
   `aii_platform` package is unavailable offline). Affected: `.aii/config.yaml`,
   `.aii/docs/INTEGRATION.md`.
 
-Known environment gap (not fixed here): the working-copy `.venv` (untracked;
-`.venv/` is gitignored) points at a Python 3.14 runtime that no longer exists on
-this machine, so `python -m pytest -q` cannot start offline from the working copy;
-the suite is unaffected and runs in CI (`.github/workflows/ci.yml`, Python
-3.10–3.12).
+Known environment gap (resolved 2026-11-12): the working-copy `.venv` (untracked;
+`.venv/` is gitignored) pointed at a Python 3.14 runtime that no longer exists on
+this machine. `./run.sh setup` now (re)creates the environment from the single
+spec `requirements-dev.txt`; arms use `$PYTHON`, else `.venv/bin/python`, else
+`python3`. CI runs the same arms on Python 3.10–3.12
+(`.github/workflows/ci.yml`).
 
 ---
 

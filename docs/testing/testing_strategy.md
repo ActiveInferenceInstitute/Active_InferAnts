@@ -2,6 +2,24 @@
 
 Testing approach for the Active InferAnts framework.
 
+## The gate
+
+Every check runs through `./run.sh`, the single entry point documented in
+[`../RUN_GUIDE.md`](../RUN_GUIDE.md). Each arm is the exact command CI runs:
+
+```bash
+./run.sh lint        # ruff on the maintained surface + compile sweep
+./run.sh test-fast   # pytest -m "not gnn"
+./run.sh test-full   # pytest (adds the gnn-marked conformance module)
+./run.sh docs        # mkdocs --strict, relative links, generated pages
+./run.sh gnn         # pinned GNN parser + specification conformance
+./run.sh gate        # lint, test-fast, docs, gnn
+```
+
+`test-fast` and `gnn` partition the suite by the `gnn` marker, so `gate` covers
+`test-full` without repeating a test. Measured wall times and per-selection
+counts: [`../_generated/gate_metrics.md`](../_generated/gate_metrics.md).
+
 ## Test Levels
 
 | Level | Scope | Tools |
