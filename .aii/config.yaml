@@ -1,7 +1,7 @@
 # AII sidecar — InstituteOS metadata. Schema: aii_platform.aii_sidecar
 meta:
   sidecar_version: 1.2.1
-  updated: '2026-11-11'
+  updated: '2026-11-12'
 repo:
   name: Active_InferAnts
   slug: activeinferants
@@ -79,7 +79,7 @@ tasks:
     cmd: ls docs
     description: List documentation.
   test:
-    cmd: python -m pytest
+    cmd: ./run.sh test-full
     description: Run the test suite.
 docs:
 - README.md

@@ -54,7 +54,7 @@
 | Task | Command | Working directory | Description |
 | --- | --- | --- | --- |
 | `docs` | `ls docs` | `.` | List documentation. |
-| `test` | `python -m pytest` | `.` | Run the test suite. |
+| `test` | `./run.sh test-full` | `.` | Run the test suite. |
 
 ## Validation
 

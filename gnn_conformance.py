@@ -75,14 +75,19 @@ def load_pin(path: Path = PIN_PATH) -> Pin:
         raise ConformanceError(f"{source} is unreadable: {exc}") from exc
     if not isinstance(data, dict):
         raise ConformanceError(f"{source} must contain a JSON object")
+    if data.get("schema") != "gnn-importer-pin/v1":
+        raise ConformanceError(f"{source}: schema must be 'gnn-importer-pin/v1'")
     try:
         pin = Pin(
-            repository=str(data["repository"]),
-            tag=str(data["tag"]),
-            commit=str(data["commit"]),
+            repository=data["repository"],
+            tag=data["tag"],
+            commit=data["commit"],
         )
     except KeyError as exc:
         raise ConformanceError(f"{source} is missing the {exc} field") from exc
+    for field in ("repository", "tag", "commit"):
+        if not isinstance(getattr(pin, field), str):
+            raise ConformanceError(f"{source}: {field} must be a string")
     if len(pin.commit) != 40 or any(c not in "0123456789abcdef" for c in pin.commit):
         raise ConformanceError(
             f"{source}: commit must be a 40-character lowercase hex SHA"
