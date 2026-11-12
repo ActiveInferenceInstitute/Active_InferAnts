@@ -49,6 +49,14 @@ command. Arms, the lint surface, and where CI runs each one:
 [`docs/_generated/gate_metrics.md`](docs/_generated/gate_metrics.md) — link it,
 never restate the numbers.
 
+Merges require `gnn conformance (local)`. Run `./run.sh setup lint docs
+test-fast gnn` with Python 3.12 and the pinned parser on the exact clean PR
+head through the qualified GitVault offline test runner. Keep the passing
+receipt and zero-skip GNN report. Publish through the reviewed GitVault
+`github-status` plan and verify the required result against that head.
+The hosted `gnn conformance (pinned)` job remains optional. Follow the
+[local run and publication instructions](README.md#required-local-gnn-check).
+
 ## Documentation
 
 Documentation is modular, one topic per file, under `docs/`. Start at the hub
