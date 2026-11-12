@@ -144,7 +144,9 @@ class KnowledgeBase(BaseModel):
         return v
 
     model_config = ConfigDict(
-        json_schema_extra={"example": {"source": "example_source", "content": {"key": "value"}}}
+        json_schema_extra={
+            "example": {"source": "example_source", "content": {"key": "value"}}
+        }
     )
 
 
@@ -163,14 +165,18 @@ def _get_clients():
         try:
             from pymongo import MongoClient
 
-            clients["mongo"] = MongoClient(config.MONGODB_URL, serverSelectionTimeoutMS=1000)
+            clients["mongo"] = MongoClient(
+                config.MONGODB_URL, serverSelectionTimeoutMS=1000
+            )
         except Exception as e:  # pragma: no cover - env dependent
             logger.warning("Mongo unavailable: %s", e)
     if config.REDIS_URL:
         try:
             import redis
 
-            clients["redis"] = redis.from_url(config.REDIS_URL, socket_connect_timeout=1)
+            clients["redis"] = redis.from_url(
+                config.REDIS_URL, socket_connect_timeout=1
+            )
         except Exception as e:  # pragma: no cover
             logger.warning("Redis unavailable: %s", e)
     if config.ELASTICSEARCH_URL:
@@ -224,7 +230,8 @@ def _sync_to_secondary(clients, knowledge: KnowledgeBase) -> None:
             with clients["neo4j"].session() as session:
                 session.run(
                     "MERGE (k:Knowledge {source: $source}) SET k.content = $content",
-                    source=knowledge.source, content=str(knowledge.content),
+                    source=knowledge.source,
+                    content=str(knowledge.content),
                 )
         except Exception as e:
             logger.warning("Neo4j write failed: %s", e)
@@ -241,10 +248,14 @@ def create_knowledge(
 ):
     try:
         existing = (
-            db.query(KnowledgeItem).filter(KnowledgeItem.source == knowledge.source).first()
+            db.query(KnowledgeItem)
+            .filter(KnowledgeItem.source == knowledge.source)
+            .first()
         )
         if existing:
-            raise HTTPException(status_code=409, detail="Knowledge source already exists")
+            raise HTTPException(
+                status_code=409, detail="Knowledge source already exists"
+            )
         item = KnowledgeItem(source=knowledge.source, content=knowledge.content)
         db.add(item)
         db.commit()
@@ -256,7 +267,9 @@ def create_knowledge(
         raise
     except Exception as e:
         logger.error("Error creating knowledge: %s", e)
-        raise HTTPException(status_code=500, detail="Error creating knowledge") from None
+        raise HTTPException(
+            status_code=500, detail="Error creating knowledge"
+        ) from None
 
 
 @app.get("/api/knowledge/{source}", response_model=dict[str, Any])
@@ -274,7 +287,9 @@ def read_knowledge(
         raise
     except Exception as e:
         logger.error("Error retrieving knowledge: %s", e)
-        raise HTTPException(status_code=500, detail="Error retrieving knowledge") from None
+        raise HTTPException(
+            status_code=500, detail="Error retrieving knowledge"
+        ) from None
 
 
 @app.put("/api/knowledge/{source}", response_model=dict[str, str])
@@ -298,7 +313,9 @@ def update_knowledge(
         raise
     except Exception as e:
         logger.error("Error updating knowledge: %s", e)
-        raise HTTPException(status_code=500, detail="Error updating knowledge") from None
+        raise HTTPException(
+            status_code=500, detail="Error updating knowledge"
+        ) from None
 
 
 @app.delete("/api/knowledge/{source}", response_model=dict[str, str])
@@ -319,7 +336,9 @@ def delete_knowledge(
         raise
     except Exception as e:
         logger.error("Error deleting knowledge: %s", e)
-        raise HTTPException(status_code=500, detail="Error deleting knowledge") from None
+        raise HTTPException(
+            status_code=500, detail="Error deleting knowledge"
+        ) from None
 
 
 @app.get("/api/knowledge/", response_model=list[dict[str, Any]])
@@ -330,7 +349,13 @@ def list_knowledge(
     _: str | None = Depends(get_api_key),
 ):
     try:
-        items = db.query(KnowledgeItem).order_by(KnowledgeItem.id).offset(skip).limit(limit).all()
+        items = (
+            db.query(KnowledgeItem)
+            .order_by(KnowledgeItem.id)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
         return [
             {
                 "id": item.id,

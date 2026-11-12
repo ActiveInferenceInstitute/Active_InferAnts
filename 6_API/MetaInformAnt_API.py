@@ -51,7 +51,9 @@ app = FastAPI(
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
-def get_current_api_key(api_key_header: str | None = Depends(api_key_header)) -> str | None:
+def get_current_api_key(
+    api_key_header: str | None = Depends(api_key_header),
+) -> str | None:
     if not API_KEY:
         return None
     if api_key_header and hmac.compare_digest(api_key_header, API_KEY):
@@ -130,7 +132,9 @@ def active_inference_update(matrix: np.ndarray, steps: int) -> np.ndarray:
     return beliefs
 
 
-def federated_average_update(matrix: np.ndarray, learning_rate: float, epochs: int) -> np.ndarray:
+def federated_average_update(
+    matrix: np.ndarray, learning_rate: float, epochs: int
+) -> np.ndarray:
     """Federated-style parameter averaging with gradient-descent steps.
 
     Treats each feature channel as a local parameter vector and performs numPy
@@ -158,7 +162,9 @@ def _run_advanced(task_id: str, data: dict[str, list[float]], steps: int) -> Non
         _tasks[task_id]["message"] = str(e)
 
 
-def _run_federated(task_id: str, data: dict[str, list[float]], lr: float, epochs: int) -> None:
+def _run_federated(
+    task_id: str, data: dict[str, list[float]], lr: float, epochs: int
+) -> None:
     try:
         arr = _normalise(data)
         result = federated_average_update(arr, lr, epochs)
@@ -193,10 +199,15 @@ def perform_advanced_inference(
         ).start()
         return TaskResponse(task_id=task_id, status="PROCESSING")
     except ValueError as ve:
-        raise HTTPException(status_code=400, detail={"error": "Invalid input", "details": str(ve)}) from None
+        raise HTTPException(
+            status_code=400, detail={"error": "Invalid input", "details": str(ve)}
+        ) from None
     except Exception as e:
         logger.exception("Unexpected error scheduling advanced inference")
-        raise HTTPException(status_code=500, detail={"error": "Internal server error", "details": str(e)}) from None
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "Internal server error", "details": str(e)},
+        ) from None
 
 
 @app.post("/api/v1/federated_learn/", response_model=TaskResponse)
@@ -213,15 +224,25 @@ def perform_federated_learning(
 
         threading.Thread(
             target=_run_federated,
-            args=(task_id, request.data, request.learning_rate or 0.01, request.epochs or 10),
+            args=(
+                task_id,
+                request.data,
+                request.learning_rate or 0.01,
+                request.epochs or 10,
+            ),
             daemon=True,
         ).start()
         return TaskResponse(task_id=task_id, status="PROCESSING")
     except ValueError as ve:
-        raise HTTPException(status_code=400, detail={"error": "Invalid input", "details": str(ve)}) from None
+        raise HTTPException(
+            status_code=400, detail={"error": "Invalid input", "details": str(ve)}
+        ) from None
     except Exception as e:
         logger.exception("Unexpected error scheduling federated learning")
-        raise HTTPException(status_code=500, detail={"error": "Internal server error", "details": str(e)}) from None
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "Internal server error", "details": str(e)},
+        ) from None
 
 
 @app.get("/api/v1/status/", response_model=TaskResponse)
@@ -230,8 +251,12 @@ def check_status(
     _: str | None = Depends(get_current_api_key),
 ):
     if not simulation_id:
-        return TaskResponse(task_id="", status="OK", message="list of running tasks",
-                            result=list(_tasks.keys()))
+        return TaskResponse(
+            task_id="",
+            status="OK",
+            message="list of running tasks",
+            result=list(_tasks.keys()),
+        )
     task = _tasks.get(simulation_id)
     if not task:
         raise HTTPException(status_code=404, detail={"error": "Simulation not found"})

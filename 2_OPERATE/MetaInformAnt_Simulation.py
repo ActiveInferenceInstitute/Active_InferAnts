@@ -19,8 +19,9 @@ import logging
 from typing import Any
 
 import numpy as np
-from active_infer_ants import ActiveInferenceAgent
 from environment import Environment
+
+from active_infer_ants import ActiveInferenceAgent
 
 logger = logging.getLogger(__name__)
 
@@ -102,8 +103,20 @@ class MetaInformAntSimulation:
         centre = (self.environment.width // 2, self.environment.height // 2)
         self.positions: list[tuple[int, int]] = [
             (
-                int(np.clip(centre[0] + self.rng.integers(-5, 6), 0, self.environment.width - 1)),
-                int(np.clip(centre[1] + self.rng.integers(-5, 6), 0, self.environment.height - 1)),
+                int(
+                    np.clip(
+                        centre[0] + self.rng.integers(-5, 6),
+                        0,
+                        self.environment.width - 1,
+                    )
+                ),
+                int(
+                    np.clip(
+                        centre[1] + self.rng.integers(-5, 6),
+                        0,
+                        self.environment.height - 1,
+                    )
+                ),
             )
             for _ in self.agents
         ]
@@ -140,7 +153,14 @@ class MetaInformAntSimulation:
         self.environment.step()
         self.step_count += 1
 
-    def _act(self, agent: ActiveInferenceAgent, action: np.ndarray, x: int, y: int, index: int) -> float:
+    def _act(
+        self,
+        agent: ActiveInferenceAgent,
+        action: np.ndarray,
+        x: int,
+        y: int,
+        index: int,
+    ) -> float:
         """Move an agent according to its action vector and deposit pheromone."""
         move_index = int(np.argmax(np.asarray(action)))
         move_index = min(max(move_index, 0), len(_MOVEMENT) - 1)
@@ -214,7 +234,11 @@ class MetaInformAntSimulation:
         small adapters are returned so the pipeline does not depend on the
         renderer's private dataclass.
         """
-        return self.environment, self._entity_list(self.environment.nests), self._entity_list(self.positions)
+        return (
+            self.environment,
+            self._entity_list(self.environment.nests),
+            self._entity_list(self.positions),
+        )
 
     @staticmethod
     def _entity_list(points: list[tuple[int, int]]) -> list[Any]:

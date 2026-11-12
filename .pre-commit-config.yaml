@@ -1,15 +1,15 @@
 # Pre-commit hooks for Active InferAnts.
+#
+# The lint hook calls the gate itself, so a commit is checked by exactly the
+# command CI runs (`./run.sh lint`, documented in docs/RUN_GUIDE.md). Ruff is
+# pinned in pyproject.toml's `dev` extra instead of a second `ruff-pre-commit`
+# revision, which keeps the hook and the gate on one linter version and one
+# rule set.
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.5
-    hooks:
-      - id: ruff
-        args: [check, --fix]
-      - id: ruff-format
   - repo: local
     hooks:
-      - id: py-compile
-        name: py-compile all sources
-        entry: ./scripts/check_compile.sh
+      - id: gate-lint
+        name: gate lint (ruff + compile sweep, ./run.sh lint)
+        entry: ./run.sh lint
         language: script
         pass_filenames: false

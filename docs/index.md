@@ -9,7 +9,10 @@ algorithms in **50 programming languages**, with a 6-phase operational pipeline
 
 ## Quick links
 
-- [Repository README](../README.md) — overview, quick start, architecture, APIs.
+- [Repository README](https://github.com/ActiveInferenceInstitute/Active_InferAnts/blob/main/README.md) — overview, quick start, architecture, APIs.
+- [Run guide](RUN_GUIDE.md) — the `./run.sh` arms, the lint surface, and where CI runs each one.
+- [Documentation index](documentation-index.md) — every document, generated from the tree.
+- [Gate metrics](_generated/gate_metrics.md) — measured arm wall times and test counts.
 - [Architecture](architecture/README.md) — pipeline flow and system design.
 - [API reference](api/README.md) — the Knowledge and MetaInformAnt REST APIs.
 - [Concepts](concepts/README.md) — Active Inference primer and agent types.
@@ -34,4 +37,4 @@ results = model.run(max_iterations=1000)
 model.visualize(results)
 ```
 
-See the [repository README](../README.md) for the full quick start.
+See the [repository README](https://github.com/ActiveInferenceInstitute/Active_InferAnts/blob/main/README.md) for the full quick start.

@@ -2,111 +2,61 @@
 
 Comprehensive documentation for the Active InferAnts multi-language Active Inference framework.
 
+**Quick Reference:** [Documentation index](documentation-index.md) |
+[Run guide](RUN_GUIDE.md) | [Gate metrics](_generated/gate_metrics.md)
+
+`docs/README.md` is the hub you are reading; [`index.md`](index.md) is the
+MkDocs home page (`mkdocs.yml` excludes this hub from the built site so the two
+do not collide). [`documentation-index.md`](documentation-index.md) is the flat
+index of every long-lived document, generated from the tree by
+`scripts/docgen/doc_index.py`.
+
 ## Quick Navigation
 
-| Section | Docs | Description |
-|---------|------|-------------|
-| [Architecture](architecture/) | 5 | System design, pipeline flow, generative model |
-| [API Reference](api/) | 3 | REST endpoints, data models, authentication |
-| [Concepts](concepts/) | 8 | Active Inference primer, agent types, category theory |
-| [Guides](guides/) | 5 | Getting started, adding languages, contributing |
-| [Operations](operations/) | 5 | Deployment, monitoring, logging, governance |
-| [Reference](reference/) | 5 | Configuration, 50-language matrix, glossary |
-| [Security](security/) | 2 | Security architecture, cryptographic primitives |
-| [Systems](systems/) | 6 | P3IF, Cognitive Sovereignty, IC2S2, William Blake |
-| [Testing](testing/) | 3 | Testing strategy, cross-language tests, verification |
-| [Tutorials](tutorials/) | 6 | First agent, pipeline, results analysis, benchmarking |
+| Section | Description |
+|---------|-------------|
+| [Architecture](architecture/README.md) | System design, pipeline flow, generative model |
+| [API Reference](api/README.md) | REST endpoints, data models, authentication |
+| [Concepts](concepts/README.md) | Active Inference primer, agent types, category theory |
+| [Guides](guides/README.md) | Getting started, adding languages, contributing |
+| [Operations](operations/README.md) | Deployment, monitoring, logging, governance |
+| [Reference](reference/README.md) | Configuration, language matrix, glossary |
+| [Security](security/README.md) | Security architecture, cryptographic primitives |
+| [Systems](systems/README.md) | P3IF, Cognitive Sovereignty, IC2S2, William Blake |
+| [Testing](testing/README.md) | Testing strategy, cross-language tests, verification |
+| [Tutorials](tutorials/README.md) | First agent, pipeline, results analysis, benchmarking |
 
-## Full document index
+Each section has its own `README.md` index, `AGENTS.md` agent guide, and
+`SPEC.md`. Per-section document counts are in the
+[documentation index](documentation-index.md), which is generated — do not copy
+the numbers here.
 
-Every content document in this tree, grouped by section. Each section also has its
-own `README.md` index, `AGENTS.md` agent guide, and `SPEC.md`.
+## Gate and measured facts
 
-### Architecture
-- [Pipeline Overview](architecture/pipeline_overview.md)
-- [Component Map](architecture/component_map.md)
-- [Data Flow](architecture/data_flow.md)
-- [Generative Model](architecture/generative_model.md)
-- [Integration Architecture](architecture/integration_architecture.md)
+The repository's single check entry point is [`../run.sh`](../run.sh); its arms
+(`lint`, `test-fast`, `test-full`, `docs`, `gnn`) and the commands CI runs are
+documented in the [run guide](RUN_GUIDE.md).
 
-### API Reference
-- [Knowledge API](api/knowledge_api.md)
-- [MetaInformAnt API](api/metainformant_api.md)
-- [Data Models](api/data_models.md)
-
-### Concepts
-- [Active Inference Primer](concepts/active_inference_primer.md)
-- [Agent Types](concepts/agent_types.md)
-- [BOLTS Framework](concepts/bolts_framework.md)
-- [Category Theory](concepts/category_theory.md)
-- [Cognitive Security](concepts/cognitive_security.md)
-- [Digital Twins](concepts/digital_twins.md)
-- [Multi-Language Design](concepts/multi_language_design.md)
-- [Pheromone Signaling](concepts/pheromone_signaling.md)
-
-### Guides
-- [Getting Started](guides/getting_started.md)
-- [Adding a Language](guides/adding_a_language.md)
-- [Running Simulations](guides/running_simulations.md)
-- [Research Workflow](guides/research_workflow.md)
-- [Contributing](guides/contributing.md)
-
-### Operations
-- [Simulation Operations](operations/simulation_operations.md)
-- [API Deployment](operations/api_deployment.md)
-- [Monitoring](operations/monitoring.md)
-- [Logging](operations/logging.md)
-- [Governance](operations/governance.md)
-
-### Reference
-- [Configuration](reference/configuration.md)
-- [Language Matrix](reference/language_matrix.md)
-- [Systems Reference](reference/systems_reference.md)
-- [Glossary](reference/glossary.md)
-- [Dependencies](reference/dependencies.md)
-
-### Security
-- [Security Architecture](security/security_architecture.md)
-- [Cryptographic Primitives](security/cryptographic_primitives.md)
-
-### Systems
-- [P3IF](systems/p3if.md)
-- [Cognitive Sovereignty](systems/cognitive_sovereignty.md)
-- [IC2S2](systems/ic2s2.md)
-- [William Blake](systems/william_blake.md)
-- [Active Data Sampling](systems/active_data_sampling.md)
-- [Meta Systems](systems/meta_systems.md)
-
-### Testing
-- [Testing Strategy](testing/testing_strategy.md)
-- [Cross-Language Tests](testing/cross_language_tests.md)
-- [Verification Methods](testing/verification_methods.md)
-
-### Tutorials
-- [Your First Agent](tutorials/first_agent.md)
-- [Running the Pipeline](tutorials/running_pipeline.md)
-- [Analyzing Results](tutorials/analyzing_results.md)
-- [Adding a System](tutorials/adding_a_system.md)
-- [Grant Generation](tutorials/grant_generation.md)
-- [Benchmarking](tutorials/benchmarking.md)
+Every measured number the documentation quotes — arm wall times, test counts,
+tracked-file inventory, and the out-of-scope lint counts — lives in
+[`_generated/gate_metrics.md`](_generated/gate_metrics.md), written by
+`scripts/docgen/gate_metrics.py`. Link it instead of restating a number.
 
 ## Project Overview
 
-Active InferAnts implements Active Inference across **50 programming languages** registered in [`0_CONTEXT/Computer_Languages/languages.json`](../0_CONTEXT/Computer_Languages/languages.json), with a **6-phase operational pipeline**:
+Active InferAnts implements Active Inference across the languages registered in
+[`0_CONTEXT/Computer_Languages/languages.json`](../0_CONTEXT/Computer_Languages/languages.json),
+with a **6-phase operational pipeline**:
 
 ```
 0_CONTEXT → 1_PREPARE → 2_OPERATE → 3_MEASURE → 4_REPORT → 5_FOLLOWUP → 6_API
 ```
 
-| Metric | Value |
-|--------|-------|
-| Tracked Python files | 280 |
-| Language implementations | 50 |
-| Specialized systems | 10 |
-| Third-party integrations | 12 |
-| Research entity profiles | 17 |
-| Funding agency docs | 8 |
-| Tracked Markdown files | 7,273 |
+The framework's core Python package is `active_infer_ants/`; the continuous
+Gaussian agent is specified in
+[`gnn/gaussian_agent.gnn.md`](../gnn/gaussian_agent.gnn.md) and validated
+against the revision pinned in [`gnn/upstream.json`](../gnn/upstream.json)
+(see the [run guide](RUN_GUIDE.md#the-gnn-arm)).
 
 ## Getting Started
 

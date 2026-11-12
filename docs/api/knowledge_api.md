@@ -55,4 +55,4 @@ All configuration is read from `KNOWLEDGE_*` environment variables (see the
 
 ## Source
 
-[`6_API/Knowledge_API.py`](../../6_API/Knowledge_API.py)
+[`6_API/Knowledge_API.py`](https://github.com/ActiveInferenceInstitute/Active_InferAnts/blob/main/6_API/Knowledge_API.py)

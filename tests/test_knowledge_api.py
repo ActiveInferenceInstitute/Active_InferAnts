@@ -20,14 +20,18 @@ def client():
 
 
 def test_full_crud_lifecycle(client):
-    r = client.post("/api/knowledge/", json={"source": "exp_a", "content": {"acc": 0.9}})
+    r = client.post(
+        "/api/knowledge/", json={"source": "exp_a", "content": {"acc": 0.9}}
+    )
     assert r.status_code == 201
     r = client.post("/api/knowledge/", json={"source": "exp_a", "content": {}})
     assert r.status_code == 409
     r = client.get("/api/knowledge/exp_a")
     assert r.status_code == 200
     assert r.json()["content"]["acc"] == 0.9
-    r = client.put("/api/knowledge/exp_a", json={"source": "exp_a", "content": {"acc": 0.95}})
+    r = client.put(
+        "/api/knowledge/exp_a", json={"source": "exp_a", "content": {"acc": 0.95}}
+    )
     assert r.status_code == 200
     assert client.get("/api/knowledge/exp_a").json()["content"]["acc"] == 0.95
     r = client.get("/api/knowledge/")

@@ -18,8 +18,9 @@ class InferenceModel:
     core package has no hard plotting dependency).
     """
 
-    def __init__(self, config: dict[str, Any] | None = None,
-                 seed: int | None = None) -> None:
+    def __init__(
+        self, config: dict[str, Any] | None = None, seed: int | None = None
+    ) -> None:
         self.config = dict(config or {})
         self.seed = seed
         n_dims = int(self.config.get("complexity", 3))

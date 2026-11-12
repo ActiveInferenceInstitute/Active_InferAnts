@@ -20,7 +20,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from gnn_conformance import (
+from gnn_conformance import (  # noqa: E402  (import after the sys.path insert)
     SPEC_PATH,
     ConformanceError,
     GnnUnavailable,
@@ -38,7 +38,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        model = extract_spec(args.spec, gnn_root=args.gnn_root, interpreter=args.interpreter)
+        model = extract_spec(
+            args.spec, gnn_root=args.gnn_root, interpreter=args.interpreter
+        )
         checks = check_conformance(model)
     except GnnUnavailable as exc:
         print(f"GNN unavailable: {exc}", file=sys.stderr)

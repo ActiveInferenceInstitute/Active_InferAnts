@@ -13,8 +13,9 @@ class AntColony:
     minimal collective optimisation behaviour.
     """
 
-    def __init__(self, n_agents: int = 50, n_dims: int = 3,
-                 seed: int | None = None) -> None:
+    def __init__(
+        self, n_agents: int = 50, n_dims: int = 3, seed: int | None = None
+    ) -> None:
         self.n_agents = n_agents
         self.n_dims = n_dims
         self.rng = np.random.default_rng(seed)
@@ -23,7 +24,9 @@ class AntColony:
 
     def parallel_inference(self) -> list[np.ndarray]:
         """Compute an action for every agent (vectorised)."""
-        self.actions = [a + self.rng.normal(0.0, 0.1, size=self.n_dims) for a in self.agents]
+        self.actions = [
+            a + self.rng.normal(0.0, 0.1, size=self.n_dims) for a in self.agents
+        ]
         return self.actions
 
     def learn_from_colony(self, pheromone_map: dict[int, float]) -> None:
@@ -33,7 +36,9 @@ class AntColony:
         best_idx = max(pheromone_map, key=lambda k: pheromone_map[k])
         strength = pheromone_map.get(best_idx, 0.0)
         for i in range(self.n_agents):
-            self.agents[i] = self.agents[i] + 0.05 * strength * (self.agents[best_idx] - self.agents[i])
+            self.agents[i] = self.agents[i] + 0.05 * strength * (
+                self.agents[best_idx] - self.agents[i]
+            )
 
     def analyze_emergent_behavior(self) -> dict[str, float]:
         """Return simple aggregate statistics over the colony."""

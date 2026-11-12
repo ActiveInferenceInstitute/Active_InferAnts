@@ -1,20 +1,25 @@
-from typing import List, Dict, Any, Union, Optional
-from enum import Enum, auto
-from dataclasses import dataclass, field, asdict
 import json
-from datetime import datetime
 import logging
-from pydantic import BaseModel, Field, validator
 import uuid
 from abc import ABC, abstractmethod
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from enum import Enum, auto
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field, validator
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 # Enumerations for various report components
 class DataSourceType(Enum):
     """Enumeration of possible data source types."""
+
     INTERNAL = auto()
     EXTERNAL = auto()
     PUBLIC = auto()
@@ -24,8 +29,10 @@ class DataSourceType(Enum):
     SYNTHETIC = auto()
     FEDERATED = auto()
 
+
 class AnalysisMethodType(Enum):
     """Enumeration of possible analysis method types."""
+
     QUANTITATIVE = auto()
     QUALITATIVE = auto()
     PREDICTIVE = auto()
@@ -35,8 +42,10 @@ class AnalysisMethodType(Enum):
     EXPLORATORY = auto()
     CAUSAL = auto()
 
+
 class DeliveryFormatType(Enum):
     """Enumeration of possible delivery format types."""
+
     PDF = auto()
     INTERACTIVE_DASHBOARD = auto()
     PRESENTATION = auto()
@@ -46,9 +55,11 @@ class DeliveryFormatType(Enum):
     REAL_TIME_FEED = auto()
     AUGMENTED_REALITY = auto()
 
+
 # Abstract base class for report components
 class ReportComponent(ABC):
     """Abstract base class for all report components."""
+
     @abstractmethod
     def validate(self) -> bool:
         """Validate the component."""
@@ -59,9 +70,11 @@ class ReportComponent(ABC):
         """Convert the component to a dictionary."""
         pass
 
+
 @dataclass
 class DataSource(ReportComponent):
     """Detailed representation of a data source."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     type: DataSourceType
@@ -93,9 +106,11 @@ class DataSource(ReportComponent):
         """Convert the data source to a dictionary."""
         return asdict(self)
 
+
 @dataclass
 class AnalysisMethod(ReportComponent):
     """Detailed representation of an analysis method."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     type: AnalysisMethodType
@@ -115,7 +130,9 @@ class AnalysisMethod(ReportComponent):
         """Validate the analysis method."""
         try:
             assert self.name, "Name is required"
-            assert isinstance(self.type, AnalysisMethodType), "Invalid analysis method type"
+            assert isinstance(self.type, AnalysisMethodType), (
+                "Invalid analysis method type"
+            )
             assert 1 <= self.complexity <= 5, "Complexity must be between 1 and 5"
             return True
         except AssertionError as e:
@@ -126,9 +143,11 @@ class AnalysisMethod(ReportComponent):
         """Convert the analysis method to a dictionary."""
         return asdict(self)
 
+
 @dataclass
 class TargetAudience(ReportComponent):
     """Detailed representation of the target audience."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     expertise_level: str
@@ -149,7 +168,9 @@ class TargetAudience(ReportComponent):
         """Validate the target audience."""
         try:
             assert self.name, "Name is required"
-            assert 1 <= self.technical_proficiency <= 5, "Technical proficiency must be between 1 and 5"
+            assert 1 <= self.technical_proficiency <= 5, (
+                "Technical proficiency must be between 1 and 5"
+            )
             assert 1 <= self.data_literacy <= 5, "Data literacy must be between 1 and 5"
             return True
         except AssertionError as e:
@@ -160,9 +181,11 @@ class TargetAudience(ReportComponent):
         """Convert the target audience to a dictionary."""
         return asdict(self)
 
+
 @dataclass
 class DeliveryFormat(ReportComponent):
     """Detailed representation of the delivery format."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     type: DeliveryFormatType
     reasoning: str
@@ -179,8 +202,12 @@ class DeliveryFormat(ReportComponent):
     def validate(self) -> bool:
         """Validate the delivery format."""
         try:
-            assert isinstance(self.type, DeliveryFormatType), "Invalid delivery format type"
-            assert 1 <= self.interactivity_level <= 5, "Interactivity level must be between 1 and 5"
+            assert isinstance(self.type, DeliveryFormatType), (
+                "Invalid delivery format type"
+            )
+            assert 1 <= self.interactivity_level <= 5, (
+                "Interactivity level must be between 1 and 5"
+            )
             return True
         except AssertionError as e:
             logger.error(f"DeliveryFormat validation failed: {str(e)}")
@@ -190,31 +217,40 @@ class DeliveryFormat(ReportComponent):
         """Convert the delivery format to a dictionary."""
         return asdict(self)
 
+
 class ReportSection(BaseModel):
     """Pydantic model for a report section."""
+
     title: str
     content: str
     priority: int = Field(1, ge=1, le=10)
-    subsections: List['ReportSection'] = []
+    subsections: List["ReportSection"] = []
 
-    @validator('priority')
+    @validator("priority")
     def check_priority(cls, v):
         if not 1 <= v <= 10:
             raise ValueError("Priority must be between 1 and 10")
         return v
+
 
 class ReportSpecification:
     """
     A comprehensive class designed to encapsulate and manage the specifications
     required for generating a sophisticated intelligence report.
     """
-    
-    def __init__(self, report_title: str, data_sources: List[DataSource], 
-                 analysis_methods: List[AnalysisMethod], target_audience: TargetAudience, 
-                 delivery_format: DeliveryFormat, additional_notes: Optional[str] = None):
+
+    def __init__(
+        self,
+        report_title: str,
+        data_sources: List[DataSource],
+        analysis_methods: List[AnalysisMethod],
+        target_audience: TargetAudience,
+        delivery_format: DeliveryFormat,
+        additional_notes: Optional[str] = None,
+    ):
         """
         Constructs the specifications for a sophisticated intelligence report.
-        
+
         Parameters:
         - report_title (str): The title of the report.
         - data_sources (List[DataSource]): The data sources to be utilized in the report.
@@ -236,13 +272,19 @@ class ReportSpecification:
         self.created_at = datetime.now()
         self.last_modified = self.created_at
         self.version = "1.0.0"
-        
+
         logger.info(f"Created new ReportSpecification with ID: {self.id}")
-    
-    def add_section(self, title: str, content: str, priority: int = 1, parent_section: Optional[ReportSection] = None):
+
+    def add_section(
+        self,
+        title: str,
+        content: str,
+        priority: int = 1,
+        parent_section: Optional[ReportSection] = None,
+    ):
         """
         Adds a new section to the report specification.
-        
+
         Parameters:
         - title (str): The title of the section.
         - content (str): The content of the section.
@@ -256,70 +298,70 @@ class ReportSpecification:
             self.sections.append(new_section)
         self.last_modified = datetime.now()
         logger.info(f"Added new section: {title}")
-    
+
     def add_key_finding(self, finding: str):
         """
         Adds a key finding to the report specification.
-        
+
         Parameters:
         - finding (str): The key finding to be added.
         """
         self.key_findings.append(finding)
         self.last_modified = datetime.now()
         logger.info(f"Added new key finding: {finding[:50]}...")
-    
+
     def add_recommendation(self, recommendation: str):
         """
         Adds a recommendation to the report specification.
-        
+
         Parameters:
         - recommendation (str): The recommendation to be added.
         """
         self.recommendations.append(recommendation)
         self.last_modified = datetime.now()
         logger.info(f"Added new recommendation: {recommendation[:50]}...")
-    
+
     def _detail_data_sources(self) -> List[Dict[str, Any]]:
         """
         Details the data sources for the report.
-        
+
         Returns:
         List[Dict[str, Any]]: A list of data sources with detailed descriptions and potential limitations.
         """
         return [source.to_dict() for source in self.data_sources]
-    
+
     def _detail_analysis_methods(self) -> List[Dict[str, Any]]:
         """
         Details the analysis methods for the report.
-        
+
         Returns:
         List[Dict[str, Any]]: A list of analysis methods with comprehensive descriptions and expected outcomes.
         """
         return [method.to_dict() for method in self.analysis_methods]
-    
+
     def _detail_target_audience(self) -> Dict[str, Any]:
         """
         Details the target audience for the report.
-        
+
         Returns:
         Dict[str, Any]: Details about the target audience, including specific needs and preferences.
         """
         return self.target_audience.to_dict()
-    
+
     def _detail_delivery_format(self) -> Dict[str, Any]:
         """
         Details the delivery format of the report.
-        
+
         Returns:
         Dict[str, Any]: Details about the delivery format, including rationale and potential alternatives.
         """
         return self.delivery_format.to_dict()
-    
+
     def compile_report_specification(self) -> Dict[str, Any]:
         """
         Compiles a comprehensive specification for the sophisticated intelligence report,
         including any additional notes, sections, key findings, and recommendations.
-        
+
         Returns:
         Dict[str, Any]: The complete specifications of the report, enriched with additional insights.
         """
@@ -330,75 +372,80 @@ class ReportSpecification:
             "analysis_methods": self._detail_analysis_methods(),
             "target_audience": self._detail_target_audience(),
             "delivery_format": self._detail_delivery_format(),
-            "sections": [section.dict() for section in sorted(self.sections, key=lambda x: x.priority)],
+            "sections": [
+                section.dict()
+                for section in sorted(self.sections, key=lambda x: x.priority)
+            ],
             "key_findings": self.key_findings,
             "recommendations": self.recommendations,
             "created_at": self.created_at.isoformat(),
             "last_modified": self.last_modified.isoformat(),
-            "version": self.version
+            "version": self.version,
         }
         if self.additional_notes:
             report_specification["additional_notes"] = self.additional_notes
         return report_specification
-    
+
     def export_to_json(self, file_path: str):
         """
         Exports the report specification to a JSON file.
-        
+
         Parameters:
         - file_path (str): The path where the JSON file will be saved.
         """
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             json.dump(self.compile_report_specification(), f, indent=4, default=str)
         logger.info(f"Exported report specification to {file_path}")
-    
+
     @classmethod
-    def from_json(cls, file_path: str) -> 'ReportSpecification':
+    def from_json(cls, file_path: str) -> "ReportSpecification":
         """
         Creates a ReportSpecification instance from a JSON file.
-        
+
         Parameters:
         - file_path (str): The path to the JSON file containing the report specification.
-        
+
         Returns:
         ReportSpecification: An instance of ReportSpecification populated with data from the JSON file.
         """
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             data = json.load(f)
-        
-        data_sources = [DataSource(**source) for source in data['data_sources']]
-        analysis_methods = [AnalysisMethod(**method) for method in data['analysis_methods']]
-        target_audience = TargetAudience(**data['target_audience'])
-        delivery_format = DeliveryFormat(**data['delivery_format'])
-        
+
+        data_sources = [DataSource(**source) for source in data["data_sources"]]
+        analysis_methods = [
+            AnalysisMethod(**method) for method in data["analysis_methods"]
+        ]
+        target_audience = TargetAudience(**data["target_audience"])
+        delivery_format = DeliveryFormat(**data["delivery_format"])
+
         report_spec = cls(
-            report_title=data['title'],
+            report_title=data["title"],
             data_sources=data_sources,
             analysis_methods=analysis_methods,
             target_audience=target_audience,
             delivery_format=delivery_format,
-            additional_notes=data.get('additional_notes')
+            additional_notes=data.get("additional_notes"),
         )
-        
-        report_spec.id = data['id']
-        report_spec.created_at = datetime.fromisoformat(data['created_at'])
-        report_spec.last_modified = datetime.fromisoformat(data['last_modified'])
-        report_spec.version = data['version']
-        
-        for section_data in data['sections']:
+
+        report_spec.id = data["id"]
+        report_spec.created_at = datetime.fromisoformat(data["created_at"])
+        report_spec.last_modified = datetime.fromisoformat(data["last_modified"])
+        report_spec.version = data["version"]
+
+        for section_data in data["sections"]:
             section = ReportSection(**section_data)
             report_spec.sections.append(section)
-        
-        report_spec.key_findings = data['key_findings']
-        report_spec.recommendations = data['recommendations']
-        
+
+        report_spec.key_findings = data["key_findings"]
+        report_spec.recommendations = data["recommendations"]
+
         logger.info(f"Loaded ReportSpecification from {file_path}")
         return report_spec
 
     def validate(self) -> bool:
         """
         Validates the report specification for completeness and consistency.
-        
+
         Returns:
         bool: True if the specification is valid, False otherwise.
         """
@@ -409,10 +456,12 @@ class ReportSpecification:
             assert self.target_audience, "Target audience is not specified"
             assert self.delivery_format, "Delivery format is not specified"
             assert self.sections, "No sections defined for the report"
-            
+
             for section in self.sections:
-                assert section.title and section.content, f"Section {section.title} is incomplete"
-            
+                assert section.title and section.content, (
+                    f"Section {section.title} is incomplete"
+                )
+
             logger.info("Report specification validation passed")
             return True
         except AssertionError as e:
@@ -422,7 +471,7 @@ class ReportSpecification:
     def update_version(self, new_version: str):
         """
         Updates the version of the report specification.
-        
+
         Parameters:
         - new_version (str): The new version string.
         """
@@ -430,10 +479,10 @@ class ReportSpecification:
         self.last_modified = datetime.now()
         logger.info(f"Updated report specification version to {new_version}")
 
-    def clone(self) -> 'ReportSpecification':
+    def clone(self) -> "ReportSpecification":
         """
         Creates a deep copy of the current ReportSpecification instance.
-        
+
         Returns:
         ReportSpecification: A new instance with the same data but a new ID.
         """
@@ -443,9 +492,11 @@ class ReportSpecification:
             analysis_methods=self.analysis_methods.copy(),
             target_audience=self.target_audience,
             delivery_format=self.delivery_format,
-            additional_notes=self.additional_notes
+            additional_notes=self.additional_notes,
         )
-        new_spec.sections = [ReportSection(**section.dict()) for section in self.sections]
+        new_spec.sections = [
+            ReportSection(**section.dict()) for section in self.sections
+        ]
         new_spec.key_findings = self.key_findings.copy()
         new_spec.recommendations = self.recommendations.copy()
         new_spec.version = f"{self.version}-clone"

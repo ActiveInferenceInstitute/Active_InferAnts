@@ -2,8 +2,16 @@ site_name: Active InferAnts
 repo_url: https://github.com/ActiveInferenceInstitute/Active_InferAnts
 theme:
   name: material
+# `docs/README.md` is the GitHub-facing hub and `docs/index.md` is the site
+# home; both would publish to `/`, so the hub is excluded from the build. It
+# stays in git and stays the entry point for readers of the repository.
+exclude_docs: |
+  /README.md
 nav:
   - Home: index.md
+  - Run guide: RUN_GUIDE.md
+  - Documentation index: documentation-index.md
+  - Gate metrics: _generated/gate_metrics.md
   - Architecture:
       - architecture/README.md
   - API:

@@ -116,7 +116,9 @@ def _git(root: Path, *args: str) -> str:
         check=False,
     )
     if result.returncode != 0:
-        raise ConformanceError(f"git {' '.join(args)} failed in {root}: {result.stderr.strip()}")
+        raise ConformanceError(
+            f"git {' '.join(args)} failed in {root}: {result.stderr.strip()}"
+        )
     return result.stdout.strip()
 
 
@@ -223,7 +225,9 @@ def extract_spec(
         )
     model = json.loads(result.stdout)
     if isinstance(model, dict) and model.get("status") == "error":
-        raise ConformanceError(f"pinned GNN extractor rejected {spec}: {model['error']}")
+        raise ConformanceError(
+            f"pinned GNN extractor rejected {spec}: {model['error']}"
+        )
     schema = str(model.get("extraction_schema_version", ""))
     if schema.split(".")[0] != REQUIRED_EXTRACT_SCHEMA_MAJOR:
         raise ConformanceError(
@@ -329,12 +333,18 @@ def check_conformance(model: dict) -> list[str]:
         ("R", observation_noise),
         ("prior_cov", prior_cov),
     ):
-        require(matrix.shape == (dimension, dimension), f"{name} must be {dimension}x{dimension}")
-    require(prior_mean.shape == (dimension,), f"prior_mean must have length {dimension}")
+        require(
+            matrix.shape == (dimension, dimension),
+            f"{name} must be {dimension}x{dimension}",
+        )
+    require(
+        prior_mean.shape == (dimension,), f"prior_mean must have length {dimension}"
+    )
     passed.append(f"dimensions match the package agent (n_dims = {dimension})")
 
     require(
-        np.allclose(transition, np.eye(dimension)) and np.allclose(readout, np.eye(dimension)),
+        np.allclose(transition, np.eye(dimension))
+        and np.allclose(readout, np.eye(dimension)),
         "F and H must be identity (static latent, identity readout)",
     )
     passed.append("F and H are identity (static latent, identity readout)")
@@ -364,14 +374,17 @@ def check_conformance(model: dict) -> list[str]:
     )
     passed.append("Q, R, prior_mean and prior_cov match the agent's Gaussian model")
 
-    posterior_precision = 1.0 / np.diag(observation_noise) + 1.0 / np.diag(process_noise)
+    posterior_precision = 1.0 / np.diag(observation_noise) + 1.0 / np.diag(
+        process_noise
+    )
     for observation in (
         np.array([1.0, 2.0, 3.0]),
         np.array([-1.0, 0.5, 0.25]),
     ):
         action = agent.infer(observation)
         expected_mean = (
-            agent.preferred / np.diag(process_noise) + observation / np.diag(observation_noise)
+            agent.preferred / np.diag(process_noise)
+            + observation / np.diag(observation_noise)
         ) / posterior_precision
         require(
             np.allclose(agent.pi, posterior_precision),

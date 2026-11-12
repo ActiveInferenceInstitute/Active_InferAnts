@@ -19,35 +19,47 @@ Multi-language Active Inference framework for advanced AI research and applicati
 - 📁 `gnn/` — GNN specification of the Gaussian agent and the pinned upstream revision
 - 📁 `active_infer_ants/` — the installable core Python package
 - 📁 `tests/` — the pytest suite
-- 📁 `scripts/` — `validate_gnn_spec.py` and `check_compile.sh`
+- 📁 `scripts/` — `validate_gnn_spec.py`, `check_compile.sh`, `check_doc_links.py`, and the
+  `docgen/` generators behind `docs/documentation-index.md` and the gate metrics
 - 📁 `docs/` — the modular documentation tree (index: `docs/README.md`)
 - 📁 `.aii/` — committed InstituteOS sidecar (metadata only)
 - 📁 `.github/` — CI workflow and Dependabot configuration
 - 📄 `README.md`, `SPEC.md`, `governance.md`, `TODO.md`, `REVIEW_LOG_2026-08-02.md`
 - 📄 `pyproject.toml`, `requirements.txt`, `requirements-dev.txt`, `config.json`
-- 📄 `Dockerfile`, `mkdocs.yml`, `gnn_conformance.py`, `scorecard.png`, `LICENSE`
+- 📄 `Dockerfile`, `mkdocs.yml`, `gnn_conformance.py`, `run.sh`, `scorecard.png`, `LICENSE`
 
-## Tests
+## Tests and the gate
 
-Run the unit suite from the repository root:
-
-```bash
-python -m pytest -q
-```
-
-The suite in `tests/` covers the `active_infer_ants/` package and both REST APIs; the GNN
-conformance test is described below. Lint and format with the pinned pre-commit hooks:
+`./run.sh` is the single entry point; every arm is the exact command CI runs.
+The suite in `tests/` covers the `active_infer_ants/` package and both REST
+APIs; the GNN conformance module is described below.
 
 ```bash
-pre-commit run --all-files
+./run.sh setup        # one environment: pip install -r requirements-dev.txt
+./run.sh lint         # ruff (maintained surface) + compile sweep of every tracked source
+./run.sh test-fast    # pytest -m "not gnn"
+./run.sh test-full    # pytest (adds the gnn-marked module)
+./run.sh docs         # mkdocs --strict, relative links, generated docs current
+./run.sh gnn          # pinned GNN parser + specification conformance
 ```
+
+The pre-commit hook calls `./run.sh lint`, so a commit is checked by the same
+command. Arms, the lint surface, and where CI runs each one:
+[`docs/RUN_GUIDE.md`](docs/RUN_GUIDE.md). Measured wall times and test counts:
+[`docs/_generated/gate_metrics.md`](docs/_generated/gate_metrics.md) — link it,
+never restate the numbers.
 
 ## Documentation
 
-Documentation is modular, one topic per file, under `docs/`. Start at the index
-[`docs/README.md`](docs/README.md); `docs/index.md` is the MkDocs home page and `mkdocs.yml`
-holds the navigation. Each `docs/<section>/` directory carries its own `README.md`,
-`AGENTS.md`, and `SPEC.md`. Keep the index in step when adding or renaming a document.
+Documentation is modular, one topic per file, under `docs/`. Start at the hub
+[`docs/README.md`](docs/README.md); [`docs/index.md`](docs/index.md) is the
+MkDocs home page (`mkdocs.yml` excludes the hub so the two do not collide) and
+`mkdocs.yml` holds the navigation. [`docs/documentation-index.md`](docs/documentation-index.md)
+is the generated flat index, and `docs/_generated/` holds generated facts. Each
+`docs/<section>/` directory carries its own `README.md`, `AGENTS.md`, and
+`SPEC.md`. Regenerate the generated pages with
+`python scripts/docgen/doc_index.py --write` and `./run.sh metrics`; `./run.sh docs`
+fails when they are stale.
 
 ## Agent Instructions
 
@@ -55,11 +67,11 @@ holds the navigation. Each `docs/<section>/` directory carries its own `README.m
 - Maintain the 6-phase operational pipeline consistency.
 - Ensure cross-language implementation parity.
 - Keep `gnn/gaussian_agent.gnn.md` in step with `active_infer_ants/agent.py`; validate it
-  with `python scripts/validate_gnn_spec.py` (needs the GNN checkout pinned in
-  `gnn/upstream.json`) or `python -m pytest tests/test_gnn_conformance.py`. CI runs both in
-  the `gnn conformance (pinned)` job, which fetches the pinned revision from the
-  public upstream repository and provisions its interpreter, so the pin is re-checked on
-  every push and pull request. GNN's
+  with `./run.sh gnn`, which fetches the revision pinned in `gnn/upstream.json` (schema
+  `gnn-importer-pin/v1`) into its own runtime and runs both the strict script and the
+  `gnn`-marked tests. CI runs the same arm in the `gnn-conformance` job, displayed as
+  `gnn conformance (pinned)` (see [`.github/GNN.md`](.github/GNN.md)), so the pin is
+  re-checked on every push and pull request. GNN's
   [downstream adoption
   guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/main/docs/gnn/integration/downstream_adoption.md)
   documents the adoption patterns, pin discipline, and drift-guard checks used here.

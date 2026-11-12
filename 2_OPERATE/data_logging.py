@@ -34,7 +34,9 @@ class DataLogger:
         """Attach the simulation and reset any previous records."""
         self.simulation = simulation
         self.records = []
-        logger.debug("DataLogger initialized for simulation %s", type(simulation).__name__)
+        logger.debug(
+            "DataLogger initialized for simulation %s", type(simulation).__name__
+        )
 
     def log_step(self, step: int, simulation: Any) -> None:
         """Record a per-step snapshot."""

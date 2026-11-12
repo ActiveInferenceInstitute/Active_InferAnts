@@ -21,14 +21,17 @@ simulation pipeline, and the GNN specification conformance.
 
 ## Agent Instructions
 
-- Run the suite with `python -m pytest -q` from the repository root.
+- Run the suite through the gate from the repository root: `./run.sh test-fast`
+  (no GNN checkout), `./run.sh test-full`, or `./run.sh gnn` (provisions the pinned
+  parser). Each arm is the exact command CI runs.
 - Never weaken or rewrite a test to make it pass; fix the code or the specification.
-- Keep `test_gnn_conformance.py`'s structural checks runnable without the GNN checkout.
+- Keep `test_gnn_conformance.py` runnable without the GNN checkout: the module is
+  `gnn`-marked, and its structural checks still run when the pinned parser is absent.
 - Add a focused test with every behavior change; prefer deterministic, seeded inputs.
 - Follow the repository's CC BY-NC-ND 4.0 license.
 
 ## Quality Checklist
 
-- [ ] `python -m pytest -q` passes
+- [ ] `./run.sh test-full` passes (or `test-fast` plus `gnn`)
 - [ ] New behavior has a focused test
 - [ ] README.md synchronized with this AGENTS.md

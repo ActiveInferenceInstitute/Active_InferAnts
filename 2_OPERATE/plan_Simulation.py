@@ -29,6 +29,7 @@ for _path in (
     if _path not in sys.path:
         sys.path.insert(0, _path)
 
+import config  # noqa: E402  (1_PREPARE/configs/config.py)
 import metaconfig  # noqa: E402
 from computational_resources import estimate_computational_resources  # noqa: E402
 from data_logging import DataLogger  # noqa: E402
@@ -38,9 +39,9 @@ from MetaInformAnt_Simulation import MetaInformAntSimulation  # noqa: E402
 from performance_metrics import PerformanceTracker  # noqa: E402
 from visualization import SimulationVisualizer  # noqa: E402
 
-import config  # noqa: E402  (1_PREPARE/configs/config.py)
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 # Default random seed when none is supplied. Kept deterministic so runs are
@@ -88,7 +89,9 @@ class SimulationPlanner:
         """Initialize all planning components from configuration."""
         settings = config.SIMULATION_SETTINGS
         environment_config = config.ENVIRONMENT_CONFIG
-        self.simulation_environment = build_environment_from_config(settings, environment_config, seed=self.seed)
+        self.simulation_environment = build_environment_from_config(
+            settings, environment_config, seed=self.seed
+        )
         self.agent_params = self.get_agent_params()
         self.niche_params = self.get_niche_params()
         self.parallel_execution = self.get_parallel_execution_settings()
@@ -153,7 +156,9 @@ class SimulationPlanner:
     # ------------------------------------------------------------------ #
     # Simulation construction
     # ------------------------------------------------------------------ #
-    def create_simulation(self, max_steps: int | None = None) -> MetaInformAntSimulation:
+    def create_simulation(
+        self, max_steps: int | None = None
+    ) -> MetaInformAntSimulation:
         """Create and return a configured ``MetaInformAntSimulation``."""
         if self.simulation_environment is None:
             self.initialize_components()
@@ -174,13 +179,18 @@ class SimulationPlanner:
             performance_tracker=self.performance_tracker,
             seed=self.seed,
         )
-        logger.info("Simulation instance created (max_steps=%d).", self.simulation_environment.max_steps)
+        logger.info(
+            "Simulation instance created (max_steps=%d).",
+            self.simulation_environment.max_steps,
+        )
         return simulation
 
     # ------------------------------------------------------------------ #
     # Execution helpers (used by the __main__ flow)
     # ------------------------------------------------------------------ #
-    def prepare_simulation(self, max_steps: int | None = None) -> MetaInformAntSimulation:
+    def prepare_simulation(
+        self, max_steps: int | None = None
+    ) -> MetaInformAntSimulation:
         """Prepare the simulation and log the estimated computational load."""
         logger.info("Preparing simulation with current configuration.")
         simulation = self.create_simulation(max_steps=max_steps)

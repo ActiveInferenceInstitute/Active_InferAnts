@@ -10,13 +10,13 @@ import pytest
 # NOTE: 3_MEASURE/statistics.py shadows the stdlib `statistics` module when the
 # phase dir is on sys.path (which breaks seaborn's `from statistics import
 # NormalDist`). Load it under a distinct module name to avoid the collision.
-_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "3_MEASURE")
+_ROOT = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "3_MEASURE"
+)
 
 
 def _load(name, filename):
-    spec = importlib.util.spec_from_file_location(
-        name, os.path.join(_ROOT, filename)
-    )
+    spec = importlib.util.spec_from_file_location(name, os.path.join(_ROOT, filename))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -64,7 +64,9 @@ def test_agents_entropy_is_normalised_shannon():
 
 
 def test_agents_entropy_degenerate_zero():
-    s = summarize.EnhancedSimulationSummary({"agents": [{"energy": 0.0}, {"energy": 0.0}]})
+    s = summarize.EnhancedSimulationSummary(
+        {"agents": [{"energy": 0.0}, {"energy": 0.0}]}
+    )
     assert s._agents_entropy() == 0.0
 
 
@@ -72,9 +74,27 @@ def test_agents_entropy_degenerate_zero():
 def _frame():
     return pd.DataFrame(
         [
-            {"category": "nests", "type": "nest", "simulation_steps": 1, "food_collected": 3, "energy": 0.0},
-            {"category": "nests", "type": "nest", "simulation_steps": 2, "food_collected": 5, "energy": 0.0},
-            {"category": "agents", "type": "worker", "simulation_steps": 1, "energy": 1.0, "food_collected": 0},
+            {
+                "category": "nests",
+                "type": "nest",
+                "simulation_steps": 1,
+                "food_collected": 3,
+                "energy": 0.0,
+            },
+            {
+                "category": "nests",
+                "type": "nest",
+                "simulation_steps": 2,
+                "food_collected": 5,
+                "energy": 0.0,
+            },
+            {
+                "category": "agents",
+                "type": "worker",
+                "simulation_steps": 1,
+                "energy": 1.0,
+                "food_collected": 0,
+            },
             # step 2 has NO agents -> the old code produced NaN for that step.
         ]
     )

@@ -56,19 +56,21 @@ Not installed by default; required only by the named subsystem:
 
 ## Development Dependencies
 
-Installed via `pip install -e ".[dev]"` or `requirements-dev.txt`:
+Installed by the gate's one spec, `requirements-dev.txt`
+(`-e .[dev,docs]`), through `./run.sh setup`:
 
 | Package | Purpose |
 |---------|---------|
 | `pytest` | Test runner |
 | `httpx` | TestClient HTTP backend |
-| `ruff` | Linting and formatting (pre-commit + CI) |
+| `ruff` | Linting and formatting, pinned; run by `./run.sh lint` (the pre-commit hook calls the same arm) |
+| `mkdocs`, `mkdocs-material` | Documentation build, run by `./run.sh docs` |
 
 ## Installation
 
 ```bash
 pip install -r requirements.txt                 # Core
 pip install -e ".[api]"                          # API secondary stores
-pip install -e ".[dev]"                          # Development tooling
+./run.sh setup                                   # Development tooling (requirements-dev.txt)
 pip install pymdp tabulate                       # PyMDP-based agents (optional)
 ```

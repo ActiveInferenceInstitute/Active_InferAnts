@@ -28,4 +28,4 @@ Authentication follows the same convention as the Knowledge API: when
 
 ## Source
 
-[`6_API/MetaInformAnt_API.py`](../../6_API/MetaInformAnt_API.py)
+[`6_API/MetaInformAnt_API.py`](https://github.com/ActiveInferenceInstitute/Active_InferAnts/blob/main/6_API/MetaInformAnt_API.py)

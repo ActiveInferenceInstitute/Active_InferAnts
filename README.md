@@ -102,19 +102,25 @@ The framework's continuous Gaussian agent (`active_infer_ants/agent.py`) is spec
 `infer()` posterior update.
 
 The specification is validated against the GNN revision pinned in
-[`gnn/upstream.json`](gnn/upstream.json), read from that pinned commit (via `git archive`)
-rather than from the GNN checkout's working tree:
+[`gnn/upstream.json`](gnn/upstream.json) (schema `gnn-importer-pin/v1`:
+`ActiveInferenceInstitute/Generalized_Notation_Notation` at `v5.0.3`, commit
+`8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`), read from that pinned commit (via
+`git archive`) rather than from the GNN checkout's working tree:
 
 ```bash
-python scripts/validate_gnn_spec.py          # strict gate (needs the GNN checkout)
-python -m pytest tests/test_gnn_conformance.py -q
+./run.sh gnn    # provisions the pinned parser, then validates the spec
 ```
 
-The gate parses the specification with the pinned GNN extractor and checks the extracted
-matrices and parameters against the framework agent, including that `infer()` performs
-exactly the declared Gaussian posterior update. The test module always runs the structural
-half (pin record, sections, declared dimensions against the agent) and skips only the
-pinned-parser half when the GNN checkout is unavailable. When editing the specification,
+The arm provisions the pinned commit into `$GNN_ROOT` (default: the gitignored
+`.cache/gnn`), then runs `scripts/validate_gnn_spec.py` and the `gnn`-marked
+tests in `tests/test_gnn_conformance.py`. It parses the specification with the
+pinned GNN extractor and checks the extracted matrices and parameters against
+the framework agent, including that `infer()` performs exactly the declared
+Gaussian posterior update; the tests assert the canonical pin record, the
+specification's required sections, the declared dimensions, and that a mutated
+model is rejected. The module is marked `gnn`, so `./run.sh test-fast` needs no
+GNN checkout; when `GNN_ROOT` selects a checkout explicitly, an unusable
+checkout fails rather than skips. When editing the specification,
 start from GNN's [Start Here](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/START_HERE.md),
 [framework integration guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/gnn/integration/framework_integration_guide.md),
 and [syntax reference](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/gnn/reference/gnn_syntax.md).
@@ -152,8 +158,11 @@ MkDocs ([`mkdocs.yml`](mkdocs.yml)). Every document is indexed from
 | Understand the pipeline | [Pipeline Overview](docs/architecture/pipeline_overview.md) |
 | Use the APIs | [Knowledge API](docs/api/knowledge_api.md) · [MetaInformAnt API](docs/api/metainformant_api.md) |
 | Test and verify | [Testing Strategy](docs/testing/testing_strategy.md) |
+| Run the checks | [Run Guide](docs/RUN_GUIDE.md) (arms, lint surface, CI mapping) |
+| Find a document | [Documentation Index](docs/documentation-index.md) · [Gate metrics](docs/_generated/gate_metrics.md) |
 
-Build the site locally with `mkdocs build` (or `mkdocs serve` for a live preview).
+Build the site locally with `./run.sh docs` (or `mkdocs serve` for a live preview;
+both come from the `docs` extra installed by `./run.sh setup`).
 
 ## 🚀 Quick Start
 
@@ -250,10 +259,10 @@ docker run -p 8000:8000 active-inferants
 ### Development Installation
 
 ```bash
-# Install in development mode
-pip install -e .
+# One environment spec, and the gate that uses it
+./run.sh setup
 
-# Install pre-commit hooks
+# Install the pre-commit hook (it calls ./run.sh lint)
 pre-commit install
 
 # Set up all language environments
@@ -553,6 +562,22 @@ Active InferAnts includes a sophisticated testing framework that ensures reliabi
 
 ### Running Tests
 
+The repository's single check entry point is `./run.sh`; each arm is the exact
+command CI runs (see [`docs/RUN_GUIDE.md`](docs/RUN_GUIDE.md)):
+
+```bash
+./run.sh setup        # one environment: pip install -r requirements-dev.txt
+./run.sh lint         # ruff (maintained surface) + compile sweep of every tracked source
+./run.sh test-fast    # pytest -m "not gnn"
+./run.sh test-full    # pytest (adds the gnn-marked conformance module)
+./run.sh docs         # mkdocs --strict, relative links, generated docs current
+./run.sh gnn          # pinned GNN parser + specification conformance
+./run.sh gate         # lint, test-fast, docs, gnn — everything, nothing twice
+```
+
+The multi-language implementation suites remain separate, and are unchanged by
+the gate:
+
 ```bash
 # Run all language implementations with testing
 python3 0_CONTEXT/Computer_Languages/master_controller.py test
@@ -562,17 +587,16 @@ python3 0_CONTEXT/Computer_Languages/master_controller.py test python
 
 # Run comprehensive benchmark suite
 python3 0_CONTEXT/Computer_Languages/test_suite.py
-
-# View test results
-python3 0_CONTEXT/Computer_Languages/test_suite.py
 ```
 
 ### Quality Metrics
 
-- **Code Coverage**: unit tests cover the core `active_infer_ants` package, both REST APIs, and the correctness/security fixes (see `tests/`); run `python3 -m pytest -q` to execute the suite
-- **Correctness**: every tracked Python source is compile-checked in CI (no syntax errors)
-- **Documentation**: API documentation is auto-generated by FastAPI (OpenAPI/Swagger); MkDocs builds the `docs/` hub
+- **Code Coverage**: unit tests cover the core `active_infer_ants` package, both REST APIs, and the correctness/security fixes (see `tests/`); no coverage percentage is claimed. Run `./run.sh test-full`.
+- **Correctness**: every tracked Python source is compile-checked by `./run.sh lint` (no syntax errors)
+- **Linting**: `./run.sh lint` is green on the maintained surface; the multi-language corpus is outside it (counts in [`docs/_generated/gate_metrics.md`](docs/_generated/gate_metrics.md))
+- **Documentation**: `./run.sh docs` builds the MkDocs hub strictly and checks relative links; FastAPI generates the API OpenAPI/Swagger
 - **Security**: security fixes are covered by the test suite (see `tests/`)
+- **Measured numbers**: per-arm wall times and test counts live in [`docs/_generated/gate_metrics.md`](docs/_generated/gate_metrics.md), generated by `scripts/docgen/gate_metrics.py`
 
 ## 📊 Performance & Benchmarking
 
@@ -612,20 +636,20 @@ python3 0_CONTEXT/Computer_Languages/status_dashboard.sh
 ### Development Workflow
 
 ```bash
-# Set up development environment
-python3 0_CONTEXT/Computer_Languages/master_controller.py setup
+# Set up development environment (one spec: requirements-dev.txt)
+python3 -m venv .venv
+./run.sh setup
 
-# Install development dependencies
-pip install -r requirements-dev.txt
+# Run the gate: lint, fast tests, docs, GNN conformance
+./run.sh gate
 
-# Run linting and code quality checks
-pre-commit run --all-files
+# Individual arms
+./run.sh lint
+./run.sh test-fast
+./run.sh docs
 
-# Run the unit test suite
-python3 -m pytest -q
-
-# Build documentation
-mkdocs build
+# Re-measure the arms and rewrite docs/_generated/gate_metrics.md
+./run.sh metrics
 
 # Run development server
 python3 6_API/Knowledge_API.py
@@ -633,11 +657,11 @@ python3 6_API/Knowledge_API.py
 
 ### Code Quality Tools
 
-- **Linting**: Ruff (lint + format) via pre-commit and CI
-- **Type Checking**: static typing with `mypy`-compatible annotations where applicable
-- **Testing**: pytest with the compile-sweep enforced in CI
-- **Documentation**: MkDocs for the `docs/` hub; FastAPI-generated OpenAPI for the APIs
-- **CI/CD**: GitHub Actions for automated testing (Python 3.10–3.12)
+- **Linting**: Ruff (lint + format), pinned in the `dev` extra and run by `./run.sh lint`; the pre-commit hook calls the same arm
+- **Type Checking**: none configured — annotations are documentation, not a gate
+- **Testing**: pytest, selected by the `gnn` marker so `./run.sh test-fast` needs no GNN checkout
+- **Documentation**: MkDocs for the `docs/` hub, built strictly by `./run.sh docs`; FastAPI-generated OpenAPI for the APIs
+- **CI/CD**: GitHub Actions runs the same arms (`.github/workflows/ci.yml`, Python 3.10–3.12)
 
 ### Contributing Guidelines
 
@@ -771,7 +795,7 @@ We welcome contributions from researchers, developers, and enthusiasts! Here's h
 2. **Set Up Development Environment**
    ```bash
    python3 0_CONTEXT/Computer_Languages/master_controller.py setup
-   pip install -r requirements-dev.txt
+   ./run.sh setup
    pre-commit install
    ```
 
@@ -783,14 +807,12 @@ We welcome contributions from researchers, developers, and enthusiasts! Here's h
 
 4. **Test Your Changes**
    ```bash
-   # Run tests
+   # Run the gate: lint, test-fast, docs, GNN conformance
+   ./run.sh gate
+
+   # Multi-language suites and benchmarks
    python3 0_CONTEXT/Computer_Languages/master_controller.py test
-
-   # Run benchmarks to ensure no performance regression
    python3 0_CONTEXT/Computer_Languages/master_controller.py benchmark
-
-   # Check code quality
-   pre-commit run --all-files
    ```
 
 5. **Submit Your Contribution**

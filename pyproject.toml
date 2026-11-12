@@ -41,7 +41,16 @@ api = [
 dev = [
     "pytest>=7.0",
     "httpx>=0.24.0",
-    "ruff>=0.4.0",
+    # The commit hook calls ./run.sh lint, so the hook runner belongs in the
+    # same environment as the gate.
+    "pre-commit>=3.7",
+    # Pinned: the gate and pre-commit run this exact linter, so a formatting or
+    # rule-set change is a reviewed dependency bump, not machine drift.
+    "ruff==0.17.4",
+]
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
 ]
 
 [project.scripts]
@@ -53,3 +62,14 @@ include = ["active_infer_ants*", "3_MEASURE*", "1_PREPARE*", "6_API*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+markers = [
+    "gnn: needs the pinned GNN parser checkout; run through ./run.sh gnn",
+]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+
+[tool.ruff.lint]
+# Explicit, so a linter release cannot silently widen the gate.
+select = ["E4", "E7", "E9", "F", "I"]

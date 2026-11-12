@@ -78,7 +78,9 @@ class SimulationExecutor:
         try:
             planner = SimulationPlanner(seed=0)
             self.simulation = planner.create_simulation(max_steps=self.max_steps)
-            self.renderer = SimulationRenderer(*self.simulation.get_visualization_parameters())
+            self.renderer = SimulationRenderer(
+                *self.simulation.get_visualization_parameters()
+            )
             self.data_logger.initialize(self.simulation)
             self.performance_monitor.start()
             self.logger.info("Simulation initialized successfully.")
@@ -121,7 +123,10 @@ class SimulationExecutor:
         self.simulation.progress()
         self.data_logger.log_step(step, self.simulation)
 
-        if self.visualization_interval is not None and step % self.visualization_interval == 0:
+        if (
+            self.visualization_interval is not None
+            and step % self.visualization_interval == 0
+        ):
             self._optional_visualization(step)
 
         self.renderer.refresh_visualization(step)
@@ -147,7 +152,9 @@ class SimulationExecutor:
     def _adjust_simulation_parameters(self) -> None:
         """Adjust simulation parameters based on performance-monitor advice."""
         if self.simulation:
-            new_params: dict[str, Any] = self.performance_monitor.suggest_parameter_adjustments()
+            new_params: dict[str, Any] = (
+                self.performance_monitor.suggest_parameter_adjustments()
+            )
             if new_params:
                 self.simulation.update_parameters(new_params)
                 self.logger.info("Adjusted simulation parameters: %s", new_params)
@@ -158,7 +165,9 @@ class SimulationExecutor:
             raise SimulationError("Simulation or renderer not initialized")
 
         self._safely_execute(
-            lambda: self.renderer.visualize_post_simulation(self.simulation.aggregate_results()),
+            lambda: self.renderer.visualize_post_simulation(
+                self.simulation.aggregate_results()
+            ),
             "Simulation conclusion",
         )
         self.data_logger.finalize()
@@ -170,8 +179,12 @@ class SimulationExecutor:
         report_data: dict[str, Any] = {
             "simulation_data": self.data_logger.generate_report(),
             "performance_metrics": self.performance_monitor.get_metrics(),
-            "simulation_parameters": self.simulation.get_parameters() if self.simulation else {},
-            "environment_state": self.simulation.environment.get_state() if self.simulation else {},
+            "simulation_parameters": self.simulation.get_parameters()
+            if self.simulation
+            else {},
+            "environment_state": self.simulation.environment.get_state()
+            if self.simulation
+            else {},
         }
         report: str = self.report_generator.generate_report(report_data)
         self.logger.info("Final simulation report generated.")

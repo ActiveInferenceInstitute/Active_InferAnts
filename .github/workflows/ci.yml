@@ -1,4 +1,8 @@
-# GitHub Actions CI for Active InferAnts
+# GitHub Actions CI for Active InferAnts.
+#
+# Every step delegates to `./run.sh <arm>`: the same commands run locally, so
+# there is no second copy of a command in this file. Arms and measured wall
+# times: docs/RUN_GUIDE.md and docs/_generated/gate_metrics.md.
 name: CI
 
 on:
@@ -13,9 +17,14 @@ concurrency:
 permissions:
   contents: read
 
+# One environment spec for every job: `./run.sh setup` installs
+# requirements-dev.txt (this project editable plus the dev and docs extras).
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -25,27 +34,30 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install core deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-      - name: Compile-sweep all Python sources
-        run: |
-          failed=0
-          while IFS= read -r -d '' f; do
-            python -m py_compile "$f" || { echo "COMPILE FAIL: $f"; failed=1; }
-          done < <(git ls-files -z '*.py')
-          exit $failed
-      - name: Run unit tests
-        run: python -m pytest -q
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements-dev.txt
+      - name: Set up the environment
+        run: ./run.sh setup
+      # Lint and docs are version-independent, so they run once (on the newest
+      # interpreter) instead of repeating in every matrix cell.
+      - name: Lint
+        if: matrix.python-version == '3.12'
+        run: ./run.sh lint
+      - name: Documentation
+        if: matrix.python-version == '3.12'
+        run: ./run.sh docs
+      - name: Tests
+        run: ./run.sh test-fast
 
   gnn-conformance:
-    timeout-minutes: 60
+    timeout-minutes: 30
     # Validates gnn/gaussian_agent.gnn.md with the upstream parser revision
-    # pinned in gnn/upstream.json. The pinned revision is fetched from the
-    # public repository at the recorded SHA into its own runtime; the strict
-    # gate never skips, and tests/test_gnn_conformance.py fails (never skips)
-    # when the explicitly selected GNN_ROOT checkout is missing or unusable.
+    # pinned in gnn/upstream.json. `./run.sh gnn` fetches the pinned commit into
+    # its own runtime and then runs scripts/validate_gnn_spec.py and the
+    # gnn-marked tests. The pin is re-checked on every push and pull request;
+    # a pin that no longer resolves fails rather than skipping.
     name: gnn conformance (pinned)
     runs-on: ubuntu-latest
     steps:
@@ -53,35 +65,14 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
-      - name: Install core deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-      - name: Provision the pinned GNN parser runtime
-        env:
-          GNN_ROOT: ${{ runner.temp }}/gnn
-        run: |
-          REVISION=$(python -c "import json; print(json.load(open('gnn/upstream.json'))['commit'])")
-          TAG=$(python -c "import json; print(json.load(open('gnn/upstream.json'))['tag'])")
-          git init --quiet "$GNN_ROOT"
-          git -C "$GNN_ROOT" remote add origin \
-            https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation.git
-          # A pin that no longer resolves upstream fails here rather than skipping.
-          git -C "$GNN_ROOT" fetch --depth 1 origin "$REVISION" "refs/tags/$TAG:refs/tags/$TAG"
-          git -C "$GNN_ROOT" checkout --quiet --detach "$REVISION"
-          python -m venv "$GNN_ROOT/.venv"
-          # The pinned extractor needs numpy and defusedxml; a missing dependency
-          # fails the run loudly instead of degrading to a skip.
-          "$GNN_ROOT/.venv/bin/python" -m pip install --quiet numpy defusedxml
-      - name: Validate the GNN specification against the pinned parser
-        env:
-          GNN_ROOT: ${{ runner.temp }}/gnn
-        run: python scripts/validate_gnn_spec.py
-      - name: Run the pinned-upstream conformance tests
-        env:
-          GNN_ROOT: ${{ runner.temp }}/gnn
-        run: python -m pytest tests/test_gnn_conformance.py -q
-
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements-dev.txt
+      - name: Set up the environment
+        run: ./run.sh setup
+      - name: GNN conformance
+        run: ./run.sh gnn
       - name: Report the resolved GNN version
         run: |
           PIN=gnn/upstream.json

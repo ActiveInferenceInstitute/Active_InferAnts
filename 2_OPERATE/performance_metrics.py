@@ -29,7 +29,9 @@ class PerformanceTracker:
         metrics["step_count"] = float(results.get("step_count", 0))
         return metrics
 
-    def calculate_aggregate_metrics(self, all_results: list[dict[str, Any]]) -> dict[str, float]:
+    def calculate_aggregate_metrics(
+        self, all_results: list[dict[str, Any]]
+    ) -> dict[str, float]:
         """Return cross-run aggregates (mean of per-run means, run count)."""
         if not all_results:
             return {"num_runs": 0.0, "mean_of_mean_rewards": 0.0}

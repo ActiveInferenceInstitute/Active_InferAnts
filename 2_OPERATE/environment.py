@@ -153,8 +153,12 @@ def build_environment_from_config(
     width = int(grid.get("WIDTH", settings.get("GRID_WIDTH", 100)))
     height = int(grid.get("HEIGHT", settings.get("GRID_HEIGHT", 100)))
     max_steps = int(settings.get("MAX_STEPS", 500))
-    num_food = len(environment_config.get("RESOURCE_ZONES", [])) if environment_config else 3
-    pheromone_cfg = environment_config.get("PHEROMONE_CONFIG", {}) if environment_config else {}
+    num_food = (
+        len(environment_config.get("RESOURCE_ZONES", [])) if environment_config else 3
+    )
+    pheromone_cfg = (
+        environment_config.get("PHEROMONE_CONFIG", {}) if environment_config else {}
+    )
     decay = float(pheromone_cfg.get("DECAY_RATE", 0.01))
     return Environment(
         width=width,
