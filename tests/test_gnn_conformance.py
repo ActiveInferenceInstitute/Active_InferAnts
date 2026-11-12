@@ -10,7 +10,6 @@ the pinned revision), an unusable checkout is a failure, never a skip.
 from __future__ import annotations
 
 import copy
-import json
 import os
 import re
 import sys
@@ -27,7 +26,7 @@ from gnn_conformance import (
     canonical_model,
     check_conformance,
     extract_spec,
-    load_pin,
+    pinned_revision,
 )
 
 # The whole module belongs to the `gnn` selection: `./run.sh gnn` provisions the
@@ -52,8 +51,8 @@ REQUIRED_SECTIONS = (
 CANONICAL_PIN = {
     "schema": "gnn-importer-pin/v1",
     "repository": "ActiveInferenceInstitute/Generalized_Notation_Notation",
-    "tag": "v5.0.3",
-    "commit": "8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1",
+    "tag": "v5.1.0",
+    "commit": "75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf",
 }
 
 
@@ -69,8 +68,22 @@ def extracted_model() -> dict:
         pytest.skip(f"pinned GNN checkout unavailable: {exc}")
 
 
+def _pinned():
+    """Read the pin with the shared reader, or skip without a GNN checkout."""
+
+    try:
+        return pinned_revision()
+    except GnnUnavailable as exc:
+        if os.environ.get("GNN_ROOT"):
+            pytest.fail(
+                f"GNN_ROOT selects a checkout, but the pinned parser is unavailable: {exc}"
+            )
+        pytest.skip(f"pinned GNN checkout unavailable: {exc}")
+
+
 def test_pin_record_is_canonical() -> None:
-    pin = load_pin()
+    pin = _pinned()
+    assert pin.schema == CANONICAL_PIN["schema"]
     assert pin.repository == CANONICAL_PIN["repository"]
     assert pin.tag == CANONICAL_PIN["tag"]
     assert pin.commit == CANONICAL_PIN["commit"]
@@ -129,52 +142,3 @@ def test_extraction_uses_schema_major_one(extracted_model: dict) -> None:
 
 def test_extracted_spec_conforms_to_the_agent(extracted_model: dict) -> None:
     assert len(check_conformance(extracted_model)) == 4
-
-
-def test_missing_pin_file_is_rejected(tmp_path) -> None:
-    with pytest.raises(ConformanceError, match="is missing"):
-        load_pin(tmp_path / "upstream.json")
-
-
-def test_incomplete_pin_record_is_rejected(tmp_path) -> None:
-    pin = tmp_path / "upstream.json"
-    pin.write_text(
-        json.dumps({"schema": "gnn-importer-pin/v1", "repository": "x", "tag": "v1"}),
-        encoding="utf-8",
-    )
-    with pytest.raises(ConformanceError, match="missing the 'commit' field"):
-        load_pin(pin)
-
-
-def test_malformed_pin_file_is_rejected(tmp_path) -> None:
-    pin = tmp_path / "upstream.json"
-    pin.write_text("not json", encoding="utf-8")
-    with pytest.raises(ConformanceError, match="is unreadable"):
-        load_pin(pin)
-
-
-@pytest.mark.parametrize("schema", [None, "", "gnn-importer-pin/v2", 1])
-def test_wrong_pin_schema_is_rejected(tmp_path, schema) -> None:
-    pin = tmp_path / "upstream.json"
-    pin.write_text(json.dumps({**CANONICAL_PIN, "schema": schema}), encoding="utf-8")
-    with pytest.raises(ConformanceError, match="schema must be 'gnn-importer-pin/v1'"):
-        load_pin(pin)
-
-
-def test_missing_pin_schema_is_rejected(tmp_path) -> None:
-    pin = tmp_path / "upstream.json"
-    data = {key: value for key, value in CANONICAL_PIN.items() if key != "schema"}
-    pin.write_text(json.dumps(data), encoding="utf-8")
-    with pytest.raises(ConformanceError, match="schema must be 'gnn-importer-pin/v1'"):
-        load_pin(pin)
-
-
-@pytest.mark.parametrize("field", ["repository", "tag", "commit"])
-@pytest.mark.parametrize(
-    "value", [None, True, 1234567890123456789012345678901234567890, [], {}]
-)
-def test_nonstring_pin_field_is_rejected(tmp_path, field, value) -> None:
-    pin = tmp_path / "upstream.json"
-    pin.write_text(json.dumps({**CANONICAL_PIN, field: value}), encoding="utf-8")
-    with pytest.raises(ConformanceError, match=f"{field} must be a string"):
-        load_pin(pin)

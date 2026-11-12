@@ -6,6 +6,13 @@ The pinned revision is read from the pinned commit (via ``git archive``), never
 from the GNN checkout's working tree, so in-progress edits in that repository
 cannot contaminate a check.
 
+The pin, its shape and the specification's syntax are the shared reader's work,
+not this module's: ``gnn.importers`` reads the pin and validates the
+specification from the pinned revision, and ``./run.sh gnn`` runs it before the
+checks below. What remains here is what only this repository can assert: that
+the extracted specification matches ``active_infer_ants``' agent. The reader is
+imported lazily, because ``./run.sh test-fast`` runs without a GNN checkout.
+
 Two entry points share this module:
 
 - ``tests/test_gnn_conformance.py`` — pytest checks (the pinned-parser half
@@ -27,10 +34,13 @@ import os
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+
+if TYPE_CHECKING:  # the reader lives in the pinned checkout, imported lazily
+    from gnn.importers import ImporterPin
 
 REPO_ROOT = Path(__file__).resolve().parent
 PIN_PATH = REPO_ROOT / "gnn" / "upstream.json"
@@ -51,48 +61,36 @@ class GnnUnavailable(ConformanceError):
     """The pinned GNN checkout or a suitable interpreter is not available."""
 
 
-@dataclass(frozen=True)
-class Pin:
-    """The GNN revision this repository's specification is validated against."""
+def _shared_reader(root: Path | str | None = None) -> Any:
+    """Return ``gnn.importers`` from the pinned GNN source tree.
 
-    repository: str
-    tag: str
-    commit: str
+    The reader is imported from the checkout the pin materializes, so this
+    repository validates against the parser its pin names and carries no second
+    copy of the pin-reading logic.
+    """
 
-
-def load_pin(path: Path = PIN_PATH) -> Pin:
-    """Read and validate the repository-local GNN pin record."""
-
-    source = Path(path)
+    checkout = resolve_gnn_root(root)
+    source = checkout / "src"
+    if str(source) not in sys.path:
+        sys.path.insert(0, str(source))
     try:
-        data = json.loads(source.read_text(encoding="utf-8"))
-    except FileNotFoundError as exc:
-        raise ConformanceError(
-            f"{source} is missing; the pinned GNN revision is required to validate "
-            "the specification"
+        from gnn import importers
+    except ImportError as exc:  # the pin predates the reader, or is not a checkout
+        raise GnnUnavailable(
+            f"the GNN checkout at {checkout} supplies no gnn.importers module "
+            f"({exc}); gnn/upstream.json must name a revision that ships it"
         ) from exc
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ConformanceError(f"{source} is unreadable: {exc}") from exc
-    if not isinstance(data, dict):
-        raise ConformanceError(f"{source} must contain a JSON object")
-    if data.get("schema") != "gnn-importer-pin/v1":
-        raise ConformanceError(f"{source}: schema must be 'gnn-importer-pin/v1'")
+    return importers
+
+
+def pinned_revision(root: Path | str | None = None) -> "ImporterPin":
+    """Read the repository-local GNN pin with the shared reader."""
+
+    importers = _shared_reader(root)
     try:
-        pin = Pin(
-            repository=data["repository"],
-            tag=data["tag"],
-            commit=data["commit"],
-        )
-    except KeyError as exc:
-        raise ConformanceError(f"{source} is missing the {exc} field") from exc
-    for field in ("repository", "tag", "commit"):
-        if not isinstance(getattr(pin, field), str):
-            raise ConformanceError(f"{source}: {field} must be a string")
-    if len(pin.commit) != 40 or any(c not in "0123456789abcdef" for c in pin.commit):
-        raise ConformanceError(
-            f"{source}: commit must be a 40-character lowercase hex SHA"
-        )
-    return pin
+        return importers.read_pin(PIN_PATH)
+    except importers.PinError as exc:
+        raise ConformanceError(str(exc)) from exc
 
 
 def resolve_gnn_root(explicit: Path | str | None = None) -> Path:
@@ -112,35 +110,7 @@ def resolve_gnn_root(explicit: Path | str | None = None) -> Path:
     )
 
 
-def _git(root: Path, *args: str) -> str:
-    result = subprocess.run(
-        ["git", "-C", str(root), *args],
-        stdin=subprocess.DEVNULL,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        raise ConformanceError(
-            f"git {' '.join(args)} failed in {root}: {result.stderr.strip()}"
-        )
-    return result.stdout.strip()
-
-
-def verify_pin(root: Path, pin: Pin) -> None:
-    """Verify the pinned tag and commit resolve to the same object."""
-
-    commit = _git(root, "rev-parse", "--verify", f"{pin.commit}^{{commit}}")
-    if commit != pin.commit:
-        raise ConformanceError(f"pinned commit resolves to {commit}, not {pin.commit}")
-    tag_commit = _git(root, "rev-parse", "--verify", f"{pin.tag}^{{commit}}")
-    if tag_commit != pin.commit:
-        raise ConformanceError(
-            f"pinned tag {pin.tag} resolves to {tag_commit}, not {pin.commit}"
-        )
-
-
-def pinned_source(root: Path, pin: Pin, destination: Path) -> Path:
+def pinned_source(root: Path, pin: "ImporterPin", destination: Path) -> Path:
     """Extract the pinned ``src/gnn`` tree into ``destination`` and return it."""
 
     destination.mkdir(parents=True, exist_ok=True)
@@ -201,8 +171,7 @@ def extract_spec(
     """Parse ``spec`` with the pinned GNN extractor and return the mapping."""
 
     root = resolve_gnn_root(gnn_root)
-    pin = load_pin()
-    verify_pin(root, pin)
+    pin = pinned_revision(root)
     python = Path(interpreter) if interpreter else resolve_interpreter(root)
     spec = Path(spec).resolve()
     with tempfile.TemporaryDirectory(prefix="gnn-pinned-") as temporary:
@@ -411,11 +380,15 @@ def check_conformance(model: dict) -> list[str]:
 def receipt(model: dict, checks: list[str], spec: Path = SPEC_PATH) -> dict:
     """Build a JSON-serializable receipt for the validation run."""
 
-    pin = load_pin()
+    pin = pinned_revision()
     return {
         "spec": str(Path(spec).resolve().relative_to(REPO_ROOT)),
         "spec_sha256": spec_sha256(spec),
-        "pin": {"repository": pin.repository, "tag": pin.tag, "commit": pin.commit},
+        "pin": {
+            "repository": pin.repository or "",
+            "tag": pin.tag or "",
+            "commit": pin.commit,
+        },
         "extraction_schema_version": model.get("extraction_schema_version"),
         "model_kind": model.get("model_kind"),
         "dimensions": {

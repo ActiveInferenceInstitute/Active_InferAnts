@@ -10,6 +10,29 @@
 
 ## Gate and documentation pass — 2026-11-12
 
+### GNN-FEP member migration — adopted
+
+- [closed] **G-10 — shared pin reader.** The
+  [GNN–FEP contract](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/main/docs/workflows/gnn-fep.md)
+  gives pin parsing, pin and pointer validation, and specification validation
+  one home in GNN's `src/gnn/importers.py`. This repository could not adopt it
+  while its pin named a revision that predates that module: the previous pin was
+  `v5.0.3` at `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`, and the migration's
+  first pull request recorded that as a blocker. The pin now records `v5.1.0`
+  at `75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`, which ships the reader, and
+  the `gnn` arm runs it from the environment the arm already builds:
+  `python -m gnn.importers check --repo . --require-pointer
+  --workflow .github/workflows/ci.yml --job gnn-conformance`. This repository's
+  own reader (`gnn_conformance.py`'s `Pin`, `load_pin`, `verify_pin`) and the
+  tests for its pin shape are deleted; the pin declares `spec_files`, so
+  validation covers `gnn/gaussian_agent.gnn.md` and not every `*.gnn.md` under
+  the tree. The agent-specific checks stay: `scripts/validate_gnn_spec.py` and
+  the `gnn`-marked tests still prove the extracted specification matches
+  `active_infer_ants/agent.py`, which the reader cannot. No reader is vendored
+  and no unpinned source is substituted. Affected: `gnn/upstream.json`,
+  `gnn_conformance.py`, `run.sh`, `tests/test_gnn_conformance.py`,
+  `.github/GNN.md`, `README.md`, `docs/RUN_GUIDE.md`.
+
 ### Locked-environment follow-through
 
 - [closed] **G-7 — shared lock and primary runtime.** `uv.lock` now resolves the
@@ -63,8 +86,9 @@
   checks every relative link in the tracked documentation.
 - [closed] **G-6 — GNN gate documented.** The conformance job key
   (`gnn-conformance`, displayed `gnn conformance (pinned)`), the pin file
-  `gnn/upstream.json` (schema `gnn-importer-pin/v1`, `v5.0.3`,
-  `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`), and the `.github/GNN.md` pointer
+  `gnn/upstream.json` (schema `gnn-importer-pin/v1`; the revision current at the
+  time was `v5.0.3`, `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`, since advanced
+  to `v5.1.0` by G-10), and the `.github/GNN.md` pointer
   are described in `docs/RUN_GUIDE.md`, `.github/GNN.md`, `README.md`, and
   `AGENTS.md`.
 
