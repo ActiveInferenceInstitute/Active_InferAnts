@@ -57,7 +57,7 @@ arm_help=(
     "test-fast|pytest -m 'not gnn' (no GNN checkout needed)"
     "test-full|pytest (adds the gnn-marked module)"
     "docs|mkdocs --strict, relative links, generated-doc freshness"
-    "gnn|verify GNN_ROOT read-only, or provision a pinned parser, then the checks"
+    "gnn|shared importer check + pinned parser + conformance checks"
     "metrics|re-measure every arm, rewrite docs/_generated/gate_metrics.md"
     "gate|lint, test-fast, docs, gnn (== test-full, without overlap)"
 )
@@ -174,7 +174,9 @@ provision_owned_gnn_cache() {
     git -C "$target" fetch --depth 1 origin "$commit" "refs/tags/$tag:refs/tags/$tag"
     git -C "$target" checkout --quiet --detach "$commit"
     "$PY" -m venv "$target/.venv"
-    "$target/.venv/bin/python" -m pip install --quiet numpy defusedxml
+    # numpy/defusedxml for the extractor, PyYAML for the specification parser
+    # the reader drives (without it the parser falls back and warns per file).
+    "$target/.venv/bin/python" -m pip install --quiet numpy defusedxml pyyaml
     GNN_ROOT=$target
     echo "gnn: provisioned $GNN_ROOT at $commit"
 }
@@ -191,8 +193,30 @@ prepare_gnn() {
     export GNN_ROOT
 }
 
+# The shared reader from the GNN-FEP contract, called from the environment the
+# arm already built: the pinned checkout supplies the module and the parser, so
+# this repository carries no copy of either. `python -m gnn.importers check
+# --repo .` is the arm the GNN-FEP member table records for this repository; the
+# pointer flags are added because `.github/GNN.md` names the pin, the revision,
+# this workflow and this job key (GNN-FEP migration step 1).
+gnn_reader() {
+    local python
+    if [ -n "${GNN_PYTHON:-}" ]; then
+        python=$GNN_PYTHON
+    elif [ -x "$GNN_ROOT/.venv/bin/python" ]; then
+        python=$GNN_ROOT/.venv/bin/python
+    else
+        python=$PY
+    fi
+    section "gnn: importers check (shared reader at the pinned revision)"
+    PYTHONPATH="$GNN_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
+        "$python" -m gnn.importers check --repo . --require-pointer \
+        --workflow .github/workflows/ci.yml --job gnn-conformance
+}
+
 gnn() {
     prepare_gnn
+    gnn_reader
     section "gnn: validate_gnn_spec.py"
     "$PY" scripts/validate_gnn_spec.py
     section "gnn: pytest -m gnn"

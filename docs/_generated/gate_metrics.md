@@ -13,13 +13,13 @@ startup and the arm's subprocesses.
 
 | Arm | Wall time | Exit | Last line |
 |---|---:|---:|---|
-| `./run.sh lint` | 0.69 s | 0 | All checks passed! |
-| `./run.sh test-fast` | 2.54 s | 0 | 31 passed, 30 deselected, 2 warnings in 1.78s |
-| `./run.sh test-full` | 3.04 s | 0 | 61 passed, 2 warnings in 2.31s |
-| `./run.sh docs` | 5.48 s | 0 | docs: site built, relative links checked, generated files current |
-| `./run.sh gnn` | 2.85 s | 0 | 30 passed, 31 deselected, 1 warning in 1.61s |
+| `./run.sh lint` | 0.67 s | 0 | All checks passed! |
+| `./run.sh test-fast` | 2.19 s | 0 | 31 passed, 7 deselected, 2 warnings in 1.54s |
+| `./run.sh test-full` | 3.44 s | 0 | 38 passed, 2 warnings in 2.71s |
+| `./run.sh docs` | 6.29 s | 0 | docs: site built, relative links checked, generated files current |
+| `./run.sh gnn` | 3.24 s | 0 | 7 passed, 31 deselected, 1 warning in 1.81s |
 
-`./run.sh gate` runs lint, test-fast, docs and gnn: 11.56 s of
+`./run.sh gate` runs lint, test-fast, docs and gnn: 12.39 s of
 measured arm time. `test-full` is a superset used on its own (it adds the
 gnn-marked module to test-fast), so nothing is run twice by the gate.
 
@@ -28,8 +28,8 @@ gnn-marked module to test-fast), so nothing is run twice by the gate.
 | Selection | Tests |
 |---|---:|
 | `pytest -m "not gnn"` (test-fast) | 31 |
-| `pytest -m gnn` (gnn) | 30 |
-| `pytest` (test-full) | 61 |
+| `pytest -m gnn` (gnn) | 7 |
+| `pytest` (test-full) | 38 |
 
 ## Repository inventory
 
@@ -74,27 +74,27 @@ distribution; no hosted-CI speedup is inferred.
     "docs": {
       "detail": "docs: site built, relative links checked, generated files current",
       "exit": 0,
-      "seconds": 5.48
+      "seconds": 6.29
     },
     "gnn": {
-      "detail": "30 passed, 31 deselected, 1 warning in 1.61s",
+      "detail": "7 passed, 31 deselected, 1 warning in 1.81s",
       "exit": 0,
-      "seconds": 2.85
+      "seconds": 3.24
     },
     "lint": {
       "detail": "All checks passed!",
       "exit": 0,
-      "seconds": 0.69
+      "seconds": 0.67
     },
     "test-fast": {
-      "detail": "31 passed, 30 deselected, 2 warnings in 1.78s",
+      "detail": "31 passed, 7 deselected, 2 warnings in 1.54s",
       "exit": 0,
-      "seconds": 2.54
+      "seconds": 2.19
     },
     "test-full": {
-      "detail": "61 passed, 2 warnings in 2.31s",
+      "detail": "38 passed, 2 warnings in 2.71s",
       "exit": 0,
-      "seconds": 3.04
+      "seconds": 3.44
     }
   },
   "baseline": {
@@ -137,8 +137,8 @@ distribution; no hosted-CI speedup is inferred.
   "counts": {
     "docs_markdown": 85,
     "tests_fast": 31,
-    "tests_full": 61,
-    "tests_gnn": 30,
+    "tests_full": 38,
+    "tests_gnn": 7,
     "tracked_markdown": 7277,
     "tracked_python": 283
   },

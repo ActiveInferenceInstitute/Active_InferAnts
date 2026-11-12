@@ -103,36 +103,38 @@ The framework's continuous Gaussian agent (`active_infer_ants/agent.py`) is spec
 
 The specification is validated against the GNN revision pinned in
 [`gnn/upstream.json`](gnn/upstream.json) (schema `gnn-importer-pin/v1`:
-`ActiveInferenceInstitute/Generalized_Notation_Notation` at `v5.0.3`, commit
-`8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`), read from that pinned commit (via
+`ActiveInferenceInstitute/Generalized_Notation_Notation` at `v5.1.0`, commit
+`75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`), read from that pinned commit (via
 `git archive`) rather than from the GNN checkout's working tree:
 
 ```bash
-./run.sh gnn    # provisions the pinned parser, then validates the spec
+./run.sh gnn    # provisions the pinned parser, runs the shared reader, validates the spec
 ```
 
 The arm provisions the pinned commit into a directory it creates under the
 gitignored `.cache/gnn/<pin commit>` (or a fresh sibling if that path is
-occupied and unusable), then runs `scripts/validate_gnn_spec.py` and the
-`gnn`-marked tests in `tests/test_gnn_conformance.py`. A `GNN_ROOT` you set
-yourself is read-only: the arm verifies it contains the pin and a runtime, and
-refuses rather than fetching, installing or deleting inside it (that path may be
-another repository's working copy). It parses the specification with the pinned
+occupied and unusable), then runs the shared GNN-FEP reader from that
+environment as `python -m gnn.importers check --repo .`: the pin, its shape and
+the specification's syntax are validated by the reader the pinned revision
+ships, and this repository carries no copy of it. It then runs
+`scripts/validate_gnn_spec.py` and the `gnn`-marked tests in
+`tests/test_gnn_conformance.py`. A `GNN_ROOT` you set yourself is read-only: the
+arm verifies it contains the pin and a runtime, and refuses rather than
+fetching, installing or deleting inside it (that path may be another
+repository's working copy). The script parses the specification with the pinned
 GNN extractor and checks the extracted matrices and parameters against the
 framework agent, including that `infer()` performs exactly the declared Gaussian
-posterior update; the tests
-assert the canonical pin record, the specification's required sections, the
-declared dimensions, and that a mutated model is rejected. The module is marked
-`gnn`, so `./run.sh test-fast` needs no GNN checkout; when `GNN_ROOT` selects a
-checkout explicitly, an unusable checkout fails rather than skips. When editing
-the specification,
-start from GNN's [Start Here](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/START_HERE.md),
-[framework integration guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/gnn/integration/framework_integration_guide.md),
-and [syntax reference](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/gnn/reference/gnn_syntax.md).
-For the wider picture (the adoption patterns sibling repositories use, pin discipline, and
-the drift guard these checks implement), see GNN's
-[downstream adoption guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/main/docs/gnn/integration/downstream_adoption.md),
-linked on GNN's default branch because it landed after the v5.0.3 pin.
+posterior update; the tests assert the pin record through the shared reader, the
+specification's required sections, the declared dimensions, and that a mutated
+model is rejected. The module is marked `gnn`, so `./run.sh test-fast` needs no
+GNN checkout; when `GNN_ROOT` selects a checkout explicitly, an unusable
+checkout fails rather than skips. When editing the specification,
+start from GNN's [Start Here](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.1.0/docs/START_HERE.md),
+[framework integration guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.1.0/docs/gnn/integration/framework_integration_guide.md),
+and [syntax reference](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.1.0/docs/gnn/reference/gnn_syntax.md).
+For the wider picture (the adoption patterns sibling repositories use, pin
+discipline, and the drift guard these checks implement), see GNN's
+[downstream adoption guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.1.0/docs/gnn/integration/downstream_adoption.md).
 
 ### 🔗 Related repositories
 

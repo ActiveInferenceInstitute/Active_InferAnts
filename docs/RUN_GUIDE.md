@@ -79,22 +79,28 @@ It installs uv and the requested Python and caches uv dependencies keyed by
 
 The canonical pin is [`gnn/upstream.json`](https://github.com/ActiveInferenceInstitute/Active_InferAnts/blob/main/gnn/upstream.json), schema
 `gnn-importer-pin/v1`: `ActiveInferenceInstitute/Generalized_Notation_Notation`
-at `v5.0.3`, revision `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`.
+at `v5.1.0`, revision `75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`.
 [`.github/GNN.md`](https://github.com/ActiveInferenceInstitute/Active_InferAnts/blob/main/.github/GNN.md) records exactly what the
 `gnn-conformance` job, displayed `gnn conformance (pinned)`, parses:
-`gnn/gaussian_agent.gnn.md`, not a repository-wide scan. Its extracted matrices
-and Gaussian posterior update are checked against `active_infer_ants/agent.py`.
+`gnn/gaussian_agent.gnn.md`. The pin's `spec_files` entry makes that the
+authoritative list, so the check is not a repository-wide scan — the arm's own
+provisioned GNN checkout under `.cache/gnn/` carries fixtures of its own. Its
+extracted matrices and Gaussian posterior update are checked against
+`active_infer_ants/agent.py`.
 
-The pin reader requires `schema: "gnn-importer-pin/v1"` and string-valued
-`repository`, `tag`, and `commit` fields; it rejects missing or unsupported schemas
-and does not coerce other JSON types to strings.
+The pin and its shape are read by the shared GNN-FEP reader
+(`gnn.importers.read_pin`), called from the pinned environment; the member table
+of [the contract](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/main/docs/workflows/gnn-fep.md)
+records `python -m gnn.importers check --repo .` as this repository's arm. This
+repository keeps no copy of the reader, and no copy of its schema validation.
 
 Both `gnn` and `test-full` prepare the parser in the same way:
 
 - **`GNN_ROOT` unset:** reuse the verified owned cache at
-  `.cache/gnn/<pin commit>`, or provision a fresh owned directory. An occupied,
-  unusable cache is preserved; a new sibling is created instead. Initial
-  acquisition needs network access; provision it before an offline gate.
+  `.cache/gnn/<pin commit>`, or provision a fresh owned directory with
+  `numpy`/`defusedxml` (the extractor) and `PyYAML` (the specification parser).
+  An occupied, unusable cache is preserved; a new sibling is created instead.
+  Initial acquisition needs network access; provision it before an offline gate.
 - **`GNN_ROOT` set:** treat it as read-only. Verify the pinned commit and runtime
   (`GNN_PYTHON`, the checkout's `.venv`, or the project interpreter with
   `numpy`/`defusedxml`). Refuse an unusable checkout with exit 2; never fetch,
@@ -102,6 +108,48 @@ Both `gnn` and `test-full` prepare the parser in the same way:
 
 The validator reads parser sources from the pinned commit with `git archive`,
 not from the checkout's potentially edited working tree.
+
+### GNN-FEP shared reader — adopted
+
+The [GNN–FEP workflow contract](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/main/docs/workflows/gnn-fep.md)
+gives pin parsing, pin and pointer validation, and specification validation one
+home in GNN's `src/gnn/importers.py`, called from the environment each member's
+`gnn` arm already builds. This repository is in that member table, and its arm
+now runs the reader before the checks:
+
+```bash
+python -m gnn.importers check --repo . --require-pointer \
+    --workflow .github/workflows/ci.yml --job gnn-conformance
+```
+
+Adoption is staged by the pin, not by the date of the contract. The previous pin
+— `v5.0.3`, revision `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1` — predates
+`src/gnn/importers.py` (added in `e6a9d3917`), so the reader could not run from
+it; that is why the earlier migration pull request recorded a blocker instead of
+a change. The pin now records `v5.1.0`, revision
+`75c834bd8519dc7b5adc4d24f16bf393cfd1ecdf`, which ships the module, and this
+change is the cutover:
+
+- `gnn_conformance.py`'s own pin reader (`Pin`, `load_pin`, `verify_pin`) is
+  deleted; `pinned_revision()` calls `gnn.importers.read_pin` from the pinned
+  checkout. The reader reports the findings the deleted code duplicated —
+  `pin-missing`, `pin-unreadable`, `pin-commit-shape`, `pin-tag-mismatch`,
+  `pin-repository-mismatch` and `pin-schema-unversioned` — plus the pointer
+  codes the arm now requests.
+- the pin-shape tests that exercised that code are deleted; one assertion
+  remains, that the pin records the canonical upstream repository, tag and
+  commit.
+- `spec_files` is declared in the pin, so specification validation covers the
+  specification this repository owns rather than every `*.gnn.md` under the
+  tree.
+- the reader runs first in the arm, then `scripts/validate_gnn_spec.py` and the
+  `gnn`-marked tests, which assert what the reader cannot: that the extracted
+  specification matches `active_infer_ants/agent.py`.
+
+No reader is vendored, no unpinned working-tree source is substituted, and the
+tag is still checked at acquisition: the arm fetches `refs/tags/<pin tag>` for
+the pin's commit, so a tag that does not resolve to that commit fails the fetch
+before any check runs.
 
 ## Lint surface
 
