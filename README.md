@@ -111,16 +111,21 @@ The specification is validated against the GNN revision pinned in
 ./run.sh gnn    # provisions the pinned parser, then validates the spec
 ```
 
-The arm provisions the pinned commit into `$GNN_ROOT` (default: the gitignored
-`.cache/gnn`), then runs `scripts/validate_gnn_spec.py` and the `gnn`-marked
-tests in `tests/test_gnn_conformance.py`. It parses the specification with the
-pinned GNN extractor and checks the extracted matrices and parameters against
-the framework agent, including that `infer()` performs exactly the declared
-Gaussian posterior update; the tests assert the canonical pin record, the
-specification's required sections, the declared dimensions, and that a mutated
-model is rejected. The module is marked `gnn`, so `./run.sh test-fast` needs no
-GNN checkout; when `GNN_ROOT` selects a checkout explicitly, an unusable
-checkout fails rather than skips. When editing the specification,
+The arm provisions the pinned commit into a directory it creates under the
+gitignored `.cache/gnn/<pin commit>` (or a fresh sibling if that path is
+occupied and unusable), then runs `scripts/validate_gnn_spec.py` and the
+`gnn`-marked tests in `tests/test_gnn_conformance.py`. A `GNN_ROOT` you set
+yourself is read-only: the arm verifies it contains the pin and a runtime, and
+refuses rather than fetching, installing or deleting inside it (that path may be
+another repository's working copy). It parses the specification with the pinned
+GNN extractor and checks the extracted matrices and parameters against the
+framework agent, including that `infer()` performs exactly the declared Gaussian
+posterior update; the tests
+assert the canonical pin record, the specification's required sections, the
+declared dimensions, and that a mutated model is rejected. The module is marked
+`gnn`, so `./run.sh test-fast` needs no GNN checkout; when `GNN_ROOT` selects a
+checkout explicitly, an unusable checkout fails rather than skips. When editing
+the specification,
 start from GNN's [Start Here](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/START_HERE.md),
 [framework integration guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/gnn/integration/framework_integration_guide.md),
 and [syntax reference](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.0.3/docs/gnn/reference/gnn_syntax.md).

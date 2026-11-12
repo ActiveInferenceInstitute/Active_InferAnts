@@ -68,10 +68,12 @@ fails when they are stale.
 - Ensure cross-language implementation parity.
 - Keep `gnn/gaussian_agent.gnn.md` in step with `active_infer_ants/agent.py`; validate it
   with `./run.sh gnn`, which fetches the revision pinned in `gnn/upstream.json` (schema
-  `gnn-importer-pin/v1`) into its own runtime and runs both the strict script and the
-  `gnn`-marked tests. CI runs the same arm in the `gnn-conformance` job, displayed as
-  `gnn conformance (pinned)` (see [`.github/GNN.md`](.github/GNN.md)), so the pin is
-  re-checked on every push and pull request. GNN's
+  `gnn-importer-pin/v1`) into its own cache and runs both the strict script and the
+  `gnn`-marked tests. A `GNN_ROOT` you set is read-only: the arm verifies it and refuses
+  instead of fetching, installing or deleting inside it. CI runs the same arm in the
+  `gnn-conformance` job, displayed as `gnn conformance (pinned)` (see
+  [`.github/GNN.md`](.github/GNN.md)), so the pin is re-checked on every push and pull
+  request. GNN's
   [downstream adoption
   guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/main/docs/gnn/integration/downstream_adoption.md)
   documents the adoption patterns, pin discipline, and drift-guard checks used here.
