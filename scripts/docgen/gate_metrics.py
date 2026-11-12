@@ -13,10 +13,10 @@ Usage:
     python scripts/docgen/gate_metrics.py --write-baseline   # re-freeze the
                                                              # pre-change numbers
 
-`--write-baseline` exists so the "before" column stays reproducible: it re-runs
-the pre-change command list below with the same harness and rewrites
-`docs/_generated/gate_baseline.json`. The numbers were first recorded on
-2026-11-12; re-freezing them is an explicit, reviewable act.
+`--write-baseline` measures the current arms before editing them and records
+the current source revision. With `--measurements PATH`, either write mode can
+import a JSON object captured by a separately governed measurement run instead
+of running the arms again.
 """
 
 from __future__ import annotations
@@ -25,10 +25,8 @@ import argparse
 import json
 import platform
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 import time
 from datetime import date
 from pathlib import Path
@@ -52,38 +50,7 @@ OUT_OF_SCOPE_IGNORE = (
     "--no-cache",
 )
 
-# The pre-change commands, frozen for comparison. These are what the previous
-# `.github/workflows/ci.yml` and `.pre-commit-config.yaml` invoked; none of them
-# is an arm any more. `--write-baseline` re-runs exactly this list.
-BASELINE_ARMS: tuple[dict[str, object], ...] = (
-    {
-        "arm": "lint",
-        "commands": (
-            "{python} -m ruff check .",
-            "{python} -m ruff format --check .",
-            "scripts/check_compile.sh",
-        ),
-    },
-    {
-        "arm": "test-fast / test-full",
-        "commands": ("{python} -m pytest -q",),
-    },
-    {
-        "arm": "docs",
-        "commands": ("{python} -m mkdocs build --strict",),
-    },
-    {
-        "arm": "gnn",
-        "commands": (
-            "{python} scripts/validate_gnn_spec.py",
-            "{python} -m pytest tests/test_gnn_conformance.py -q",
-        ),
-    },
-)
-
-
-# Output lines worth quoting in the receipt, in priority order. A raw "last
-# line" is often a hint or a JSON brace and says nothing about the result.
+# Summary lines used in generated receipts.
 DETAIL_PATTERNS = (
     r"Found \d+ errors?",
     r"All checks passed",
@@ -202,59 +169,30 @@ def measure_arms() -> dict[str, dict[str, object]]:
 
 
 def measure_baseline() -> dict[str, object]:
-    """Measure the pre-change commands on a throwaway checkout of `origin/main`.
+    """Freeze the current arms before a change, without a second checkout."""
+    return baseline_receipt(measure_arms())
 
-    The working tree has already changed (`ruff --fix` rewrote imports, files
-    were formatted, `pyproject.toml` gained a `[tool.ruff]` section), so a
-    "before" number can only come from the pre-change commit. The checkout is
-    removed afterwards; the receipt records which commit it was.
-    """
-    worktree = Path(tempfile.mkdtemp(prefix="aii-baseline-")) / "tree"
-    revision = subprocess.run(
-        ["git", "rev-parse", "origin/main"],
+
+def baseline_receipt(arms: dict[str, dict[str, object]]) -> dict[str, object]:
+    revision = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"],
         cwd=REPO_ROOT,
-        capture_output=True,
+        stdin=subprocess.DEVNULL,
         text=True,
-        check=True,
-    ).stdout.strip()
-    subprocess.run(
-        ["git", "worktree", "add", "--detach", str(worktree), revision],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-    )
-    try:
-        arms = []
-        for spec in BASELINE_ARMS:
-            total = 0.0
-            details = []
-            ok = True
-            for template in spec["commands"]:
-                command = template.format(python=sys.executable).split()
-                elapsed, code, detail = run(command, cwd=worktree)
-                total += elapsed
-                ok = ok and code == 0
-                details.append(f"`{template.format(python='python')}` → {detail}")
-            arms.append(
-                {
-                    "arm": spec["arm"],
-                    "seconds": round(total, 2),
-                    "ok": ok,
-                    "detail": "; ".join(details),
-                }
-            )
-    finally:
-        subprocess.run(
-            ["git", "worktree", "remove", "--force", str(worktree)],
-            cwd=REPO_ROOT,
-            capture_output=True,
-        )
-        shutil.rmtree(worktree.parent, ignore_errors=True)
+    ).strip()
     return {
         "recorded": date.today().isoformat(),
         "host": host(),
-        "source": f"origin/main {revision}",
-        "arms": arms,
+        "source": revision,
+        "arms": [
+            {
+                "arm": arm,
+                "seconds": data["seconds"],
+                "ok": data["exit"] == 0,
+                "detail": data["detail"],
+            }
+            for arm, data in arms.items()
+        ],
     }
 
 
@@ -338,12 +276,11 @@ def render(receipt: dict[str, object]) -> str:
         lines += [
             "## Pre-change baseline",
             "",
-            f"Recorded {baseline['recorded']} on {baseline['host']} with the same",
-            "harness (`--write-baseline`, commands listed below). These are the",
-            "commands the previous CI workflow and pre-commit hook invoked; lint",
-            "and the documentation build were not in CI at all. The GNN row used",
-            "an already-provisioned parser checkout: the old workflow provisioned",
-            "it in a separate step and then ran the two commands below.",
+            f"Recorded {baseline['recorded']} on {baseline['host']}, one run",
+            f"of each `./run.sh` arm at source `{baseline['source']}`.",
+            "Setup and parser acquisition are excluded; both columns use an",
+            "already-provisioned parser. Single samples are not a benchmark",
+            "distribution; no hosted-CI speedup is inferred.",
             "",
             "| Arm before | Wall time | Green | Command → last line |",
             "|---|---:|---|---|",
@@ -397,11 +334,32 @@ def main(argv: list[str] | None = None) -> int:
     mode.add_argument(
         "--write-baseline", action="store_true", help="re-freeze the baseline JSON"
     )
+    parser.add_argument("--measurements", type=Path, help="import captured arm results")
     args = parser.parse_args(argv)
+    # Importing captured measurements avoids repeating tests simply to publish
+    # their timings after an offline, source-bound execution has finished.
+    if args.measurements:
+        measured = json.loads(args.measurements.read_text(encoding="utf-8"))
+        if set(measured) != set(ARMS):
+            parser.error("measurements must contain exactly the gate arms")
+        for data in measured.values():
+            if "output" in data:
+                data["detail"] = pick_detail(
+                    data.pop("output").splitlines(), "no output"
+                )
+    else:
+        measured = None
 
     if args.write_baseline:
         BASELINE.write_text(
-            json.dumps(measure_baseline(), indent=2, sort_keys=True) + "\n",
+            json.dumps(
+                baseline_receipt(measured)
+                if measured is not None
+                else measure_baseline(),
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
             encoding="utf-8",
         )
         print(f"wrote {BASELINE.relative_to(REPO_ROOT)}")
@@ -457,10 +415,10 @@ def main(argv: list[str] | None = None) -> int:
     # measurement, and it must not see a stale page just because the arm's own
     # wall time has not been recorded yet.
     METRICS.write_text(render(receipt), encoding="utf-8")
-    receipt["arms"] = measure_arms()
+    receipt["arms"] = measured if measured is not None else measure_arms()
     METRICS.write_text(render(receipt), encoding="utf-8")
     print(f"wrote {METRICS.relative_to(REPO_ROOT)}")
-    return 0
+    return int(any(data["exit"] != 0 for data in receipt["arms"].values()))
 
 
 if __name__ == "__main__":

@@ -1,8 +1,5 @@
-# GitHub Actions CI for Active InferAnts.
-#
-# Every step delegates to `./run.sh <arm>`: the same commands run locally, so
-# there is no second copy of a command in this file. Arms and measured wall
-# times: docs/RUN_GUIDE.md and docs/_generated/gate_metrics.md.
+# Gate commands live only in run.sh. Local gates remain authoritative while
+# organisation Actions billing is locked; this workflow is not hosted evidence.
 name: CI
 
 on:
@@ -17,65 +14,45 @@ concurrency:
 permissions:
   contents: read
 
-# One environment spec for every job: `./run.sh setup` installs
-# requirements-dev.txt (this project editable plus the dev and docs extras).
-env:
-  PIP_DISABLE_PIP_VERSION_CHECK: "1"
-
 jobs:
   test:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      - uses: ActiveInferenceInstitute/.github/.github/actions/setup-python-uv@7159e67315330aac8e414aebae0ad1e999a41448
         with:
           python-version: ${{ matrix.python-version }}
-          cache: pip
-          cache-dependency-path: |
-            pyproject.toml
-            requirements-dev.txt
-      - name: Set up the environment
+      - name: Set up the locked environment
         run: ./run.sh setup
-      # Lint and docs are version-independent, so they run once (on the newest
-      # interpreter) instead of repeating in every matrix cell.
-      - name: Lint
-        if: matrix.python-version == '3.12'
-        run: ./run.sh lint
-      - name: Documentation
-        if: matrix.python-version == '3.12'
-        run: ./run.sh docs
-      - name: Tests
+      - name: Compatibility tests
         run: ./run.sh test-fast
 
   gnn-conformance:
-    timeout-minutes: 30
-    # Validates gnn/gaussian_agent.gnn.md with the upstream parser revision
-    # pinned in gnn/upstream.json. `./run.sh gnn` fetches the pinned commit into
-    # its own runtime and then runs scripts/validate_gnn_spec.py and the
-    # gnn-marked tests. The pin is re-checked on every push and pull request;
-    # a pin that no longer resolves fails rather than skipping.
     name: gnn conformance (pinned)
+    timeout-minutes: 30
     runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.12"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      - uses: ActiveInferenceInstitute/.github/.github/actions/setup-python-uv@7159e67315330aac8e414aebae0ad1e999a41448
         with:
           python-version: "3.12"
-          cache: pip
-          cache-dependency-path: |
-            pyproject.toml
-            requirements-dev.txt
-      - name: Set up the environment
+      - name: Set up the locked environment
         run: ./run.sh setup
+      - name: Lint
+        run: ./run.sh lint
+      - name: Documentation
+        run: ./run.sh docs
+      - name: Fast tests
+        run: ./run.sh test-fast
+      # The gnn selection complements test-fast; test-full would repeat it.
+      # Parses only gnn/gaussian_agent.gnn.md at gnn/upstream.json's revision.
       - name: GNN conformance
         run: ./run.sh gnn
-      - name: Report the resolved GNN version
-        run: |
-          PIN=gnn/upstream.json
-          VERSION=$(python3 -c "import json;print(json.load(open('$PIN'))['tag'].removeprefix('v'))")
-          test -n "$VERSION"
-          echo "gnn-version=${VERSION}" >> "$GITHUB_STEP_SUMMARY"
