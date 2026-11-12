@@ -1,9 +1,4 @@
-# Development environment for Active InferAnts: one spec for local use and CI.
-#
-# Install with:
-#   python -m pip install -r requirements-dev.txt
-#
-# This is the only environment definition the gate uses (./run.sh setup). It
-# installs this project editable plus the `dev` and `docs` extras declared in
-# pyproject.toml — add a tool there, not here.
+# Compatibility pip install for contributors; the gate uses uv.lock.
+# Declare tools in pyproject.toml and refresh the universal lock with uv lock.
+# Local and CI gate setup: ./run.sh setup
 -e .[dev,docs]

@@ -2,30 +2,36 @@
   "arms": [
     {
       "arm": "lint",
-      "detail": "`python -m ruff check .` \u2192 Found 12812 errors.; `python -m ruff format --check .` \u2192 269 files would be reformatted, 7285 files already formatted; `scripts/check_compile.sh` \u2192 exit 0",
-      "ok": false,
-      "seconds": 17.9
+      "detail": "All checks passed!",
+      "ok": true,
+      "seconds": 15.55
     },
     {
-      "arm": "test-fast / test-full",
-      "detail": "`python -m pytest -q` \u2192 41 passed, 2 warnings in 11.04s",
+      "arm": "test-fast",
+      "detail": "31 passed, 10 deselected, 2 warnings in 3.10s",
       "ok": true,
-      "seconds": 13.23
+      "seconds": 4.16
+    },
+    {
+      "arm": "test-full",
+      "detail": "41 passed, 2 warnings in 4.85s",
+      "ok": true,
+      "seconds": 6.41
     },
     {
       "arm": "docs",
-      "detail": "`python -m mkdocs build --strict` \u2192 Aborted with 5 warnings in strict mode!",
-      "ok": false,
-      "seconds": 1.61
+      "detail": "docs: site built, relative links checked, generated files current",
+      "ok": true,
+      "seconds": 18.67
     },
     {
       "arm": "gnn",
-      "detail": "`python scripts/validate_gnn_spec.py` \u2192 \"extraction_schema_version\": \"1.0.0\",; `python -m pytest tests/test_gnn_conformance.py -q` \u2192 10 passed in 0.94s",
+      "detail": "10 passed, 31 deselected, 1 warning in 5.04s",
       "ok": true,
-      "seconds": 3.48
+      "seconds": 7.94
     }
   ],
   "host": "Darwin arm64, Python 3.12.16",
   "recorded": "2026-11-12",
-  "source": "origin/main 3c739b15cca0a2ba93c4ce4fe180443500570fb6"
+  "source": "6ebea3739466d441fbaede06608608ba8fe4cda2"
 }

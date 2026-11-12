@@ -5,16 +5,16 @@
 # `./run.sh <arm>`); there is no second copy of any command. Documentation:
 # docs/RUN_GUIDE.md.
 #
-# Usage: ./run.sh <arm> [arm...]     ./run.sh            # list arms
+# Usage: ./run.sh <arm> [arm...]     ./run.sh            # fast tests
 #
-#   setup       install the one environment (requirements-dev.txt)
+#   setup       sync the locked development environment (uv.lock)
 #   lint        ruff check + ruff format --check + compile sweep
 #   test-fast   pytest -m "not gnn"   (no GNN checkout needed)
 #   test-full   pytest                (adds the gnn-marked module)
 #   docs        mkdocs build --strict, relative links, generated-doc freshness
 #   gnn         provision the pinned GNN parser, then the conformance checks
 #   metrics     re-measure every arm and rewrite docs/_generated/gate_metrics.md
-#   gate        lint, test-fast, docs, gnn   (== test-full, without overlap)
+#   gate        lint, test-fast, docs, gnn   (full gate without overlap)
 #
 # Interpreter: $PYTHON if set, else .venv/bin/python, else python3.
 set -euo pipefail
@@ -50,9 +50,9 @@ LINT_PATHS=(
 # Unset, the gnn arm provisions its own cache under .cache/gnn/<pin commit>/.
 PIN=$ROOT/gnn/upstream.json
 
-# name|one-line description; the same list drives `./run.sh` with no arguments.
+# name|one-line description; the same list drives `./run.sh --help`.
 arm_help=(
-    "setup|install the one environment (requirements-dev.txt)"
+    "setup|sync the locked development environment (uv.lock)"
     "lint|ruff check + ruff format --check + compile sweep"
     "test-fast|pytest -m 'not gnn' (no GNN checkout needed)"
     "test-full|pytest (adds the gnn-marked module)"
@@ -63,7 +63,7 @@ arm_help=(
 )
 
 usage() {
-    printf 'Usage: ./run.sh <arm> [arm...]     ./run.sh    # list arms\n\n'
+    printf 'Usage: ./run.sh <arm> [arm...]     ./run.sh    # fast tests\n\n'
     printf 'Every arm is the exact command CI runs (.github/workflows/ci.yml).\n'
     printf 'Documentation: docs/RUN_GUIDE.md\n\n'
     local entry
@@ -78,8 +78,8 @@ section() {
 }
 
 setup() {
-    section "setup: $PY -m pip install -r requirements-dev.txt"
-    "$PY" -m pip install -r requirements-dev.txt
+    section "setup: uv sync --locked --extra dev --extra docs"
+    uv sync --locked --extra dev --extra docs --python "${UV_PYTHON:-$PY}"
 }
 
 lint() {
@@ -87,7 +87,7 @@ lint() {
     "$PY" -m ruff check "${LINT_PATHS[@]}"
     "$PY" -m ruff format --check "${LINT_PATHS[@]}"
     section "lint: compile sweep over every tracked Python file"
-    ./scripts/check_compile.sh
+    PYTHON="$PY" ./scripts/check_compile.sh
 }
 
 test_fast() {
@@ -96,6 +96,7 @@ test_fast() {
 }
 
 test_full() {
+    prepare_gnn
     section "test-full: pytest"
     "$PY" -m pytest -q
 }
@@ -178,7 +179,7 @@ provision_owned_gnn_cache() {
     echo "gnn: provisioned $GNN_ROOT at $commit"
 }
 
-gnn() {
+prepare_gnn() {
     local commit tag
     commit=$(pin_field commit)
     tag=$(pin_field tag)
@@ -188,6 +189,10 @@ gnn() {
         provision_owned_gnn_cache "$commit" "$tag"
     fi
     export GNN_ROOT
+}
+
+gnn() {
+    prepare_gnn
     section "gnn: validate_gnn_spec.py"
     "$PY" scripts/validate_gnn_spec.py
     section "gnn: pytest -m gnn"
@@ -207,7 +212,7 @@ gate() {
 }
 
 if [ $# -eq 0 ]; then
-    usage
+    test_fast
     exit 0
 fi
 

@@ -90,7 +90,7 @@ def render(files: list[str]) -> str:
     lines += ["", "## Hub and generated pages", ""]
     for name in root_docs:
         lines.append(f"- [`{name}`]({name})")
-    for name in ("RUN_GUIDE.md", "_generated/gate_metrics.md"):
+    for name in ("_generated/gate_metrics.md",):
         if (REPO_ROOT / "docs" / name).exists():
             lines.append(f"- [`{name}`]({name})")
     lines.append("")

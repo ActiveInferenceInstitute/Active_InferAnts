@@ -13,13 +13,13 @@ startup and the arm's subprocesses.
 
 | Arm | Wall time | Exit | Last line |
 |---|---:|---:|---|
-| `./run.sh lint` | 9.83 s | 0 | All checks passed! |
-| `./run.sh test-fast` | 6.36 s | 0 | 31 passed, 10 deselected, 2 warnings in 4.83s |
-| `./run.sh test-full` | 6.20 s | 0 | 41 passed, 2 warnings in 4.83s |
-| `./run.sh docs` | 11.57 s | 0 | docs: site built, relative links checked, generated files current |
-| `./run.sh gnn` | 5.28 s | 0 | 10 passed, 31 deselected, 1 warning in 3.18s |
+| `./run.sh lint` | 0.69 s | 0 | All checks passed! |
+| `./run.sh test-fast` | 2.33 s | 0 | 31 passed, 10 deselected, 2 warnings in 1.66s |
+| `./run.sh test-full` | 3.11 s | 0 | 41 passed, 2 warnings in 2.31s |
+| `./run.sh docs` | 6.70 s | 0 | docs: site built, relative links checked, generated files current |
+| `./run.sh gnn` | 3.00 s | 0 | 10 passed, 31 deselected, 1 warning in 1.66s |
 
-`./run.sh gate` runs lint, test-fast, docs and gnn: 33.04 s of
+`./run.sh gate` runs lint, test-fast, docs and gnn: 12.72 s of
 measured arm time. `test-full` is a superset used on its own (it adds the
 gnn-marked module to test-fast), so nothing is run twice by the gate.
 
@@ -54,19 +54,19 @@ what the same rule selection reports on them, measured with the metrics:
 
 ## Pre-change baseline
 
-Recorded 2026-11-12 on Darwin arm64, Python 3.12.16 with the same
-harness (`--write-baseline`, commands listed below). These are the
-commands the previous CI workflow and pre-commit hook invoked; lint
-and the documentation build were not in CI at all. The GNN row used
-an already-provisioned parser checkout: the old workflow provisioned
-it in a separate step and then ran the two commands below.
+Recorded 2026-11-12 on Darwin arm64, Python 3.12.16, one run
+of each `./run.sh` arm at source `6ebea3739466d441fbaede06608608ba8fe4cda2`.
+Setup and parser acquisition are excluded; both columns use an
+already-provisioned parser. Single samples are not a benchmark
+distribution; no hosted-CI speedup is inferred.
 
 | Arm before | Wall time | Green | Command → last line |
 |---|---:|---|---|
-| lint | 17.90 s | no | `python -m ruff check .` → Found 12812 errors.; `python -m ruff format --check .` → 269 files would be reformatted, 7285 files already formatted; `scripts/check_compile.sh` → exit 0 |
-| test-fast / test-full | 13.23 s | yes | `python -m pytest -q` → 41 passed, 2 warnings in 11.04s |
-| docs | 1.61 s | no | `python -m mkdocs build --strict` → Aborted with 5 warnings in strict mode! |
-| gnn | 3.48 s | yes | `python scripts/validate_gnn_spec.py` → "extraction_schema_version": "1.0.0",; `python -m pytest tests/test_gnn_conformance.py -q` → 10 passed in 0.94s |
+| lint | 15.55 s | yes | All checks passed! |
+| test-fast | 4.16 s | yes | 31 passed, 10 deselected, 2 warnings in 3.10s |
+| test-full | 6.41 s | yes | 41 passed, 2 warnings in 4.85s |
+| docs | 18.67 s | yes | docs: site built, relative links checked, generated files current |
+| gnn | 7.94 s | yes | 10 passed, 31 deselected, 1 warning in 5.04s |
 
 <!-- gate-metrics-receipt
 {
@@ -74,59 +74,65 @@ it in a separate step and then ran the two commands below.
     "docs": {
       "detail": "docs: site built, relative links checked, generated files current",
       "exit": 0,
-      "seconds": 11.57
+      "seconds": 6.7
     },
     "gnn": {
-      "detail": "10 passed, 31 deselected, 1 warning in 3.18s",
+      "detail": "10 passed, 31 deselected, 1 warning in 1.66s",
       "exit": 0,
-      "seconds": 5.28
+      "seconds": 3.0
     },
     "lint": {
       "detail": "All checks passed!",
       "exit": 0,
-      "seconds": 9.83
+      "seconds": 0.69
     },
     "test-fast": {
-      "detail": "31 passed, 10 deselected, 2 warnings in 4.83s",
+      "detail": "31 passed, 10 deselected, 2 warnings in 1.66s",
       "exit": 0,
-      "seconds": 6.36
+      "seconds": 2.33
     },
     "test-full": {
-      "detail": "41 passed, 2 warnings in 4.83s",
+      "detail": "41 passed, 2 warnings in 2.31s",
       "exit": 0,
-      "seconds": 6.2
+      "seconds": 3.11
     }
   },
   "baseline": {
     "arms": [
       {
         "arm": "lint",
-        "detail": "`python -m ruff check .` \u2192 Found 12812 errors.; `python -m ruff format --check .` \u2192 269 files would be reformatted, 7285 files already formatted; `scripts/check_compile.sh` \u2192 exit 0",
-        "ok": false,
-        "seconds": 17.9
+        "detail": "All checks passed!",
+        "ok": true,
+        "seconds": 15.55
       },
       {
-        "arm": "test-fast / test-full",
-        "detail": "`python -m pytest -q` \u2192 41 passed, 2 warnings in 11.04s",
+        "arm": "test-fast",
+        "detail": "31 passed, 10 deselected, 2 warnings in 3.10s",
         "ok": true,
-        "seconds": 13.23
+        "seconds": 4.16
+      },
+      {
+        "arm": "test-full",
+        "detail": "41 passed, 2 warnings in 4.85s",
+        "ok": true,
+        "seconds": 6.41
       },
       {
         "arm": "docs",
-        "detail": "`python -m mkdocs build --strict` \u2192 Aborted with 5 warnings in strict mode!",
-        "ok": false,
-        "seconds": 1.61
+        "detail": "docs: site built, relative links checked, generated files current",
+        "ok": true,
+        "seconds": 18.67
       },
       {
         "arm": "gnn",
-        "detail": "`python scripts/validate_gnn_spec.py` \u2192 \"extraction_schema_version\": \"1.0.0\",; `python -m pytest tests/test_gnn_conformance.py -q` \u2192 10 passed in 0.94s",
+        "detail": "10 passed, 31 deselected, 1 warning in 5.04s",
         "ok": true,
-        "seconds": 3.48
+        "seconds": 7.94
       }
     ],
     "host": "Darwin arm64, Python 3.12.16",
     "recorded": "2026-11-12",
-    "source": "origin/main 3c739b15cca0a2ba93c4ce4fe180443500570fb6"
+    "source": "6ebea3739466d441fbaede06608608ba8fe4cda2"
   },
   "counts": {
     "docs_markdown": 85,

@@ -18,3 +18,8 @@ checks the extracted matrices against the framework agent in
 required `##` sections, the declared state dimensions, and that a mutated
 model is rejected. It does not scan the rest of the repository for `*.gnn.md`;
 the claim covers that one specification.
+
+The primary Python 3.12 job shares one `./run.sh setup` environment from
+`uv.lock` across lint, docs, fast tests and conformance. It uses
+`ActiveInferenceInstitute/.github/.github/actions/setup-python-uv@7159e67315330aac8e414aebae0ad1e999a41448`
+to install Python and uv; project dependency installation stays in `run.sh`.

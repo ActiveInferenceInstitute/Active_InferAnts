@@ -56,8 +56,8 @@ Not installed by default; required only by the named subsystem:
 
 ## Development Dependencies
 
-Installed by the gate's one spec, `requirements-dev.txt`
-(`-e .[dev,docs]`), through `./run.sh setup`:
+Declared in `pyproject.toml`, resolved in the shared `uv.lock`, and installed
+through `./run.sh setup` (`uv sync --locked --extra dev --extra docs`):
 
 | Package | Purpose |
 |---------|---------|
@@ -71,6 +71,6 @@ Installed by the gate's one spec, `requirements-dev.txt`
 ```bash
 pip install -r requirements.txt                 # Core
 pip install -e ".[api]"                          # API secondary stores
-./run.sh setup                                   # Development tooling (requirements-dev.txt)
+./run.sh setup                                   # Locked development and docs environment
 pip install pymdp tabulate                       # PyMDP-based agents (optional)
 ```
