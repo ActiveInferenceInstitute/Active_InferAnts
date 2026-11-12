@@ -113,6 +113,7 @@ htmlcov/
 .nox/
 .coverage.*
 .cache
+site/
 nosetests.xml
 coverage.xml
 *.cover
