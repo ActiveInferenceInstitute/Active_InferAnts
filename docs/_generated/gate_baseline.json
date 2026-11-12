@@ -1,0 +1,31 @@
+{
+  "arms": [
+    {
+      "arm": "lint",
+      "detail": "`python -m ruff check .` \u2192 Found 12812 errors.; `python -m ruff format --check .` \u2192 269 files would be reformatted, 7285 files already formatted; `scripts/check_compile.sh` \u2192 exit 0",
+      "ok": false,
+      "seconds": 17.9
+    },
+    {
+      "arm": "test-fast / test-full",
+      "detail": "`python -m pytest -q` \u2192 41 passed, 2 warnings in 11.04s",
+      "ok": true,
+      "seconds": 13.23
+    },
+    {
+      "arm": "docs",
+      "detail": "`python -m mkdocs build --strict` \u2192 Aborted with 5 warnings in strict mode!",
+      "ok": false,
+      "seconds": 1.61
+    },
+    {
+      "arm": "gnn",
+      "detail": "`python scripts/validate_gnn_spec.py` \u2192 \"extraction_schema_version\": \"1.0.0\",; `python -m pytest tests/test_gnn_conformance.py -q` \u2192 10 passed in 0.94s",
+      "ok": true,
+      "seconds": 3.48
+    }
+  ],
+  "host": "Darwin arm64, Python 3.12.16",
+  "recorded": "2026-11-12",
+  "source": "origin/main 3c739b15cca0a2ba93c4ce4fe180443500570fb6"
+}
