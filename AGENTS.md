@@ -25,17 +25,17 @@ Multi-language Active Inference framework for advanced AI research and applicati
 - 📁 `.aii/` — committed InstituteOS sidecar (metadata only)
 - 📁 `.github/` — CI workflow and Dependabot configuration
 - 📄 `README.md`, `SPEC.md`, `governance.md`, `TODO.md`, `REVIEW_LOG_2026-08-02.md`
-- 📄 `pyproject.toml`, `requirements.txt`, `requirements-dev.txt`, `config.json`
+- 📄 `pyproject.toml`, `uv.lock`, `requirements.txt`, `requirements-dev.txt`, `config.json`
 - 📄 `Dockerfile`, `mkdocs.yml`, `gnn_conformance.py`, `run.sh`, `scorecard.png`, `LICENSE`
 
 ## Tests and the gate
 
-`./run.sh` is the single entry point; every arm is the exact command CI runs.
+`./run.sh` is the single entry point; no arguments runs fast tests, and CI calls its arms.
 The suite in `tests/` covers the `active_infer_ants/` package and both REST
 APIs; the GNN conformance module is described below.
 
 ```bash
-./run.sh setup        # one environment: pip install -r requirements-dev.txt
+./run.sh setup        # uv sync --locked --extra dev --extra docs
 ./run.sh lint         # ruff (maintained surface) + compile sweep of every tracked source
 ./run.sh test-fast    # pytest -m "not gnn"
 ./run.sh test-full    # pytest (adds the gnn-marked module)

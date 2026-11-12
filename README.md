@@ -152,7 +152,7 @@ them.
 
 The modular documentation hub lives in [`docs/`](docs/README.md) and is published with
 MkDocs ([`mkdocs.yml`](mkdocs.yml)). Every document is indexed from
-[`docs/README.md`](docs/README.md); the rendered entry point is
+[`docs/documentation-index.md`](docs/documentation-index.md); the rendered entry point is
 [`docs/index.md`](docs/index.md).
 
 | Start here | Document |
@@ -571,7 +571,7 @@ The repository's single check entry point is `./run.sh`; each arm is the exact
 command CI runs (see [`docs/RUN_GUIDE.md`](docs/RUN_GUIDE.md)):
 
 ```bash
-./run.sh setup        # one environment: pip install -r requirements-dev.txt
+./run.sh setup        # one locked environment: uv sync --locked --extra dev --extra docs
 ./run.sh lint         # ruff (maintained surface) + compile sweep of every tracked source
 ./run.sh test-fast    # pytest -m "not gnn"
 ./run.sh test-full    # pytest (adds the gnn-marked conformance module)
@@ -641,8 +641,7 @@ python3 0_CONTEXT/Computer_Languages/status_dashboard.sh
 ### Development Workflow
 
 ```bash
-# Set up development environment (one spec: requirements-dev.txt)
-python3 -m venv .venv
+# Set up the development environment from uv.lock (uv 0.13.7)
 ./run.sh setup
 
 # Run the gate: lint, fast tests, docs, GNN conformance

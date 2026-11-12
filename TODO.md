@@ -10,6 +10,29 @@
 
 ## Gate and documentation pass — 2026-11-12
 
+### Locked-environment follow-through
+
+- [closed] **G-7 — shared lock and primary runtime.** `uv.lock` now resolves the
+  development and docs extras. `./run.sh setup` uses `uv sync --locked`; the
+  Python 3.12 `gnn-conformance` job shares that setup for lint, docs, fast tests
+  and conformance instead of installing the primary project twice. The 3.10
+  and 3.11 compatibility matrix remains. All jobs use the commit-pinned
+  Institute `setup-python-uv` composite described in `docs/RUN_GUIDE.md`.
+- [closed] **G-8 — fast default and compile startup.** No-argument `./run.sh`
+  runs `test-fast`; `--help` lists arms. The compile sweep checks every tracked
+  Python source in one process using the gate interpreter. `test-full`
+  prepares the parser before running tests rather than relying on an implicit
+  checkout. Before/after observations are generated in
+  `docs/_generated/gate_metrics.md`; no hosted timing is claimed.
+- [closed] **G-9 — reproducible measurement capture.** The metrics writer can
+  import separately captured arm results without rerunning them and returns
+  nonzero for failed arms. Baseline refresh measures the current arms rather
+  than constructing and forcibly deleting an `origin/main` worktree. The
+  generated flat index no longer repeats the run-guide entry.
+- **Manuscript:** no `manuscript/` directory exists; no render path was added.
+
+### Earlier gate pass (historical implementation)
+
 - [closed] **G-1 — one gate entry point.** `./run.sh` with separately runnable
   arms (`setup`, `lint`, `test-fast`, `test-full`, `docs`, `gnn`, `metrics`,
   `gate`); `.github/workflows/ci.yml` calls those arms and nothing else. The

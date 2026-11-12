@@ -34,7 +34,6 @@ measured gate numbers (arm wall times, test counts) are in
 - [`RUN_GUIDE.md`](RUN_GUIDE.md)
 - [`SPEC.md`](SPEC.md)
 - [`index.md`](index.md)
-- [`RUN_GUIDE.md`](RUN_GUIDE.md)
 - [`_generated/gate_metrics.md`](_generated/gate_metrics.md)
 
 ## architecture/

@@ -6,7 +6,7 @@ repository root — the arms are the exact commands CI runs
 
 ```bash
 ./run.sh test-fast    # pytest -m "not gnn" — no GNN checkout needed
-./run.sh test-full    # pytest — adds the gnn-marked module
+./run.sh test-full    # prepares the parser, then pytest including the gnn module
 ./run.sh gnn          # provisions the pinned parser, runs validate + gnn tests
 ```
 
@@ -30,8 +30,8 @@ repository root — the arms are the exact commands CI runs
 declared in `pyproject.toml`), so `pytest -m "not gnn"` and `pytest -m gnn`
 partition the suite. The conformance arm is `./run.sh gnn`; it provisions the
 pinned checkout and runs the module, which needs the GNN parser selected by
-`GNN_ROOT`. When `GNN_ROOT` is set explicitly an unusable checkout fails rather
-than skips.
+`GNN_ROOT`. `test-full` prepares the same parser first. When `GNN_ROOT` is set
+explicitly an unusable checkout fails rather than skips.
 
 Measured counts for each selection live in
 [`docs/_generated/gate_metrics.md`](../docs/_generated/gate_metrics.md).
