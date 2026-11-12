@@ -136,6 +136,95 @@ For the wider picture (the adoption patterns sibling repositories use, pin
 discipline, and the drift guard these checks implement), see GNN's
 [downstream adoption guide](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation/blob/v5.1.0/docs/gnn/integration/downstream_adoption.md).
 
+### Required local GNN check
+
+The `main` ruleset requires `gnn conformance (local)` on the current PR
+head. The hosted `gnn conformance (pinned)` job remains optional. Prepare a
+detached validation checkout at the PR head with Python 3.12 and uv.
+In GitVault, use its repository admission rules to prepare that checkout
+and the pinned parser. Confirm that the checkout matches the open PR.
+
+```sh
+set -eu
+repo=ActiveInferenceInstitute/Active_InferAnts
+: "${PR_NUMBER:?Set PR_NUMBER}"
+pr_head=$(gh pr view "$PR_NUMBER" --repo "$repo" --json headRefOid --jq .headRefOid </dev/null)
+test "$(git rev-parse HEAD </dev/null)" = "$pr_head"
+test -z "$(git status --porcelain=v1 --untracked-files=all </dev/null)"
+```
+
+Prepare the locked project environment with `UV_PYTHON=3.12 ./run.sh setup`
+and a read-only parser checkout at
+the commit in [`gnn/upstream.json`](gnn/upstream.json). The parser Python needs
+`numpy`, `defusedxml`, and `PyYAML`. The GNN arm can also provision its own
+parser cache before an offline run. With both environments and the uv cache
+prepared, export the absolute `GNN_ROOT` and `GNN_PYTHON` paths and run the
+same arms as the hosted job, locally.
+
+```sh
+: "${GNN_ROOT:?Set GNN_ROOT to the prepared parser checkout}"
+: "${GNN_PYTHON:?Set GNN_PYTHON to its interpreter}"
+export GNN_ROOT GNN_PYTHON
+UV_PYTHON=3.12 UV_OFFLINE=true ./run.sh setup lint docs test-fast gnn
+```
+
+For a publishable GitVault receipt, run those five arms in order through
+`execute --classification test`. Prepare the intent using GitVault's
+`docs/EXECUTE.md` and `docs/EXECUTION-INTENT.md`. Bind the clean PR revision,
+`run.sh`, `uv.lock`, and the pin file. Pass the parser paths to the qualified
+child and set them there. Use the child's `GITVAULT_EXECUTION_OUTPUT` for
+the fast and GNN reports. The GNN suite must execute tests with zero skips,
+failures, or errors. Preserve the report and the source-bound exit receipt.
+
+### Publish the local GNN result
+
+An authorized maintainer uses the configured GitVault launcher with the
+mapped Institute identity and the `state` write class enabled. Set `VAULT`
+to that launcher's absolute path, `PR_NUMBER` to the pull request number, and
+`GNN_EXIT_RECEIPT` to the governed run's `exit.json`. Review the passing
+gate output and its nonempty, zero-skip test report before planning success.
+
+```sh
+set -eu
+repo=ActiveInferenceInstitute/Active_InferAnts
+context='gnn conformance (local)'
+: "${VAULT:?Set VAULT}" "${PR_NUMBER:?Set PR_NUMBER}" "${GNN_EXIT_RECEIPT:?Set GNN_EXIT_RECEIPT}"
+tested_head=$(jq -er --arg repo "$repo" '
+  .payload | select(.classification == "test" and .outcome == "SUCCEEDED"
+    and .returncode == 0 and .source_unchanged == true and .binding.source == $repo
+    and .descendants.sample_errors == 0 and .descendants.remaining == [])
+  | .binding.revision | select(test("^[0-9a-f]{40}$"))
+' "$GNN_EXIT_RECEIPT")
+test "$(gh pr view "$PR_NUMBER" --repo "$repo" --json headRefOid --jq .headRefOid </dev/null)" = "$tested_head"
+
+digest=$(shasum -a 256 "$GNN_EXIT_RECEIPT")
+status_parameters=$(jq -nc --arg repo "$repo" --arg head "$tested_head" --arg context "$context" \
+  --arg digest "${digest%% *}" '{
+    repository:$repo, expected_commit:$head, context:$context, state:"success",
+    description:("Local pinned GNN checks passed. Receipt SHA-256 " + $digest[:16])
+  }')
+plan=$("$VAULT" plan github-status --parameters "$status_parameters" </dev/null)
+plan_id=$(printf '%s\n' "$plan" | jq -er .github)
+confirmation=$(printf '%s\n' "$plan" | jq -er .confirmation)
+"$VAULT" github-apply --plan "$plan_id" </dev/null
+```
+
+Review the repository, commit, context, and exact confirmation phrase in the
+plan. In the same shell, recheck the live PR head before applying. Confirm
+that GitHub reports the local context as a passing required check. A new head
+needs a fresh run and publication.
+
+```sh
+test "$(gh pr view "$PR_NUMBER" --repo "$repo" --json headRefOid --jq .headRefOid </dev/null)" = "$tested_head"
+"$VAULT" github-apply --plan "$plan_id" --apply --confirm "$confirmation" </dev/null
+gh api "repos/$repo/commits/$tested_head/status" </dev/null |
+  jq -e --arg head "$tested_head" --arg context "$context" '
+    .sha == $head and any(.statuses[]; .context == $context and .state == "success")'
+test "$(gh pr view "$PR_NUMBER" --repo "$repo" --json headRefOid --jq .headRefOid </dev/null)" = "$tested_head"
+gh pr checks "$PR_NUMBER" --repo "$repo" --required --json name,bucket </dev/null |
+  jq -e --arg context "$context" 'any(.[]; .name == $context and .bucket == "pass")'
+```
+
 ### 🔗 Related repositories
 
 - [Generalized_Notation_Notation](https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation) —
