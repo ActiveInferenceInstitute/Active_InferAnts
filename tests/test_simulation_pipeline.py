@@ -121,7 +121,9 @@ def test_support_modules(tmp_path):
     tracker = PerformanceTracker()
     metrics = tracker.calculate_metrics({"mean_reward": 0.5, "step_count": 3})
     assert metrics["mean_reward"] == 0.5
-    agg = tracker.calculate_aggregate_metrics([{"mean_reward": 0.4}, {"mean_reward": 0.6}])
+    agg = tracker.calculate_aggregate_metrics(
+        [{"mean_reward": 0.4}, {"mean_reward": 0.6}]
+    )
     assert agg["mean_of_mean_rewards"] == 0.5
     assert agg["num_runs"] == 2.0
 

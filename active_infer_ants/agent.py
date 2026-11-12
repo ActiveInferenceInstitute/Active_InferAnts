@@ -25,11 +25,14 @@ class ActiveInferenceAgent:
         Rate at which the agent updates its preferred state toward experience.
     """
 
-    def __init__(self, sensory_precision: float = 5.0,
-                 prior_precision: float = 2.0,
-                 learning_rate: float = 0.1,
-                 n_dims: int = 3,
-                 seed: int | None = None) -> None:
+    def __init__(
+        self,
+        sensory_precision: float = 5.0,
+        prior_precision: float = 2.0,
+        learning_rate: float = 0.1,
+        n_dims: int = 3,
+        seed: int | None = None,
+    ) -> None:
         self.sensory_precision = float(sensory_precision)
         self.prior_precision = float(prior_precision)
         self.learning_rate = float(learning_rate)
@@ -62,9 +65,8 @@ class ActiveInferenceAgent:
         # Precision-weighted belief update (Gaussian prior <-> likelihood).
         self.pi = self.prior_precision + self.sensory_precision * np.ones_like(obs)
         self.mu = (
-            (self.prior_precision * self.preferred + self.sensory_precision * obs)
-            / self.pi
-        )
+            self.prior_precision * self.preferred + self.sensory_precision * obs
+        ) / self.pi
         # Action that minimises expected free energy: move toward the preferred
         # state (the belief already encodes the mismatch).
         action = self.preferred + (self.mu - self.preferred)
@@ -72,7 +74,9 @@ class ActiveInferenceAgent:
 
     def learn(self, reward: float) -> None:
         """Update the preferred state toward recently rewarded actions."""
-        self.preferred = self.preferred + self.learning_rate * (self.mu - self.preferred)
+        self.preferred = self.preferred + self.learning_rate * (
+            self.mu - self.preferred
+        )
         self.history.append(float(reward))
 
     def visualize_beliefs(self) -> None:

@@ -1,9 +1,13 @@
 # Tests
 
-The pytest suite for Active InferAnts. Run it from the repository root:
+The pytest suite for Active InferAnts. Run it through the gate from the
+repository root — the arms are the exact commands CI runs
+([`docs/RUN_GUIDE.md`](../docs/RUN_GUIDE.md)):
 
 ```bash
-python -m pytest -q
+./run.sh test-fast    # pytest -m "not gnn" — no GNN checkout needed
+./run.sh test-full    # pytest — adds the gnn-marked module
+./run.sh gnn          # provisions the pinned parser, runs validate + gnn tests
 ```
 
 [`conftest.py`](conftest.py) puts the flat, non-package phase directories
@@ -22,13 +26,19 @@ python -m pytest -q
 | [`test_simulation_pipeline.py`](test_simulation_pipeline.py) | The 2_OPERATE plan → execute → render pipeline |
 | [`test_gnn_conformance.py`](test_gnn_conformance.py) | The Gaussian agent GNN specification against the pinned revision |
 
-`test_gnn_conformance.py` always runs its structural half; the pinned-parser half
-needs the GNN checkout selected by `GNN_ROOT` and is exercised in CI by the
-`gnn conformance (pinned)` job. When `GNN_ROOT` is set explicitly an unusable
-checkout fails rather than skips.
+`test_gnn_conformance.py` is marked `gnn` at module level (the marker is
+declared in `pyproject.toml`), so `pytest -m "not gnn"` and `pytest -m gnn`
+partition the suite. The conformance arm is `./run.sh gnn`; it provisions the
+pinned checkout and runs the module, which needs the GNN parser selected by
+`GNN_ROOT`. When `GNN_ROOT` is set explicitly an unusable checkout fails rather
+than skips.
+
+Measured counts for each selection live in
+[`docs/_generated/gate_metrics.md`](../docs/_generated/gate_metrics.md).
 
 ## Related
 
 - Parent: [Active InferAnts](../README.md)
 - Testing documentation: [docs/testing/](../docs/testing/README.md)
+- Run guide: [`docs/RUN_GUIDE.md`](../docs/RUN_GUIDE.md)
 - CI workflow: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)

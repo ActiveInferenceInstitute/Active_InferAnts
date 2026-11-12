@@ -29,6 +29,10 @@ from gnn_conformance import (
     load_pin,
 )
 
+# The whole module belongs to the `gnn` selection: `./run.sh gnn` provisions the
+# pinned parser checkout and runs it, while `./run.sh test-fast` stays checkout-free.
+pytestmark = pytest.mark.gnn
+
 REQUIRED_SECTIONS = (
     "GNNSection",
     "GNNVersionAndFlags",
@@ -57,7 +61,9 @@ def extracted_model() -> dict:
         return extract_spec()
     except GnnUnavailable as exc:
         if os.environ.get("GNN_ROOT"):
-            pytest.fail(f"GNN_ROOT selects a checkout, but the pinned parser is unavailable: {exc}")
+            pytest.fail(
+                f"GNN_ROOT selects a checkout, but the pinned parser is unavailable: {exc}"
+            )
         pytest.skip(f"pinned GNN checkout unavailable: {exc}")
 
 
@@ -106,7 +112,11 @@ def test_agent_canonical_model_conforms() -> None:
 
 def test_mutated_model_is_rejected() -> None:
     model = copy.deepcopy(canonical_model())
-    model["initial_parameterization"]["Q"] = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+    model["initial_parameterization"]["Q"] = [
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0],
+    ]
     with pytest.raises(ConformanceError, match="Q must be"):
         check_conformance(model)
 

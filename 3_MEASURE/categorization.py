@@ -1,11 +1,10 @@
 import itertools
-from typing import List, Dict, Callable, Any, Tuple, Optional, Set, Union
-import networkx as nx
-import matplotlib.pyplot as plt
 from functools import reduce
-from collections import defaultdict
-import numpy as np
-from scipy.stats import entropy
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
 
 class CategoryTheoryAnalyzer:
     """
@@ -13,7 +12,7 @@ class CategoryTheoryAnalyzer:
     This class provides a comprehensive toolkit for analyzing and manipulating categorical structures,
     with enhanced functionality for complex data analysis and visualization.
     """
-    
+
     def __init__(self):
         self.objects: Dict[str, Any] = {}
         self.morphisms: Dict[Tuple[str, str], Callable] = {}
@@ -33,11 +32,11 @@ class CategoryTheoryAnalyzer:
     def add_object(self, obj_name: str, obj_data: Any) -> None:
         """
         Add an object to the category with associated data, adhering to Active Inference principles.
-        
+
         Args:
             obj_name (str): The name of the object to add.
             obj_data (Any): The data associated with the object.
-        
+
         Raises:
             ValueError: If the object already exists in the category.
         """
@@ -49,12 +48,12 @@ class CategoryTheoryAnalyzer:
     def add_morphism(self, source: str, target: str, morphism: Callable) -> None:
         """
         Add a morphism between two objects, ensuring it aligns with Active Inference principles.
-        
+
         Args:
             source (str): The source object of the morphism.
             target (str): The target object of the morphism.
             morphism (Callable): The function representing the morphism.
-        
+
         Raises:
             ValueError: If the source or target object does not exist, or if the morphism already exists.
         """
@@ -64,31 +63,36 @@ class CategoryTheoryAnalyzer:
             raise ValueError(f"Morphism from {source} to {target} already exists.")
         self.morphisms[(source, target)] = morphism
 
-    def compose_morphisms(self, source: str, via: str, target: str) -> Optional[Callable]:
+    def compose_morphisms(
+        self, source: str, via: str, target: str
+    ) -> Optional[Callable]:
         """
         Compose two morphisms to create a direct morphism from source to target, following Active Inference optimization.
-        
+
         Args:
             source (str): The source object of the composition.
             via (str): The intermediate object in the composition.
             target (str): The target object of the composition.
-        
+
         Returns:
             Optional[Callable]: The composed morphism, if successful.
-        
+
         Raises:
             ValueError: If the required morphisms for composition do not exist.
         """
         if (source, via) not in self.morphisms or (via, target) not in self.morphisms:
             raise ValueError("Morphisms for composition do not exist.")
-        composed_morphism = lambda x: self.morphisms[(via, target)](self.morphisms[(source, via)](x))
+
+        def composed_morphism(x):
+            return self.morphisms[(via, target)](self.morphisms[(source, via)](x))
+
         self.compositions[(source, target)] = composed_morphism
         return composed_morphism
 
     def find_isomorphisms(self) -> Dict[Tuple[str, str], Callable]:
         """
         Identify isomorphisms in the category, utilizing Active Inference to optimize the process.
-        
+
         Returns:
             Dict[Tuple[str, str], Callable]: A dictionary of identified isomorphisms.
         """
@@ -101,37 +105,47 @@ class CategoryTheoryAnalyzer:
         self.isomorphisms = isomorphisms
         return isomorphisms
 
-    def _check_isomorphism(self, morphism: Callable, inverse_morphism: Callable) -> bool:
+    def _check_isomorphism(
+        self, morphism: Callable, inverse_morphism: Callable
+    ) -> bool:
         """
         Verify if two morphisms form an isomorphism, incorporating Active Inference principles for efficiency.
-        
+
         Args:
             morphism (Callable): The forward morphism.
             inverse_morphism (Callable): The inverse morphism.
-        
+
         Returns:
             bool: True if the morphisms form an isomorphism, False otherwise.
         """
-        return all(morphism(inverse_morphism(obj)) == obj and inverse_morphism(morphism(obj)) == obj for obj in self.objects.values())
+        return all(
+            morphism(inverse_morphism(obj)) == obj
+            and inverse_morphism(morphism(obj)) == obj
+            for obj in self.objects.values()
+        )
 
     def find_epimorphisms(self) -> Dict[Tuple[str, str], Callable]:
         """
         Discover epimorphisms in the category, applying Active Inference strategies for enhanced performance.
-        
+
         Returns:
             Dict[Tuple[str, str], Callable]: A dictionary of identified epimorphisms.
         """
-        epimorphisms = {(source, target): morphism for (source, target), morphism in self.morphisms.items() if self._check_epimorphism(morphism)}
+        epimorphisms = {
+            (source, target): morphism
+            for (source, target), morphism in self.morphisms.items()
+            if self._check_epimorphism(morphism)
+        }
         self.epimorphisms = epimorphisms
         return epimorphisms
 
     def _check_epimorphism(self, morphism: Callable) -> bool:
         """
         Determine if a morphism is an epimorphism, using Active Inference for effective analysis.
-        
+
         Args:
             morphism (Callable): The morphism to check.
-        
+
         Returns:
             bool: True if the morphism is an epimorphism, False otherwise.
         """
@@ -141,21 +155,25 @@ class CategoryTheoryAnalyzer:
     def find_monomorphisms(self) -> Dict[Tuple[str, str], Callable]:
         """
         Identify monomorphisms in the category, leveraging Active Inference for optimization.
-        
+
         Returns:
             Dict[Tuple[str, str], Callable]: A dictionary of identified monomorphisms.
         """
-        monomorphisms = {(source, target): morphism for (source, target), morphism in self.morphisms.items() if self._check_monomorphism(morphism)}
+        monomorphisms = {
+            (source, target): morphism
+            for (source, target), morphism in self.morphisms.items()
+            if self._check_monomorphism(morphism)
+        }
         self.monomorphisms = monomorphisms
         return monomorphisms
 
     def _check_monomorphism(self, morphism: Callable) -> bool:
         """
         Check if a morphism is a monomorphism, incorporating Active Inference principles for efficiency.
-        
+
         Args:
             morphism (Callable): The morphism to check.
-        
+
         Returns:
             bool: True if the morphism is a monomorphism, False otherwise.
         """
@@ -165,53 +183,61 @@ class CategoryTheoryAnalyzer:
     def find_initial_objects(self) -> List[str]:
         """
         Locate initial objects in the category, applying Active Inference for systematic analysis.
-        
+
         Returns:
             List[str]: A list of initial objects in the category.
         """
-        initial_objects = [obj for obj in self.objects if self._check_initial_object(obj)]
+        initial_objects = [
+            obj for obj in self.objects if self._check_initial_object(obj)
+        ]
         self.initial_objects = initial_objects
         return initial_objects
 
     def _check_initial_object(self, obj: str) -> bool:
         """
         Verify if an object is an initial object, using Active Inference to streamline the process.
-        
+
         Args:
             obj (str): The object to check.
-        
+
         Returns:
             bool: True if the object is an initial object, False otherwise.
         """
-        return all((obj, target) in self.morphisms for target in self.objects if target != obj)
+        return all(
+            (obj, target) in self.morphisms for target in self.objects if target != obj
+        )
 
     def find_terminal_objects(self) -> List[str]:
         """
         Discover terminal objects in the category, utilizing Active Inference for efficient identification.
-        
+
         Returns:
             List[str]: A list of terminal objects in the category.
         """
-        terminal_objects = [obj for obj in self.objects if self._check_terminal_object(obj)]
+        terminal_objects = [
+            obj for obj in self.objects if self._check_terminal_object(obj)
+        ]
         self.terminal_objects = terminal_objects
         return terminal_objects
 
     def _check_terminal_object(self, obj: str) -> bool:
         """
         Determine if an object is a terminal object, applying Active Inference principles for effective analysis.
-        
+
         Args:
             obj (str): The object to check.
-        
+
         Returns:
             bool: True if the object is a terminal object, False otherwise.
         """
-        return all((source, obj) in self.morphisms for source in self.objects if source != obj)
+        return all(
+            (source, obj) in self.morphisms for source in self.objects if source != obj
+        )
 
     def analyze_morphism_properties(self) -> Dict[Tuple[str, str], Dict[str, bool]]:
         """
         Analyze properties of morphisms such as injectivity, surjectivity, and bijectivity, incorporating Active Inference for comprehensive analysis.
-        
+
         Returns:
             Dict[Tuple[str, str], Dict[str, bool]]: A dictionary containing the properties of each morphism.
         """
@@ -221,36 +247,41 @@ class CategoryTheoryAnalyzer:
             is_surjective = self._check_surjectivity(morphism)
             is_bijective = is_injective and is_surjective
             properties[(source, target)] = {
-                'injective': is_injective,
-                'surjective': is_surjective,
-                'bijective': is_bijective
+                "injective": is_injective,
+                "surjective": is_surjective,
+                "bijective": is_bijective,
             }
         return properties
 
     def _check_injectivity(self, morphism: Callable) -> bool:
         """
         Verify if a morphism is injective, using Active Inference for optimized analysis.
-        
+
         Args:
             morphism (Callable): The morphism to check.
-        
+
         Returns:
             bool: True if the morphism is injective, False otherwise.
         """
-        return len(set(morphism(obj) for obj in self.objects.values())) == len(self.objects)
+        return len(set(morphism(obj) for obj in self.objects.values())) == len(
+            self.objects
+        )
 
     def _check_surjectivity(self, morphism: Callable) -> bool:
         """
         Determine if a morphism is surjective, applying Active Inference principles for effective evaluation.
-        
+
         Args:
             morphism (Callable): The morphism to check.
-        
+
         Returns:
             bool: True if the morphism is surjective, False otherwise.
         """
         codomain = set(self.objects.values())
-        return all(any(morphism(source_obj) == obj for source_obj in self.objects.values()) for obj in codomain)
+        return all(
+            any(morphism(source_obj) == obj for source_obj in self.objects.values())
+            for obj in codomain
+        )
 
     def generate_product_objects(self) -> None:
         """
@@ -267,31 +298,45 @@ class CategoryTheoryAnalyzer:
 
             # Define product morphism for each source with morphisms to obj1 and obj2
             for source in self.objects:
-                if (source, obj1) in self.morphisms and (source, obj2) in self.morphisms:
-                    product_morphism = lambda x, s=source: (self.morphisms[(s, obj1)](x), self.morphisms[(s, obj2)](x))
+                if (source, obj1) in self.morphisms and (
+                    source,
+                    obj2,
+                ) in self.morphisms:
+
+                    def product_morphism(x, s=source):
+                        return (
+                            self.morphisms[(s, obj1)](x),
+                            self.morphisms[(s, obj2)](x),
+                        )
+
                     self.add_morphism(source, product_name, product_morphism)
 
     def apply_functor(self, functor: Callable[[Any], Any], name: str) -> None:
         """
         Apply a functor to transform objects and morphisms in the category, utilizing Active Inference for adaptive transformation.
-        
+
         Args:
             functor (Callable[[Any], Any]): The functor to apply.
             name (str): A name for the functor.
         """
         self.objects = {obj: functor(data) for obj, data in self.objects.items()}
-        self.morphisms = {(source, target): lambda x, f=functor, m=morphism: f(m(x)) for (source, target), morphism in self.morphisms.items()}
+        self.morphisms = {
+            (source, target): lambda x, f=functor, m=morphism: f(m(x))
+            for (source, target), morphism in self.morphisms.items()
+        }
         self.functors[name] = functor
 
-    def add_natural_transformation(self, source_functor: str, target_functor: str, transformation: Callable) -> None:
+    def add_natural_transformation(
+        self, source_functor: str, target_functor: str, transformation: Callable
+    ) -> None:
         """
         Add a natural transformation between two functors.
-        
+
         Args:
             source_functor (str): The name of the source functor.
             target_functor (str): The name of the target functor.
             transformation (Callable): The natural transformation function.
-        
+
         Raises:
             ValueError: If either functor does not exist.
         """
@@ -310,14 +355,23 @@ class CategoryTheoryAnalyzer:
             G.add_node(obj)
 
         # Add morphisms as edges
-        for (source, target) in self.morphisms:
+        for source, target in self.morphisms:
             G.add_edge(source, target)
 
         # Draw the graph
         pos = nx.spring_layout(G, seed=42)  # Seed for reproducible layout
         plt.figure(figsize=(12, 8))
-        nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', font_weight='bold', node_size=3000, font_size=10)
-        
+        nx.draw(
+            G,
+            pos,
+            with_labels=True,
+            node_color="lightblue",
+            edge_color="gray",
+            font_weight="bold",
+            node_size=3000,
+            font_size=10,
+        )
+
         # Add edge labels for morphism types
         edge_labels = {}
         for (source, target), morphism in self.morphisms.items():
@@ -332,17 +386,17 @@ class CategoryTheoryAnalyzer:
         nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
 
         plt.title("Category Visualization")
-        plt.axis('off')
+        plt.axis("off")
         plt.tight_layout()
         plt.show()
 
     def compute_limit(self, diagram: Dict[str, Any]) -> Any:
         """
         Compute the limit of a diagram in the category.
-        
+
         Args:
             diagram (Dict[str, Any]): A dictionary representing the diagram.
-        
+
         Returns:
             Any: The limit object.
         """
@@ -354,10 +408,10 @@ class CategoryTheoryAnalyzer:
     def compute_colimit(self, diagram: Dict[str, Any]) -> Any:
         """
         Compute the colimit of a diagram in the category.
-        
+
         Args:
             diagram (Dict[str, Any]): A dictionary representing the diagram.
-        
+
         Returns:
             Any: The colimit object.
         """
@@ -376,6 +430,8 @@ class CategoryTheoryAnalyzer:
 
         self.colimits[str(diagram)] = colimit
         return colimit
+
+
 # Example usage
 if __name__ == "__main__":
     analyzer = CategoryTheoryAnalyzer()

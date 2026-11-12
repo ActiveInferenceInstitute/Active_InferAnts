@@ -1,6 +1,7 @@
 """Tests for the active_infer_ants package (public README API)."""
 
 import numpy as np
+
 from active_infer_ants import (
     ActiveInferenceAgent,
     AntColony,

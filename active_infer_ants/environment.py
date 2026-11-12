@@ -16,8 +16,9 @@ class Environment:
     the agent a non-trivial but tractable signal to track.
     """
 
-    def __init__(self, config: dict[str, Any] | None = None,
-                 seed: int | None = None) -> None:
+    def __init__(
+        self, config: dict[str, Any] | None = None, seed: int | None = None
+    ) -> None:
         self.config = dict(config or {})
         self.complexity: int = int(self.config.get("complexity", 3))
         self.uncertainty: float = float(self.config.get("uncertainty", 0.2))

@@ -55,7 +55,9 @@ class SimulationVisualizer:
         matplotlib.use("Agg", force=False)
         import matplotlib.pyplot as plt
 
-        means = [float(r.get("mean_reward", 0.0)) for r in all_results if isinstance(r, dict)]
+        means = [
+            float(r.get("mean_reward", 0.0)) for r in all_results if isinstance(r, dict)
+        ]
         fig, ax = plt.subplots(figsize=(8, 4))
         if means:
             ax.bar(range(len(means)), means)

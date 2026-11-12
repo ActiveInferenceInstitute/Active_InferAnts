@@ -48,7 +48,11 @@ def test_federated_learning_endpoint():
     client = TestClient(app)
     r = client.post(
         "/api/v1/federated_learn/",
-        json={"data": {"f1": [1.0, 2.0], "f2": [3.0, 4.0]}, "learning_rate": 0.01, "epochs": 2},
+        json={
+            "data": {"f1": [1.0, 2.0], "f2": [3.0, 4.0]},
+            "learning_rate": 0.01,
+            "epochs": 2,
+        },
     )
     assert r.status_code == 200
     assert r.json()["status"] == "PROCESSING"

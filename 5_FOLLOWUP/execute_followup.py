@@ -1,15 +1,25 @@
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
-from specify_followup import FollowUpSpecification, FollowUpType, SessionType, UpdateArea, Session, Stakeholder, Resource, ReportGenerator, TextReportGenerator, HTMLReportGenerator
-from email_service import EmailService
-from project_management import ProjectManager
+from typing import Any, Dict
+
 from data_analysis import MetricsAnalyzer
-from resource_allocation import ResourceAllocator
+from database_service import DatabaseService
+from email_service import EmailService
 from error_handling import ErrorHandler
 from notification_service import NotificationService
-from database_service import DatabaseService
+from project_management import ProjectManager
+from resource_allocation import ResourceAllocator
+from specify_followup import (
+    FollowUpSpecification,
+    FollowUpType,
+    HTMLReportGenerator,
+    Session,
+    SessionType,
+    Stakeholder,
+    TextReportGenerator,
+    UpdateArea,
+)
 from task_scheduler import TaskScheduler
+
 
 class FollowUpExecutor:
     """
@@ -33,15 +43,19 @@ class FollowUpExecutor:
     def _setup_logger(self) -> logging.Logger:
         """
         Sets up and configures the logger for this class.
-        
+
         Returns:
             logging.Logger: Configured logger instance.
         """
-        logger = logging.getLogger(f"{self.__class__.__name__}_{self.specification.name}")
+        logger = logging.getLogger(
+            f"{self.__class__.__name__}_{self.specification.name}"
+        )
         logger.setLevel(logging.INFO)
         if not logger.handlers:
             handler = logging.StreamHandler()
-            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
             handler.setFormatter(formatter)
             logger.addHandler(handler)
         return logger
@@ -52,8 +66,10 @@ class FollowUpExecutor:
         This method orchestrates all the steps involved in the follow-up,
         handling exceptions and logging the progress.
         """
-        self.logger.info(f"Starting execution of follow-up for {self.specification.name}")
-        
+        self.logger.info(
+            f"Starting execution of follow-up for {self.specification.name}"
+        )
+
         try:
             self._initialize_followup()
             self._execute_update_areas()
@@ -72,8 +88,10 @@ class FollowUpExecutor:
             self.notification_service.send_alert("Critical Follow-up Error", str(e))
         finally:
             self._cleanup()
-        
-        self.logger.info(f"Completed execution of follow-up for {self.specification.name}")
+
+        self.logger.info(
+            f"Completed execution of follow-up for {self.specification.name}"
+        )
 
     def _initialize_followup(self):
         """
@@ -101,12 +119,14 @@ class FollowUpExecutor:
                 self.logger.error(f"Error updating area {area.area}: {str(e)}")
                 area.status = "Failed"
                 self.error_handler.handle_area_update_error(e, area)
-                self.notification_service.send_alert(f"Area Update Failed: {area.area}", str(e))
+                self.notification_service.send_alert(
+                    f"Area Update Failed: {area.area}", str(e)
+                )
 
     def _update_area(self, area: UpdateArea):
         """
         Implements the specific update logic for a given area.
-        
+
         Args:
             area (UpdateArea): The area to be updated.
         """
@@ -136,15 +156,19 @@ class FollowUpExecutor:
                 self.logger.info(f"Completed session: {session.type.name}")
                 self.database_service.update_session_status(session)
             except Exception as e:
-                self.logger.error(f"Error conducting session {session.type.name}: {str(e)}")
+                self.logger.error(
+                    f"Error conducting session {session.type.name}: {str(e)}"
+                )
                 session.status = "Failed"
                 self.error_handler.handle_session_error(e, session)
-                self.notification_service.send_alert(f"Session Failed: {session.type.name}", str(e))
+                self.notification_service.send_alert(
+                    f"Session Failed: {session.type.name}", str(e)
+                )
 
     def _prepare_session(self, session: Session):
         """
         Prepares for a session, including sending invites and preparing materials.
-        
+
         Args:
             session (Session): The session to be prepared.
         """
@@ -156,7 +180,7 @@ class FollowUpExecutor:
     def _run_session(self, session: Session):
         """
         Simulates or manages the actual running of a session.
-        
+
         Args:
             session (Session): The session to be run.
         """
@@ -171,7 +195,7 @@ class FollowUpExecutor:
     def _post_session_tasks(self, session: Session):
         """
         Handles post-session tasks such as distributing minutes or action items.
-        
+
         Args:
             session (Session): The session for which post-tasks need to be performed.
         """
@@ -193,19 +217,19 @@ class FollowUpExecutor:
             self._prepare_debrief(debrief)
             self._run_debrief(debrief)
             self._post_debrief_tasks(debrief)
-            debrief['status'] = "Completed"
+            debrief["status"] = "Completed"
             self.logger.info("Completed debrief session")
             self.database_service.update_debrief_status(debrief)
         except Exception as e:
             self.logger.error(f"Error during debrief session: {str(e)}")
-            debrief['status'] = "Failed"
+            debrief["status"] = "Failed"
             self.error_handler.handle_debrief_error(e, debrief)
             self.notification_service.send_alert("Debrief Session Failed", str(e))
 
     def _prepare_debrief(self, debrief: Dict[str, Any]):
         """
         Prepares for the debrief session.
-        
+
         Args:
             debrief (Dict[str, Any]): The debrief session details.
         """
@@ -216,7 +240,7 @@ class FollowUpExecutor:
     def _run_debrief(self, debrief: Dict[str, Any]):
         """
         Runs the debrief session.
-        
+
         Args:
             debrief (Dict[str, Any]): The debrief session details.
         """
@@ -226,7 +250,7 @@ class FollowUpExecutor:
     def _post_debrief_tasks(self, debrief: Dict[str, Any]):
         """
         Handles post-debrief tasks.
-        
+
         Args:
             debrief (Dict[str, Any]): The debrief session details.
         """
@@ -245,12 +269,12 @@ class FollowUpExecutor:
         self.logger.info(f"Implementing {plan['type']} plan")
         try:
             self.project_manager.implement_plan(plan)
-            plan['status'] = "Active"
+            plan["status"] = "Active"
             self.logger.info(f"{plan['type']} plan is now active")
             self.database_service.update_plan_status(plan)
         except Exception as e:
             self.logger.error(f"Error implementing plan: {str(e)}")
-            plan['status'] = "Failed"
+            plan["status"] = "Failed"
             self.error_handler.handle_plan_implementation_error(e, plan)
             self.notification_service.send_alert("Plan Implementation Failed", str(e))
 
@@ -264,17 +288,23 @@ class FollowUpExecutor:
             self.logger.info(f"Engaging stakeholder: {stakeholder.name}")
             try:
                 self._engage_stakeholder(stakeholder)
-                self.logger.info(f"Completed engagement with stakeholder: {stakeholder.name}")
+                self.logger.info(
+                    f"Completed engagement with stakeholder: {stakeholder.name}"
+                )
                 self.database_service.update_stakeholder_engagement(stakeholder)
             except Exception as e:
-                self.logger.error(f"Error engaging stakeholder {stakeholder.name}: {str(e)}")
+                self.logger.error(
+                    f"Error engaging stakeholder {stakeholder.name}: {str(e)}"
+                )
                 self.error_handler.handle_stakeholder_engagement_error(e, stakeholder)
-                self.notification_service.send_alert(f"Stakeholder Engagement Failed: {stakeholder.name}", str(e))
+                self.notification_service.send_alert(
+                    f"Stakeholder Engagement Failed: {stakeholder.name}", str(e)
+                )
 
     def _engage_stakeholder(self, stakeholder: Stakeholder):
         """
         Implements the specific engagement strategy for a given stakeholder.
-        
+
         Args:
             stakeholder (Stakeholder): The stakeholder to engage with.
         """
@@ -286,7 +316,9 @@ class FollowUpExecutor:
             report = self.project_manager.generate_stakeholder_report(stakeholder)
             self.email_service.send_stakeholder_report(stakeholder, report)
         else:
-            raise ValueError(f"Unsupported engagement strategy: {stakeholder.engagement_strategy}")
+            raise ValueError(
+                f"Unsupported engagement strategy: {stakeholder.engagement_strategy}"
+            )
 
     def _track_metrics(self):
         """
@@ -335,13 +367,21 @@ class FollowUpExecutor:
                 self.logger.info(f"Allocated resource: {resource.name}")
                 self.database_service.update_resource_allocation(resource)
             except ValueError as ve:
-                self.logger.error(f"Value error allocating resource {resource.name}: {str(ve)}")
+                self.logger.error(
+                    f"Value error allocating resource {resource.name}: {str(ve)}"
+                )
                 self.error_handler.handle_resource_allocation_error(ve, resource)
-                self.notification_service.send_alert(f"Resource Allocation Failed: {resource.name}", str(ve))
+                self.notification_service.send_alert(
+                    f"Resource Allocation Failed: {resource.name}", str(ve)
+                )
             except Exception as e:
-                self.logger.error(f"Unexpected error allocating resource {resource.name}: {str(e)}")
+                self.logger.error(
+                    f"Unexpected error allocating resource {resource.name}: {str(e)}"
+                )
                 self.error_handler.handle_resource_allocation_error(e, resource)
-                self.notification_service.send_alert(f"Resource Allocation Failed: {resource.name}", str(e))
+                self.notification_service.send_alert(
+                    f"Resource Allocation Failed: {resource.name}", str(e)
+                )
 
     def _generate_and_distribute_reports(self):
         """
@@ -349,12 +389,14 @@ class FollowUpExecutor:
         This method creates both text and HTML reports, and distributes them to stakeholders.
         """
         self.logger.info("Generating follow-up reports")
-        
+
         try:
             text_report = self._generate_text_report()
             html_report = self._generate_html_report()
             self._distribute_reports(text_report, html_report)
-            self.logger.info("Completed generation and distribution of follow-up reports")
+            self.logger.info(
+                "Completed generation and distribution of follow-up reports"
+            )
         except Exception as e:
             self.logger.error(f"Error generating or distributing reports: {str(e)}")
             self.error_handler.handle_report_error(e)
@@ -362,27 +404,31 @@ class FollowUpExecutor:
     def _generate_text_report(self) -> str:
         """
         Generates a text-based report of the follow-up.
-        
+
         Returns:
             str: The generated text report.
         """
         text_generator = TextReportGenerator()
-        return text_generator.generate(self.specification.generate_followup_specification())
+        return text_generator.generate(
+            self.specification.generate_followup_specification()
+        )
 
     def _generate_html_report(self) -> str:
         """
         Generates an HTML-based report of the follow-up.
-        
+
         Returns:
             str: The generated HTML report.
         """
         html_generator = HTMLReportGenerator()
-        return html_generator.generate(self.specification.generate_followup_specification())
+        return html_generator.generate(
+            self.specification.generate_followup_specification()
+        )
 
     def _distribute_reports(self, text_report: str, html_report: str):
         """
         Distributes generated reports to relevant stakeholders.
-        
+
         Args:
             text_report (str): The generated text report.
             html_report (str): The generated HTML report.
@@ -390,15 +436,21 @@ class FollowUpExecutor:
         for stakeholder in self.specification.stakeholders:
             self.logger.info(f"Sending reports to stakeholder: {stakeholder.name}")
             try:
-                self._send_email(stakeholder.contact, "Follow-up Reports", text_report, html_report)
+                self._send_email(
+                    stakeholder.contact, "Follow-up Reports", text_report, html_report
+                )
             except Exception as e:
-                self.logger.error(f"Error sending report to {stakeholder.name}: {str(e)}")
+                self.logger.error(
+                    f"Error sending report to {stakeholder.name}: {str(e)}"
+                )
                 self.error_handler.handle_report_distribution_error(e, stakeholder)
 
-    def _send_email(self, recipient: str, subject: str, text_content: str, html_content: str):
+    def _send_email(
+        self, recipient: str, subject: str, text_content: str, html_content: str
+    ):
         """
         Sends an email with the generated reports.
-        
+
         Args:
             recipient (str): The email recipient.
             subject (str): The email subject.
@@ -406,7 +458,9 @@ class FollowUpExecutor:
             html_content (str): The HTML content of the email.
         """
         try:
-            self.email_service.send_email(recipient, subject, text_content, html_content)
+            self.email_service.send_email(
+                recipient, subject, text_content, html_content
+            )
             self.logger.info(f"Sent email to {recipient} with subject: {subject}")
         except Exception as e:
             self.logger.error(f"Error sending email to {recipient}: {str(e)}")
@@ -426,6 +480,7 @@ class FollowUpExecutor:
             self.logger.error(f"Error during cleanup operations: {str(e)}")
             self.error_handler.handle_cleanup_error(e)
             self.notification_service.send_alert("Cleanup Failed", str(e))
+
 
 # Usage example:
 if __name__ == "__main__":

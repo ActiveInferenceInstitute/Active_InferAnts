@@ -1,10 +1,10 @@
-from typing import Callable, Tuple, TypeVar, Generic, Any
+from typing import Any, Callable, Generic, Tuple, TypeVar
 
 # Type variables for input and output types
-A = TypeVar('A')
-B = TypeVar('B')
-C = TypeVar('C')
-D = TypeVar('D')
+A = TypeVar("A")
+B = TypeVar("B")
+C = TypeVar("C")
+D = TypeVar("D")
 
 
 class PolyFunctor(Generic[A, B]):
@@ -131,13 +131,15 @@ class EitherFunctor(PolyFunctor[A, B]):
             or unchanged if it's a Left.
         """
         if not (isinstance(data, tuple) and len(data) == 2):
-            raise ValueError("Input data must be a tuple of ('Left' or 'Right', value).")
+            raise ValueError(
+                "Input data must be a tuple of ('Left' or 'Right', value)."
+            )
 
         tag, value = data
-        if tag == 'Left':
+        if tag == "Left":
             return data
-        elif tag == 'Right':
-            return ('Right', func(value))
+        elif tag == "Right":
+            return ("Right", func(value))
         else:
             raise ValueError("First element of the tuple must be 'Left' or 'Right'.")
 
@@ -147,7 +149,7 @@ class Tree:
     A simple binary tree structure.
     """
 
-    def __init__(self, value: A, left: 'Tree' = None, right: 'Tree' = None):
+    def __init__(self, value: A, left: "Tree" = None, right: "Tree" = None):
         self.value = value
         self.left = left
         self.right = right
@@ -181,6 +183,7 @@ class TreeFunctor(PolyFunctor[A, B]):
 
 # Example usage
 if __name__ == "__main__":
+
     def triple(x: int) -> int:
         """
         Example polymorphic function that triples an integer.
@@ -227,16 +230,22 @@ if __name__ == "__main__":
     print(f"hmap result on Maybe None: {result_maybe_none}")  # Output: None
 
     # Apply hmap to an Either type (Right value)
-    data_either_right = ('Right', 7)
+    data_either_right = ("Right", 7)
     result_either_right = either_functor.hmap(triple, data_either_right)
-    print(f"hmap result on Either Right: {result_either_right}")  # Output: ('Right', 21)
+    print(
+        f"hmap result on Either Right: {result_either_right}"
+    )  # Output: ('Right', 21)
 
     # Apply hmap to an Either type (Left value)
-    data_either_left = ('Left', 'Error')
+    data_either_left = ("Left", "Error")
     result_either_left = either_functor.hmap(triple, data_either_left)
-    print(f"hmap result on Either Left: {result_either_left}")  # Output: ('Left', 'Error')
+    print(
+        f"hmap result on Either Left: {result_either_left}"
+    )  # Output: ('Left', 'Error')
 
     # Apply hmap to a binary tree
     data_tree = Tree(2, Tree(3), Tree(4))
     result_tree = tree_functor.hmap(triple, data_tree)
-    print(f"hmap result on Tree: {result_tree}")  # Output: Tree(6, Tree(9, None, None), Tree(12, None, None))
+    print(
+        f"hmap result on Tree: {result_tree}"
+    )  # Output: Tree(6, Tree(9, None, None), Tree(12, None, None))
