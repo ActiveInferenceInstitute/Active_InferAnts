@@ -4,11 +4,72 @@
 
 **Owner:** Daniel Ari Friedman (Active Inference Institute)
 **Status:** Active / Maintained
-**Last reviewed:** 2026-11-12 (gate and documentation pass; see below)
+**Last reviewed:** 2026-11-12 (to-do refresh against `origin/main` at `d713aa17`)
+
+---
+
+## Open — needs an owner
+
+These are open today. None is a defect in the maintained Python surface
+(`active_infer_ants/`, `2_OPERATE/`, `3_MEASURE/`, `4_REPORT/`, `5_FOLLOWUP/`,
+`6_API/` — the trees `./run.sh lint` covers); they are a version policy
+decision, an organisation-level billing lock, and one unpinned corpus
+dependency.
+
+- **O-1 — the declared Python floor is never exercised.** `pyproject.toml`
+  declares `requires-python = ">=3.9"`, `uv.lock` declares
+  `requires-python = ">=3.9"`, and `[tool.ruff] target-version = "py39"`, but
+  `.github/workflows/ci.yml` installs only `"3.10"` and `"3.11"`, and both the
+  gate and the working `.venv` run 3.12.16 — so no arm ever runs on 3.9, which
+  upstream reached end of life in October 2025. **Blocked on a decision, not on
+  code:** either raise the floor to the lowest version actually tested and
+  refresh `uv.lock` + `target-version`, or put 3.9 back in the matrix.
+  **Owner:** repository maintainer (Daniel).
+- **O-2 — hosted CI cannot produce evidence while the billing lock holds.**
+  `gh run list -R ActiveInferenceInstitute/Active_InferAnts` reports every
+  recent `CI` run on `main` as `failure` after ~4 s with no job log (#24, #25),
+  and the recent `Dependabot Updates` runs appear as `failure` as well. Local
+  arms are therefore the only evidence, and `.github/workflows/ci.yml` says so
+  in its header. **Blocked outside this repository:** the organisation's GitHub
+  Actions billing must be cleared by an organisation billing administrator.
+  **Owner:** Active Inference Institute organisation admins.
+- **O-3 — the corpus imports `pymdp`; nothing installs it and the sidecar
+  claims it as a dependency.** `0_CONTEXT/Systems/Active_Inference/VCG.py`
+  (lines 9–14) and `0_CONTEXT/Systems/IC2S2/utils_active_inference.py` (lines
+  7–8) import `pymdp.POMDP`, `pymdp.maths`, `pymdp.algos`, `pymdp.utils` and
+  `pymdp.agent`; `1_PREPARE/Things/Thing.py:1` and
+  `1_PREPARE/General/SaltFatAcidHeat.py:2` do the same. No manifest provides the
+  package — `pyproject.toml`, `requirements.txt`, `requirements-dev.txt` and
+  `uv.lock` have no `pymdp`/`inferactively-pymdp` entry — while
+  `.aii/config.yaml` declares `ActiveInferenceInstitute/pymdp` as
+  `depends-on`. Nothing breaks today because those trees are outside
+  `LINT_PATHS` in `run.sh` and the gated trees contain no `pymdp` reference
+  (`git grep -i pymdp` over `tests/`, `active_infer_ants/`, `2_OPERATE/`,
+  `3_MEASURE/`, `4_REPORT/`, `5_FOLLOWUP/`, `6_API/`, `scripts/` is empty), but
+  the corpus cannot be run from `./run.sh setup`'s environment. **Blocked on a
+  decision:** pin `inferactively-pymdp` for the corpus and add it to the gate,
+  or mark the corpus archival and drop the sidecar `depends-on` relation.
+  **Owner:** repository maintainer (Daniel), with the sidecar edited through the
+  `aii_platform.aii_sidecar` generator if that relation changes.
 
 ---
 
 ## Gate and documentation pass — 2026-11-12
+
+### Local evidence — 2026-11-12
+
+Run on `origin/main` at `d713aa17` with the working `.venv` (CPython 3.12.16).
+Hosted Actions is billing-locked (O-2), so these local arm runs are the evidence
+for the closed items in this file:
+
+- `./run.sh docs` — `mkdocs build --strict` clean; `checked 97 Markdown files,
+  0 broken relative links`; `docs/documentation-index.md` and
+  `docs/_generated/gate_metrics.md` both current.
+- `./run.sh lint` — ruff check and `ruff format --check` clean (`63 files
+  already formatted`); the compile sweep over every tracked Python file clean.
+- `./run.sh test-fast` — `31 passed, 7 deselected`.
+- `./run.sh gnn` — the shared reader's `check` against `v5.1.0`, then
+  `7 passed, 31 deselected`.
 
 ### GNN-FEP member migration — adopted
 
@@ -31,7 +92,16 @@
   `active_infer_ants/agent.py`, which the reader cannot. No reader is vendored
   and no unpinned source is substituted. Affected: `gnn/upstream.json`,
   `gnn_conformance.py`, `run.sh`, `tests/test_gnn_conformance.py`,
-  `.github/GNN.md`, `README.md`, `docs/RUN_GUIDE.md`.
+  `.github/GNN.md`, `README.md`, `docs/RUN_GUIDE.md`. Re-run locally
+  2026-11-12 on this branch: `./run.sh gnn` ran the shared reader at `v5.1.0`,
+  then `7 passed, 31 deselected` (`tests/test_gnn_conformance.py`); the pin's
+  shape is now the reader's schema, so this repository keeps no pin validator.
+- [closed] **pymdp cohort — not a member.** This repository pins no
+  `inferactively-pymdp`: `pyproject.toml`, `requirements.txt`,
+  `requirements-dev.txt` and `uv.lock` contain no such entry, so the cohort's
+  1.0.5 pin has nothing to apply to here. The `pymdp` imports that remain live
+  in `0_CONTEXT/` and `1_PREPARE/` are ungated corpus code — O-3 is a separate
+  question about that corpus, not a pin upgrade.
 
 ### Locked-environment follow-through
 
@@ -68,6 +138,9 @@
   pip downloads are cached on `pyproject.toml` + `requirements-dev.txt`.
   `pyproject.toml` gained a `docs` extra and an explicit `[tool.ruff]` rule
   selection with Ruff pinned, so a linter release cannot silently widen the gate.
+  (Superseded on the install path by G-7: `./run.sh setup` now runs
+  `uv sync --locked --extra dev --extra docs`, and `requirements-dev.txt`
+  remains only the pip compatibility file.)
 - [closed] **G-3 — lint surface made green.** 45 mechanical violations fixed
   (unused imports, unused `except … as e`, unsorted imports), imports formatted,
   and two `lambda` assignments in `3_MEASURE/categorization.py` rewritten as
@@ -121,20 +194,25 @@ Verified, no new defects found:
 
 Known environment gap (resolved 2026-11-12): the working-copy `.venv` (untracked;
 `.venv/` is gitignored) pointed at a Python 3.14 runtime that no longer exists on
-this machine. `./run.sh setup` now (re)creates the environment from the single
-spec `requirements-dev.txt`; arms use `$PYTHON`, else `.venv/bin/python`, else
-`python3`. CI runs the same arms on Python 3.10–3.12
-(`.github/workflows/ci.yml`).
+this machine. `./run.sh setup` now (re)creates the environment from the lock —
+`uv sync --locked --extra dev --extra docs`; arms use `$PYTHON`, else
+`.venv/bin/python`, else `python3`, and the working `.venv` is CPython 3.12.16.
+`.github/workflows/ci.yml` runs the same arms on 3.10 and 3.11 (`test` job) and
+on 3.12 (`gnn-conformance`). The 3.9 floor those manifests still declare is
+never exercised — see O-1.
 
 ---
 
-## Current status — measured 2026-08-01
+## Red-team pass — measured 2026-08-01 (historical)
 
-Working copy on branch `main` (up to date with `origin/main`). State after the
-red-team review and follow-on fix-and-push pass:
+State recorded at the end of the red-team review and the follow-on
+fix-and-push pass. **M-4 was the one Major still deferred on that date and was
+closed on 2026-08-02** (entry at the end of this file), so the `2_OPERATE`
+pipeline and its support modules now exist in the tree; do not read the
+"remaining" note below as current.
 
-- All **11 red-team Major findings** are resolved except **M-4** (2_OPERATE
-  pipeline — see below), which is deferred with a concrete reason.
+- All **11 red-team Major findings** are resolved: M-1, M-2, M-3, M-5–M-11 in
+  the fix-and-push pass, and M-4 on 2026-08-02.
 - **Both REST APIs rebuilt and verified**: `Knowledge_API.py` and
   `MetaInformAnt_API.py` now parse, are internally coherent (no async misuse, no
   nonexistent-package imports), CORS-restricted, credentials from env, and pass
@@ -145,14 +223,17 @@ red-team review and follow-on fix-and-push pass:
 - **Packaging / CI**: `pyproject.toml` (`pip install -e .` works),
   `requirements.txt`, `requirements-dev.txt`, `Dockerfile`, `.github/workflows/ci.yml`
   (CI), `.pre-commit-config.yaml`, `mkdocs.yml`.
-- **Test suite** `tests/` (24 passing) covers the package, both APIs, the
+- **Test suite** `tests/` (24 passing at that date; 38 collected today — 31 in
+  `./run.sh test-fast`, 7 `gnn`-marked) covers the package, both APIs, the
   restricted-unpickler security fix, and the 3_MEASURE correctness fixes.
-- **Remaining** `2_OPERATE/plan_Simulation.py` + `execute_Simulation.py` import
-  ~8 modules that do not exist anywhere in the tree
-  (`MetaInformAnt_Simulation`, `data_logging`, `performance_monitor`,
+- **Then remaining, since closed:** `2_OPERATE/plan_Simulation.py` +
+  `execute_Simulation.py` imported ~8 modules that did not exist anywhere in the
+  tree (`MetaInformAnt_Simulation`, `data_logging`, `performance_monitor`,
   `error_handling`, `report_generator`, `computational_resources`,
-  `performance_metrics`, `exception_handling`) and reference a
-  `SimulationPlanner` that `plan_Simulation.py` does not define — see M-4.
+  `performance_metrics`, `exception_handling`) and referenced a
+  `SimulationPlanner` that `plan_Simulation.py` did not define. All nine are
+  tracked files under `2_OPERATE/` now (`git ls-files 2_OPERATE`), which is the
+  evidence for M-4's closure.
 
 ---
 
@@ -243,10 +324,10 @@ Severity definitions: **Minor** = typo, broken link, formatting, or small factua
 - [closed] **D-7 — Repair the MkDocs documentation navigation.** `mkdocs.yml` and `docs/index.md` now reference the existing section `README.md` indexes; validated that every nav target resolves. Affected: `mkdocs.yml`, `docs/index.md`. ✓ (docs: fix MkDocs navigation)
 - [closed] **D-8 — Make the simulation quickstart honest about the deferred 2_OPERATE pipeline and provide a verified package/API path.** The getting-started guide now leads with the working `active_infer_ants` package and CLI; the deferred M-4 status is flagged in the guide and pipeline pages. Affected: `docs/guides/getting_started.md`, `docs/guides/running_simulations.md`, `docs/tutorials/running_pipeline.md`, `docs/architecture/pipeline_overview.md`. ✓ (docs: honest simulation quickstart)
 
-## Major — open / deferred
+## Major — closed
 
-- **M-4 — `2_OPERATE` plan→execute→render pipeline references non-existent
-  modules; **CLOSED 2026-08-02**.** The pipeline was rebuilt and wired to the
+- [closed] **M-4 — `2_OPERATE` plan→execute→render pipeline (closed
+  2026-08-02).** The pipeline was rebuilt and wired to the
   now-realisable `active_infer_ants` simulation API:
   - Built the missing support modules in `2_OPERATE/`: `environment.py`
     (grid world with pheromone field), `MetaInformAnt_Simulation.py`
@@ -267,5 +348,7 @@ Severity definitions: **Minor** = typo, broken link, formatting, or small factua
     `visualize_post_simulation`).
   - Integration suite `tests/test_simulation_pipeline.py` (7 tests) covers
     environment contract, seeded reproducibility, planner/executor end-to-end
-    runs, and the support modules. Full suite: 31 passed; compile-sweep and
-    ruff (new files) clean. ✓ (fix: rebuild 2_OPERATE pipeline on active_infer_ants)
+    runs, and the support modules. Full suite at that date: 31 passed
+    (38 collected today: 31 in `./run.sh test-fast`, 7 `gnn`-marked);
+    compile-sweep and ruff (new files) clean. ✓ (fix: rebuild 2_OPERATE
+    pipeline on active_infer_ants)
