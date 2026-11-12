@@ -85,6 +85,10 @@ at `v5.0.3`, revision `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`.
 `gnn/gaussian_agent.gnn.md`, not a repository-wide scan. Its extracted matrices
 and Gaussian posterior update are checked against `active_infer_ants/agent.py`.
 
+The pin reader requires `schema: "gnn-importer-pin/v1"` and string-valued
+`repository`, `tag`, and `commit` fields; it rejects missing or unsupported schemas
+and does not coerce other JSON types to strings.
+
 Both `gnn` and `test-full` prepare the parser in the same way:
 
 - **`GNN_ROOT` unset:** reuse the verified owned cache at

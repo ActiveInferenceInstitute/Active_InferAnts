@@ -10,6 +10,7 @@ the pinned revision), an unusable checkout is a failure, never a skip.
 from __future__ import annotations
 
 import copy
+import json
 import os
 import re
 import sys
@@ -49,6 +50,7 @@ REQUIRED_SECTIONS = (
 )
 
 CANONICAL_PIN = {
+    "schema": "gnn-importer-pin/v1",
     "repository": "ActiveInferenceInstitute/Generalized_Notation_Notation",
     "tag": "v5.0.3",
     "commit": "8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1",
@@ -136,7 +138,10 @@ def test_missing_pin_file_is_rejected(tmp_path) -> None:
 
 def test_incomplete_pin_record_is_rejected(tmp_path) -> None:
     pin = tmp_path / "upstream.json"
-    pin.write_text('{"repository": "x", "tag": "v1"}', encoding="utf-8")
+    pin.write_text(
+        json.dumps({"schema": "gnn-importer-pin/v1", "repository": "x", "tag": "v1"}),
+        encoding="utf-8",
+    )
     with pytest.raises(ConformanceError, match="missing the 'commit' field"):
         load_pin(pin)
 
@@ -145,4 +150,31 @@ def test_malformed_pin_file_is_rejected(tmp_path) -> None:
     pin = tmp_path / "upstream.json"
     pin.write_text("not json", encoding="utf-8")
     with pytest.raises(ConformanceError, match="is unreadable"):
+        load_pin(pin)
+
+
+@pytest.mark.parametrize("schema", [None, "", "gnn-importer-pin/v2", 1])
+def test_wrong_pin_schema_is_rejected(tmp_path, schema) -> None:
+    pin = tmp_path / "upstream.json"
+    pin.write_text(json.dumps({**CANONICAL_PIN, "schema": schema}), encoding="utf-8")
+    with pytest.raises(ConformanceError, match="schema must be 'gnn-importer-pin/v1'"):
+        load_pin(pin)
+
+
+def test_missing_pin_schema_is_rejected(tmp_path) -> None:
+    pin = tmp_path / "upstream.json"
+    data = {key: value for key, value in CANONICAL_PIN.items() if key != "schema"}
+    pin.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ConformanceError, match="schema must be 'gnn-importer-pin/v1'"):
+        load_pin(pin)
+
+
+@pytest.mark.parametrize("field", ["repository", "tag", "commit"])
+@pytest.mark.parametrize(
+    "value", [None, True, 1234567890123456789012345678901234567890, [], {}]
+)
+def test_nonstring_pin_field_is_rejected(tmp_path, field, value) -> None:
+    pin = tmp_path / "upstream.json"
+    pin.write_text(json.dumps({**CANONICAL_PIN, field: value}), encoding="utf-8")
+    with pytest.raises(ConformanceError, match=f"{field} must be a string"):
         load_pin(pin)
