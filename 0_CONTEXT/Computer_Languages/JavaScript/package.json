@@ -18,11 +18,11 @@
   "author": "ActiveInferAnts",
   "license": "MIT",
   "dependencies": {
-    "mathjs": "^11.9.1",
-    "plotly.js": "^2.25.2"
+    "mathjs": "^15.2.0",
+    "plotly.js": "^4.2.0"
   },
   "devDependencies": {
-    "jest": "^29.6.1"
+    "jest": "^30.5.2"
   },
   "engines": {
     "node": ">=16.0.0"
