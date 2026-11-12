@@ -72,12 +72,25 @@ revision recorded in [`../gnn/upstream.json`](../gnn/upstream.json), whose schem
 is `gnn-importer-pin/v1`: `ActiveInferenceInstitute/Generalized_Notation_Notation`
 at tag `v5.0.3` (commit `8f293d9ba810e6eda5c09842d9c7ed9ffa5f92c1`).
 
-`./run.sh gnn` fetches that commit (and the tag) into `$GNN_ROOT`, defaulting to
-the gitignored `.cache/gnn`, creates the pinned parser's virtual environment
-there, and reuses it until the pin record changes. It then runs the two
-commands the conformance job has always run: the strict script and the
-`gnn`-marked tests. `.github/GNN.md` records what the job parses and what its
-claim covers.
+`./run.sh gnn` has two modes, and neither one modifies a checkout it did not
+create:
+
+- **`GNN_ROOT` unset** — provisions into a directory it just created:
+  `.cache/gnn/<pin commit>`, or a fresh `.cache/gnn/<pin commit>.XXXXXX`
+  beside it when that path already exists but is not a usable cache. The pinned
+  parser's virtual environment lives inside it, and a complete cache for the pin
+  is reused. Nothing is replaced recursively: a stale or broken cache directory
+  is left in place and a new one is made.
+- **`GNN_ROOT` set** — treated as read-only. The arm verifies that the checkout
+  contains the pinned commit and that a runtime exists (`GNN_PYTHON`, the
+  checkout's own `.venv`, or `$PY` with `numpy`/`defusedxml`), then uses it. It
+  never fetches into it, never installs into it, and never removes it; an
+  unusable checkout is refused with exit code 2 and a message, because that path
+  may be another repository's working copy with local work in it.
+
+Either way it then runs the two commands the conformance job has always run: the
+strict script and the `gnn`-marked tests. `.github/GNN.md` records what the job
+parses and what its claim covers.
 
 ## Lint surface
 

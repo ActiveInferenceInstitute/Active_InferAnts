@@ -46,7 +46,8 @@ LINT_PATHS=(
     6_API
 )
 
-GNN_ROOT=${GNN_ROOT:-$ROOT/.cache/gnn}
+# GNN_ROOT is only honoured when the caller sets it, and then it is read-only.
+# Unset, the gnn arm provisions its own cache under .cache/gnn/<pin commit>/.
 PIN=$ROOT/gnn/upstream.json
 
 # name|one-line description; the same list drives `./run.sh` with no arguments.
@@ -56,7 +57,7 @@ arm_help=(
     "test-fast|pytest -m 'not gnn' (no GNN checkout needed)"
     "test-full|pytest (adds the gnn-marked module)"
     "docs|mkdocs --strict, relative links, generated-doc freshness"
-    "gnn|provision the pinned GNN parser, then the conformance checks"
+    "gnn|verify GNN_ROOT read-only, or provision a pinned parser, then the checks"
     "metrics|re-measure every arm, rewrite docs/_generated/gate_metrics.md"
     "gate|lint, test-fast, docs, gnn (== test-full, without overlap)"
 )
@@ -110,30 +111,82 @@ docs() {
     echo "docs: site built, relative links checked, generated files current"
 }
 
-provision_gnn() {
-    local commit tag head
-    commit=$("$PY" -c 'import json,sys;print(json.load(open(sys.argv[1]))["commit"])' "$PIN")
-    tag=$("$PY" -c 'import json,sys;print(json.load(open(sys.argv[1]))["tag"])' "$PIN")
-    head=$(git -C "$GNN_ROOT" rev-parse HEAD 2>/dev/null || true)
-    if [ "$head" = "$commit" ] && [ -x "$GNN_ROOT/.venv/bin/python" ]; then
-        echo "gnn: reusing $GNN_ROOT at $commit"
+pin_field() {
+    "$PY" -c 'import json,sys;print(json.load(open(sys.argv[1]))[sys.argv[2]])' \
+        "$PIN" "$1"
+}
+
+# A caller-supplied GNN_ROOT is read-only: verify it and refuse if it cannot be
+# used. Nothing is created, replaced or removed inside it — it may be another
+# repository's working copy with local work in it.
+require_readonly_gnn_checkout() {
+    local root=$1 commit=$2
+    if [ ! -d "$root" ]; then
+        echo "gnn: GNN_ROOT=$root does not exist; supply a checkout of the pin" >&2
+        echo "     or unset GNN_ROOT to let ./run.sh provision its own cache" >&2
+        return 2
+    fi
+    if ! git -C "$root" cat-file -e "$commit^{commit}" 2>/dev/null; then
+        echo "gnn: GNN_ROOT=$root does not contain the pinned commit $commit" >&2
+        echo "     (it is treated as read-only, so ./run.sh will not fetch into it)" >&2
+        return 2
+    fi
+    if [ -n "${GNN_PYTHON:-}" ]; then
+        if [ ! -x "$GNN_PYTHON" ]; then
+            echo "gnn: GNN_PYTHON=$GNN_PYTHON is not executable" >&2
+            return 2
+        fi
+    elif [ ! -x "$root/.venv/bin/python" ]; then
+        if ! "$PY" -c "import defusedxml, numpy" >/dev/null 2>&1; then
+            echo "gnn: GNN_ROOT=$root has no .venv and $PY lacks numpy/defusedxml" >&2
+            echo "     set GNN_PYTHON, or unset GNN_ROOT to provision an owned cache" >&2
+            return 2
+        fi
+    fi
+    echo "gnn: using read-only GNN_ROOT=$root at $commit"
+}
+
+# Provision into a directory this script just created: no recursive replacement
+# of an existing path, so a stale or foreign cache can never be erased.
+provision_owned_gnn_cache() {
+    local commit=$1 tag=$2 cache target
+    cache=$ROOT/.cache/gnn/$commit
+    if [ -d "$cache/.git" ] && [ -x "$cache/.venv/bin/python" ] &&
+        [ "$(git -C "$cache" rev-parse HEAD 2>/dev/null)" = "$commit" ]; then
+        GNN_ROOT=$cache
+        echo "gnn: reusing owned cache $cache at $commit"
         return
     fi
     section "gnn: provisioning the pinned parser at $tag ($commit)"
-    rm -rf "$GNN_ROOT"
-    mkdir -p "$(dirname "$GNN_ROOT")"
-    git init --quiet "$GNN_ROOT"
-    git -C "$GNN_ROOT" remote add origin \
+    mkdir -p "$ROOT/.cache/gnn"
+    # `mkdir` fails if the path exists, so an incomplete or foreign cache is
+    # never replaced — the arm provisions beside it instead.
+    if mkdir "$cache" 2>/dev/null; then
+        target=$cache
+    else
+        target=$(mktemp -d "$ROOT/.cache/gnn/${commit}.XXXXXX")
+    fi
+    git init --quiet "$target"
+    git -C "$target" remote add origin \
         https://github.com/ActiveInferenceInstitute/Generalized_Notation_Notation.git
     # A pin that no longer resolves upstream fails here rather than skipping.
-    git -C "$GNN_ROOT" fetch --depth 1 origin "$commit" "refs/tags/$tag:refs/tags/$tag"
-    git -C "$GNN_ROOT" checkout --quiet --detach "$commit"
-    "$PY" -m venv "$GNN_ROOT/.venv"
-    "$GNN_ROOT/.venv/bin/python" -m pip install --quiet numpy defusedxml
+    git -C "$target" fetch --depth 1 origin "$commit" "refs/tags/$tag:refs/tags/$tag"
+    git -C "$target" checkout --quiet --detach "$commit"
+    "$PY" -m venv "$target/.venv"
+    "$target/.venv/bin/python" -m pip install --quiet numpy defusedxml
+    GNN_ROOT=$target
+    echo "gnn: provisioned $GNN_ROOT at $commit"
 }
 
 gnn() {
-    provision_gnn
+    local commit tag
+    commit=$(pin_field commit)
+    tag=$(pin_field tag)
+    if [ -n "${GNN_ROOT:-}" ]; then
+        require_readonly_gnn_checkout "$GNN_ROOT" "$commit"
+    else
+        provision_owned_gnn_cache "$commit" "$tag"
+    fi
     export GNN_ROOT
     section "gnn: validate_gnn_spec.py"
     "$PY" scripts/validate_gnn_spec.py
