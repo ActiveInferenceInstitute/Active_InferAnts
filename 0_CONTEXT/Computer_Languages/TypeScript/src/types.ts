@@ -2,6 +2,9 @@
  * Type definitions for Active Inference implementation
  */
 
+import type * as math from 'mathjs';
+import type { ActiveInferenceAgent } from './ActiveInferenceAgent.js';
+
 // Mathematical types
 export type Matrix = math.Matrix;
 export type Vector = math.Matrix;
@@ -27,9 +30,9 @@ export interface GenerativeModel {
 
 // Belief state
 export interface BeliefState {
-    readonly current: Vector;
+    current: Vector;
     readonly prior: Vector;
-    readonly posterior: Vector;
+    posterior: Vector;
 }
 
 // Action and observation types
@@ -117,7 +120,7 @@ export class ActiveInferenceError extends Error {
     constructor(
         message: string,
         public readonly code: string,
-        public readonly context?: Record<string, any>
+        public readonly context?: Record<string, unknown>
     ) {
         super(message);
         this.name = 'ActiveInferenceError';
@@ -125,13 +128,13 @@ export class ActiveInferenceError extends Error {
 }
 
 export class BeliefUpdateError extends ActiveInferenceError {
-    constructor(message: string, context?: Record<string, any>) {
+    constructor(message: string, context?: Record<string, unknown>) {
         super(message, 'BELIEF_UPDATE_ERROR', context);
     }
 }
 
 export class PolicySelectionError extends ActiveInferenceError {
-    constructor(message: string, context?: Record<string, any>) {
+    constructor(message: string, context?: Record<string, unknown>) {
         super(message, 'POLICY_SELECTION_ERROR', context);
     }
 }
@@ -140,16 +143,12 @@ export class PolicySelectionError extends ActiveInferenceError {
 export type ReadonlyMatrix = Readonly<math.Matrix>;
 export type ReadonlyVector = Readonly<math.Matrix>;
 
-// Import mathjs for type augmentation
-import * as math from 'mathjs';
-
-// Augment mathjs types for better TypeScript support
-declare module 'mathjs' {
-    export interface Matrix {
-        readonly size: readonly number[];
-        get(index: readonly number[]): number;
-        set(index: readonly number[], value: number): void;
-        clone(): Matrix;
-        toArray(): any[];
-    }
+// Statistics reported by an agent's getStatistics()
+export interface AgentStatistics {
+    readonly message?: string;
+    readonly totalSteps?: number;
+    readonly averageFreeEnergy?: number;
+    readonly actionDistribution?: Record<number, number>;
+    readonly finalBeliefs?: number[];
+    readonly observationDistribution?: Record<number, number>;
 }
