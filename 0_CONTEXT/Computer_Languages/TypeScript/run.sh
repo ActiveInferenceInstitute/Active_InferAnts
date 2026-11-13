@@ -22,17 +22,15 @@ if ! command -v npm &> /dev/null; then
     exit 1
 fi
 
-# Check if TypeScript is installed
-if ! command -v tsc &> /dev/null; then
-    echo "📦 Installing TypeScript..."
-    npm install -g typescript
-fi
-
-echo "✅ TypeScript found: $(tsc --version)"
-
-# Install dependencies
+# Install dependencies from the committed lockfile
 echo "📦 Installing project dependencies..."
-npm install
+if [ ! -f package-lock.json ]; then
+    echo "❌ Error: package-lock.json not found; refusing a non-deterministic install"
+    exit 1
+fi
+npm ci
+
+echo "✅ TypeScript found: $(./node_modules/.bin/tsc --version)"
 
 # Build the TypeScript implementation
 echo "🔨 Compiling TypeScript implementation..."

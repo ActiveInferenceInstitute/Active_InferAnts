@@ -10,8 +10,16 @@ import {
     BeliefUpdateError,
     PolicySelectionError,
     Vector,
-    Matrix
+    Matrix,
+    AgentStatistics
 } from './types.js';
+
+/**
+ * Extract a readable message from an unknown thrown value.
+ */
+function describeError(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+}
 
 /**
  * Type-safe Active Inference Agent implementation
@@ -209,7 +217,7 @@ export class ActiveInferenceAgent {
                 throw new BeliefUpdateError('Invalid likelihood - posterior sums to zero');
             }
 
-            this.beliefState.posterior = math.divide(posterior, sum);
+            this.beliefState.posterior = math.dotDivide(posterior, sum);
             this.beliefState.current = math.clone(this.beliefState.posterior);
 
             // Record in history
@@ -220,7 +228,7 @@ export class ActiveInferenceAgent {
 
         } catch (error) {
             throw new BeliefUpdateError(
-                `Failed to update beliefs: ${error.message}`,
+                `Failed to update beliefs: ${describeError(error)}`,
                 { observation, currentBeliefs: this.beliefState.current.toArray() }
             );
         }
@@ -273,7 +281,7 @@ export class ActiveInferenceAgent {
 
         } catch (error) {
             throw new PolicySelectionError(
-                `Failed to calculate expected free energy: ${error.message}`,
+                `Failed to calculate expected free energy: ${describeError(error)}`,
                 { action }
             );
         }
@@ -283,8 +291,11 @@ export class ActiveInferenceAgent {
      * Predict beliefs after taking an action
      */
     private predictBeliefs(action: Action): Vector {
-        const B_action = this.generativeModel.B[action];
-        return math.multiply(this.beliefState.current, B_action);
+        const transition = this.generativeModel.B[action];
+        if (!transition) {
+            throw new PolicySelectionError(`No transition matrix for action ${action}`);
+        }
+        return math.multiply(this.beliefState.current, transition);
     }
 
     /**
@@ -320,9 +331,13 @@ export class ActiveInferenceAgent {
      */
     private calculateEntropy(beliefs: Vector): number {
         let entropy = 0;
+        const width = beliefs.size()[1];
+        if (width === undefined) {
+            return 0;
+        }
 
-        for (let i = 0; i < beliefs.size()[1]; i++) {
-            const prob = beliefs.get([0, i]);
+        for (let i = 0; i < width; i++) {
+            const prob = math.number(beliefs.get([0, i]));
             if (prob > 0) {
                 entropy -= prob * Math.log2(prob);
             }
@@ -339,7 +354,7 @@ export class ActiveInferenceAgent {
 
         for (let obs = 0; obs < this.config.nObservations; obs++) {
             const likelihood = this.getObservationLikelihood(obs);
-            const expectedObsProb = math.sum(math.dotMultiply(this.beliefState.current, likelihood));
+            const expectedObsProb = Number(math.sum(math.dotMultiply(this.beliefState.current, likelihood)));
             if (expectedObsProb > 0) {
                 expectedLikelihood += expectedObsProb * Math.log(expectedObsProb);
             }
@@ -363,14 +378,15 @@ export class ActiveInferenceAgent {
 
             // Select action with minimum expected free energy
             const bestAction = efes.reduce((best, current, index) => {
-                return current.expected < efes[best].expected ? index : best;
+                const bestEfe = efes[best];
+                return bestEfe === undefined || current.expected < bestEfe.expected ? index : best;
             }, 0);
 
             return bestAction;
 
         } catch (error) {
             throw new PolicySelectionError(
-                `Failed to select action: ${error.message}`,
+                `Failed to select action: ${describeError(error)}`,
                 { availableActions: this.config.nActions }
             );
         }
@@ -450,7 +466,7 @@ export class ActiveInferenceAgent {
     /**
      * Get statistics about agent behavior
      */
-    public getStatistics(): Record<string, any> {
+    public getStatistics(): AgentStatistics {
         if (this.history.actions.length === 0) {
             return { message: 'No actions recorded yet' };
         }
@@ -464,7 +480,9 @@ export class ActiveInferenceAgent {
             totalSteps: this.history.actions.length,
             averageFreeEnergy: this.history.freeEnergy.reduce((a, b) => a + b, 0) / this.history.freeEnergy.length,
             actionDistribution: actionCounts,
-            finalBeliefs: this.beliefState.current.toArray()[0],
+            finalBeliefs: Array.from({ length: this.config.nStates }, (_, state) =>
+                math.number(this.beliefState.current.get([0, state]))
+            ),
             observationDistribution: this.getDistribution(this.history.observations)
         };
     }

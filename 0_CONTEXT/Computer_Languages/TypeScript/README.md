@@ -43,9 +43,12 @@ interface FreeEnergy {
 
 ## Installation
 
+Requires Node.js >= 22.13.0 and TypeScript 6.0.x. The TypeScript version is bounded
+by the published `@typescript-eslint` peer range (`>=4.8.4 <6.1.0`).
+
 ```bash
-# Install dependencies
-npm install
+# Install the committed dependency set
+npm ci
 
 # Build the project
 npm run build
@@ -56,8 +59,9 @@ npm run demo
 # Run tests
 npm test
 
-# Type checking
+# Type checking and linting
 npm run type-check
+npm run lint
 ```
 
 ## Core Concepts

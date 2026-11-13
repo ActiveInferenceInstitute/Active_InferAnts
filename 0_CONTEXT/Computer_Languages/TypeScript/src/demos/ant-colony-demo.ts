@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env tsx
 
 /**
  * TypeScript Ant Colony Active Inference Demo
@@ -13,7 +13,9 @@
 import { ActiveInferenceAgent } from '../ActiveInferenceAgent.js';
 import {
     AgentConfig,
+    AgentStatistics,
     EnvironmentConfig,
+    EnvironmentState,
     Position,
     AntAgent,
     SimulationResults,
@@ -21,6 +23,28 @@ import {
     GridCell,
     PheromoneLevels
 } from '../types.js';
+
+/**
+ * Extract a readable message from an unknown thrown value.
+ */
+function describeError(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+}
+
+interface EnvironmentStatistics {
+    readonly totalAnts: number;
+    readonly foodSources: number;
+    readonly totalPheromones: number;
+    readonly foodCollected: number;
+    readonly averageEnergy: number;
+    readonly agentStats: ReadonlyArray<{
+        readonly id: number;
+        readonly position: Position;
+        readonly carryingFood: boolean;
+        readonly energy: number;
+        readonly statistics: AgentStatistics;
+    }>;
+}
 
 /**
  * Ant Colony Environment with type safety
@@ -65,12 +89,34 @@ class AntColonyEnvironment {
      * Initialize pheromone grid
      */
     private initializePheromoneGrid(): PheromoneLevels[][] {
-        return Array(this.config.gridSize).fill(null).map(() =>
-            Array(this.config.gridSize).fill(null).map(() => ({
+        return Array.from({ length: this.config.gridSize }, () =>
+            Array.from({ length: this.config.gridSize }, () => ({
                 home: 0,
                 food: 0
             }))
         );
+    }
+
+    /**
+     * Read a grid cell, failing loudly if the coordinates are out of bounds
+     */
+    private cellAt(x: number, y: number): GridCell {
+        const cell = this.grid[y]?.[x];
+        if (!cell) {
+            throw new RangeError(`Cell (${x}, ${y}) is outside the ${this.config.gridSize}x${this.config.gridSize} grid`);
+        }
+        return cell;
+    }
+
+    /**
+     * Read a pheromone cell, failing loudly if the coordinates are out of bounds
+     */
+    private pheromonesAt(x: number, y: number): PheromoneLevels {
+        const pheromones = this.pheromoneGrid[y]?.[x];
+        if (!pheromones) {
+            throw new RangeError(`Pheromone cell (${x}, ${y}) is outside the ${this.config.gridSize}x${this.config.gridSize} grid`);
+        }
+        return pheromones;
     }
 
     /**
@@ -110,7 +156,7 @@ class AntColonyEnvironment {
 
         for (let i = 0; i < this.config.foodSources; i++) {
             const position = this.getRandomPosition();
-            this.grid[position.y][position.x].food = 10;
+            this.cellAt(position.x, position.y).food = 10;
             foodLocations.push(position);
         }
 
@@ -143,9 +189,10 @@ class AntColonyEnvironment {
                 const ny = y + dy;
 
                 if (nx >= 0 && nx < this.config.gridSize && ny >= 0 && ny < this.config.gridSize) {
-                    foodNearby = Math.max(foodNearby, this.grid[ny][nx].food);
-                    pheromoneHome = Math.max(pheromoneHome, this.pheromoneGrid[ny][nx].home);
-                    pheromoneFood = Math.max(pheromoneFood, this.pheromoneGrid[ny][nx].food);
+                    foodNearby = Math.max(foodNearby, this.cellAt(nx, ny).food);
+                    const pheromones = this.pheromonesAt(nx, ny);
+                    pheromoneHome = Math.max(pheromoneHome, pheromones.home);
+                    pheromoneFood = Math.max(pheromoneFood, pheromones.food);
                 }
             }
         }
@@ -164,8 +211,9 @@ class AntColonyEnvironment {
         // Decay pheromones
         for (let y = 0; y < this.config.gridSize; y++) {
             for (let x = 0; x < this.config.gridSize; x++) {
-                this.pheromoneGrid[y][x].home *= this.config.pheromoneDecay;
-                this.pheromoneGrid[y][x].food *= this.config.pheromoneDecay;
+                const pheromones = this.pheromonesAt(x, y);
+                pheromones.home *= this.config.pheromoneDecay;
+                pheromones.food *= this.config.pheromoneDecay;
             }
         }
 
@@ -186,9 +234,10 @@ class AntColonyEnvironment {
                 this.layPheromone(ant, newPosition);
 
                 // Check for food
-                if (this.grid[newPosition.y][newPosition.x].food > 0) {
+                const cell = this.cellAt(newPosition.x, newPosition.y);
+                if (cell.food > 0) {
                     ant.carryingFood = true;
-                    this.grid[newPosition.y][newPosition.x].food--;
+                    cell.food--;
                     ant.energy = Math.min(100, ant.energy + 20);
                 }
 
@@ -196,7 +245,7 @@ class AntColonyEnvironment {
                 ant.energy = Math.max(0, ant.energy - 1);
 
             } catch (error) {
-                console.error(`Ant ${ant.id} error:`, error.message);
+                console.error(`Ant ${ant.id} error:`, describeError(error));
             }
         });
     }
@@ -231,12 +280,12 @@ class AntColonyEnvironment {
      * Lay pheromone at position
      */
     private layPheromone(ant: AntAgent, position: Position): void {
-        const { x, y } = position;
+        const pheromones = this.pheromonesAt(position.x, position.y);
 
         if (ant.carryingFood) {
-            this.pheromoneGrid[y][x].food = Math.min(1.0, this.pheromoneGrid[y][x].food + 0.1);
+            pheromones.food = Math.min(1.0, pheromones.food + 0.1);
         } else {
-            this.pheromoneGrid[y][x].home = Math.min(1.0, this.pheromoneGrid[y][x].home + 0.1);
+            pheromones.home = Math.min(1.0, pheromones.home + 0.1);
         }
     }
 
@@ -289,7 +338,8 @@ class AntColonyEnvironment {
         let total = 0;
         for (let y = 0; y < this.config.gridSize; y++) {
             for (let x = 0; x < this.config.gridSize; x++) {
-                total += this.pheromoneGrid[y][x].home + this.pheromoneGrid[y][x].food;
+                const pheromones = this.pheromonesAt(x, y);
+                total += pheromones.home + pheromones.food;
             }
         }
         return total;
@@ -323,7 +373,7 @@ class AntColonyEnvironment {
     /**
      * Get current environment state
      */
-    private getEnvironmentState() {
+    private getEnvironmentState(): EnvironmentState {
         return {
             grid: this.grid,
             ants: this.ants,
@@ -335,7 +385,7 @@ class AntColonyEnvironment {
     /**
      * Get simulation statistics
      */
-    public getStatistics(): Record<string, any> {
+    public getStatistics(): EnvironmentStatistics {
         const agentStats = this.ants.map(ant => ({
             id: ant.id,
             position: ant.position,
@@ -389,7 +439,7 @@ function runAntColonyDemo(): void {
   Average Energy: ${stats.averageEnergy.toFixed(2)}
   Agent Details:`);
 
-    stats.agentStats.forEach((agent: any) => {
+    stats.agentStats.forEach(agent => {
         console.log(`    Ant ${agent.id}: Energy=${agent.energy}, Food=${agent.carryingFood}, Pos=(${agent.position.x},${agent.position.y})`);
     });
 }
@@ -424,8 +474,8 @@ function runSingleAgentDemo(): void {
         const action = agent.step(observation);
         console.log(`  Action: ${action}`);
 
-        const beliefs = agent.getBeliefState().current.toArray()[0];
-        console.log(`  Beliefs: [${beliefs.map(b => b.toFixed(3)).join(', ')}]`);
+        const beliefs = agent.getBeliefState().current.toArray()[0] as number[] | undefined;
+        console.log(`  Beliefs: [${(beliefs ?? []).map((b: number) => b.toFixed(3)).join(', ')}]`);
 
         const freeEnergy = agent.calculateVariationalFreeEnergy();
         console.log(`  Free Energy: ${freeEnergy.toFixed(3)}`);
@@ -434,9 +484,9 @@ function runSingleAgentDemo(): void {
     // Show statistics
     const statistics = agent.getStatistics();
     console.log(`\nFinal Statistics:
-  Total Steps: ${statistics.totalSteps}
-  Average Free Energy: ${statistics.averageFreeEnergy.toFixed(4)}
-  Action Distribution: ${JSON.stringify(statistics.actionDistribution)}`);
+  Total Steps: ${statistics.totalSteps ?? 0}
+  Average Free Energy: ${(statistics.averageFreeEnergy ?? 0).toFixed(4)}
+  Action Distribution: ${JSON.stringify(statistics.actionDistribution ?? {})}`);
 }
 
 /**
@@ -458,7 +508,7 @@ function runErrorHandlingDemo(): void {
         };
         new ActiveInferenceAgent(invalidConfig);
     } catch (error) {
-        console.log(`Caught expected error: ${error.message}`);
+        console.log(`Caught expected error: ${describeError(error)}`);
     }
 
     // Test valid configuration
@@ -475,14 +525,14 @@ function runErrorHandlingDemo(): void {
         console.log("Successfully created agent with valid configuration");
         console.log("Agent statistics:", agent.getStatistics());
     } catch (error) {
-        console.log(`Unexpected error: ${error.message}`);
+        console.log(`Unexpected error: ${describeError(error)}`);
     }
 }
 
 /**
  * Main demo runner
  */
-function main(): void {
+export function main(): void {
     console.log("🧠 TypeScript Active Inference Implementation");
     console.log("===========================================\n");
 
@@ -500,7 +550,7 @@ function main(): void {
         console.log("   • IDE support with autocomplete and refactoring");
 
     } catch (error) {
-        console.error("❌ Demo failed:", error.message);
+        console.error("❌ Demo failed:", describeError(error));
         process.exit(1);
     }
 }
