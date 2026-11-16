@@ -12,9 +12,11 @@ seeded explicitly (no unseeded ``np.random`` calls).
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import sys
+from copy import deepcopy
 from typing import Any
 
 import numpy as np
@@ -66,6 +68,35 @@ class SimulationPlanner:
         self.config_path = config_path
         self.seed = _DEFAULT_SEED if seed is None else int(seed)
         self.rng = np.random.default_rng(self.seed)
+        if config_path is None:
+            selected = deepcopy(
+                {
+                    "SIMULATION_SETTINGS": config.SIMULATION_SETTINGS,
+                    "ENVIRONMENT_CONFIG": config.ENVIRONMENT_CONFIG,
+                    "ANT_AND_COLONY_CONFIG": config.ANT_AND_COLONY_CONFIG,
+                    "META_CONFIG": metaconfig.META_CONFIG,
+                }
+            )
+        else:
+            with open(config_path, encoding="utf-8") as stream:
+                selected = json.load(stream)
+            if not isinstance(selected, dict):
+                raise ValueError("Simulation configuration must be an object")
+            for key in ("SIMULATION_SETTINGS", "ENVIRONMENT_CONFIG"):
+                if key not in selected:
+                    raise ValueError(f"Missing simulation configuration section: {key}")
+        for key in (
+            "SIMULATION_SETTINGS",
+            "ENVIRONMENT_CONFIG",
+            "ANT_AND_COLONY_CONFIG",
+            "META_CONFIG",
+        ):
+            if not isinstance(selected.get(key, {}), dict):
+                raise ValueError(f"Simulation configuration section must be an object: {key}")
+        self.settings = selected["SIMULATION_SETTINGS"]
+        self.environment_config = selected["ENVIRONMENT_CONFIG"]
+        self.ant_and_colony_config = selected.get("ANT_AND_COLONY_CONFIG", {})
+        self.meta_config = selected.get("META_CONFIG", {})
 
         self.simulation_environment: Environment | None = None
         self.agent_params: dict[str, Any] = {}
@@ -87,11 +118,8 @@ class SimulationPlanner:
     # ------------------------------------------------------------------ #
     def initialize_components(self) -> None:
         """Initialize all planning components from configuration."""
-        settings = config.SIMULATION_SETTINGS
-        environment_config = config.ENVIRONMENT_CONFIG
-        self.simulation_environment = build_environment_from_config(
-            settings, environment_config, seed=self.seed
-        )
+        settings = self.settings
+        self.simulation_environment = None
         self.agent_params = self.get_agent_params()
         self.niche_params = self.get_niche_params()
         self.parallel_execution = self.get_parallel_execution_settings()
@@ -111,11 +139,11 @@ class SimulationPlanner:
         fall back to the consolidated ant/colony config so the planner never
         assumes a key that is not there.
         """
-        ant_colony = metaconfig.META_CONFIG.get("ANT_AND_COLONY", {})
+        ant_colony = self.meta_config.get("ANT_AND_COLONY", {})
         params = ant_colony.get("AGENT_PARAMS")
         if isinstance(params, dict):
             return dict(params)
-        nestmate = config.ANT_AND_COLONY_CONFIG.get("NESTMATE", {})
+        nestmate = self.ant_and_colony_config.get("NESTMATE", {})
         active_inference = nestmate.get("ACTIVE_INFERENCE", {})
         # Only pass parameters the agent API actually accepts.
         known = ("sensory_precision", "prior_precision", "learning_rate")
@@ -123,16 +151,16 @@ class SimulationPlanner:
 
     def get_niche_params(self) -> dict[str, Any]:
         """Return niche parameters from the meta configuration (if present)."""
-        ant_colony = metaconfig.META_CONFIG.get("ANT_AND_COLONY", {})
+        ant_colony = self.meta_config.get("ANT_AND_COLONY", {})
         params = ant_colony.get("NICHE_PARAMS")
         return dict(params) if isinstance(params, dict) else {}
 
     def get_parallel_execution_settings(self) -> dict[str, Any]:
         """Return validated parallel-execution settings from the config."""
-        settings = dict(config.SIMULATION_SETTINGS.get("PARALLEL_EXECUTION", {}))
+        settings = dict(self.settings.get("PARALLEL_EXECUTION", {}))
         enabled = bool(settings.get("ENABLED", False))
         worker_count = int(settings.get("WORKER_COUNT", 1) or 1)
-        agent_count = int(config.SIMULATION_SETTINGS.get("AGENT_COUNT", 1))
+        agent_count = int(self.settings.get("AGENT_COUNT", 1))
         if enabled and worker_count > agent_count:
             logger.warning(
                 "Worker count (%d) exceeds agent count (%d); clamping",
@@ -144,10 +172,10 @@ class SimulationPlanner:
 
     def estimate_computational_load(self) -> dict[str, Any]:
         """Estimate the computational cost of the planned run."""
-        settings = config.SIMULATION_SETTINGS
+        settings = self.settings
         return estimate_computational_resources(
             num_agents=int(settings.get("AGENT_COUNT", 100)),
-            num_food_sources=len(config.ENVIRONMENT_CONFIG.get("RESOURCE_ZONES", [])),
+            num_food_sources=len(self.environment_config.get("RESOURCE_ZONES", [])),
             num_nests=int(settings.get("NEST_COUNT", 1)),
             max_steps=int(settings.get("MAX_STEPS", 500)),
             parallel_execution=self.parallel_execution,
@@ -160,17 +188,17 @@ class SimulationPlanner:
         self, max_steps: int | None = None
     ) -> MetaInformAntSimulation:
         """Create and return a configured ``MetaInformAntSimulation``."""
-        if self.simulation_environment is None:
-            self.initialize_components()
-        assert self.simulation_environment is not None
+        self.simulation_environment = build_environment_from_config(
+            self.settings, self.environment_config, seed=self.seed
+        )
         if max_steps is not None:
             self.simulation_environment.max_steps = int(max_steps)
 
-        settings = config.SIMULATION_SETTINGS
+        settings = self.settings
         simulation = MetaInformAntSimulation(
             num_agents=int(settings.get("AGENT_COUNT", 100)),
             simulation_environment=self.simulation_environment,
-            num_food_sources=len(config.ENVIRONMENT_CONFIG.get("RESOURCE_ZONES", [])),
+            num_food_sources=len(self.environment_config.get("RESOURCE_ZONES", [])),
             num_nests=int(settings.get("NEST_COUNT", 1)),
             agent_params=self.agent_params,
             niche_params=self.niche_params,
@@ -240,7 +268,7 @@ SimulationSetup = SimulationPlanner
 
 if __name__ == "__main__":
     setup = SimulationPlanner()
-    num_simulations = int(config.SIMULATION_SETTINGS.get("NUM_SIMULATIONS", 1) or 1)
+    num_simulations = int(setup.settings.get("NUM_SIMULATIONS", 1) or 1)
     if num_simulations > 1:
         results_all = setup.run_multiple_simulations(num_simulations)
         logger.info("Completed %d simulations.", num_simulations)

@@ -76,7 +76,7 @@ class ReportExecutor:
 
         try:
             # Validate report specification
-            if not await self.report_specification.validate():
+            if not self.report_specification.validate():
                 raise ValueError("Invalid report specification")
 
             # Collect data

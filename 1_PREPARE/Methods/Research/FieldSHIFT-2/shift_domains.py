@@ -37,6 +37,11 @@ def perform_domain_shift(input_file: str, output_dir: str, llm_params: dict) -> 
         llm_params (dict): Parameters for the language model.
     """
     try:
+        output_file_name = os.path.basename(input_file).replace('concatenated_', 'shifted_')
+        output_file_path = os.path.join(output_dir, output_file_name)
+        if os.path.exists(output_file_path):
+            logger.info(f"Output already exists; preserving {output_file_path}")
+            return
         logger.info(f"Processing file: {input_file}")
         
         # Load domain content
@@ -48,9 +53,6 @@ def perform_domain_shift(input_file: str, output_dir: str, llm_params: dict) -> 
         # Generate the shifted domain using LLM
         shifted_domain, _ = generate_llm_response(domain_content, llm_params)
         
-        # Prepare the output file path
-        output_file_name = os.path.basename(input_file).replace('concatenated_', 'shifted_')
-        output_file_path = os.path.join(output_dir, output_file_name)
         
         # Save the shifted domain
         save_file(shifted_domain, output_file_path)
@@ -71,13 +73,7 @@ def process_domain_shift(input_dir: str, output_dir: str, config: dict) -> None:
     try:
         logger.info("Starting domain shift processing")
         
-        # Get the API key using the new get_api_key() function
-        api_key = get_api_key()
-        if not api_key:
-            raise ValueError("API key not found in .env or LLM_keys.key file")
-        
-        # Prepare LLM parameters
-        llm_params = {**USER_CONFIG['llm_params'], 'api_key': api_key}
+        llm_params = None
         
         # Iterate over all files in the input directory
         for input_file in os.listdir(input_dir):
@@ -93,6 +89,11 @@ def process_domain_shift(input_dir: str, output_dir: str, config: dict) -> None:
                 print(f"Output file already exists: {output_file_name}. Skipping LLM request.")
             else:
                 # Perform the domain shift
+                if llm_params is None:
+                    api_key = get_api_key()
+                    if not api_key:
+                        raise ValueError("API key not found in .env or LLM_keys.key file")
+                    llm_params = {**USER_CONFIG['llm_params'], 'api_key': api_key}
                 start_time = time.time()
                 perform_domain_shift(input_file_path, output_dir, llm_params)
                 elapsed_time = time.time() - start_time

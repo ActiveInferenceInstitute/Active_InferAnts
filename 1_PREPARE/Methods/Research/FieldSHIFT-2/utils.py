@@ -43,11 +43,16 @@ def save_file(content: str, file_path: str) -> None:
     Raises:
         IOError: If there's an error writing to the file.
     """
+    if os.path.exists(file_path):
+        logging.info(f"Output already exists; preserving {file_path}")
+        return
     try:
-        with open(file_path, 'w', encoding='utf-8') as file:
+        with open(file_path, 'x', encoding='utf-8') as file:
             file.write(content)
         
         logging.info(f"File saved successfully: {file_path}")
+    except FileExistsError:
+        logging.info(f"Output already exists; preserving {file_path}")
     except IOError as e:
         logging.error(f"Error writing to file {file_path}: {str(e)}")
         raise
@@ -196,6 +201,9 @@ def process_pro_shifted_domains(input_dir: str, output_dir: str, llm_params: Dic
             input_path = os.path.join(input_dir, filename)
             output_filename = f"shifted_{filename}"
             output_path = os.path.join(output_dir, output_filename)
+            if os.path.exists(output_path):
+                logger.info(f"Output already exists; preserving {output_path}")
+                continue
 
             logger.info(f"Processing file: {filename}")
             
@@ -207,8 +215,7 @@ def process_pro_shifted_domains(input_dir: str, output_dir: str, llm_params: Dic
                 
                 shifted_content, time_taken = generate_llm_response(prompt, llm_params)
                 
-                with open(output_path, 'w', encoding='utf-8') as file:
-                    file.write(shifted_content)
+                save_file(shifted_content, output_path)
                 
                 logger.info(f"Processed {filename} in {time_taken:.2f} seconds. Output saved as {output_filename}")
             
@@ -315,7 +322,15 @@ def generate_entity_library() -> Dict[str, Any]:
 
 def save_entity_library(library: Dict[str, Any], filename: str):
     """Save the entity library to a JSON file."""
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, 'w') as f:
-        json.dump(library, f, indent=2)
-    logger.info(f"Entity library saved to {filename}")
+    if os.path.exists(filename):
+        logging.info(f"Output already exists; preserving {filename}")
+        return
+    parent = os.path.dirname(filename)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    try:
+        with open(filename, 'x') as f:
+            json.dump(library, f, indent=2)
+    except FileExistsError:
+        return
+    logging.info(f"Entity library saved to {filename}")

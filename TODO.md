@@ -10,11 +10,18 @@
 
 ## Open — needs an owner
 
-These are open today. None is a defect in the maintained Python surface
-(`active_infer_ants/`, `2_OPERATE/`, `3_MEASURE/`, `4_REPORT/`, `5_FOLLOWUP/`,
-`6_API/` — the trees `./run.sh lint` covers); they are a version policy
-decision, an organisation-level billing lock, and one unpinned corpus
-dependency.
+Open rows and historical closures must be interpreted within their stated scope
+and evidence date. A passing gate, historical closure or maintained-lint membership
+does not establish that every pipeline, provider, API or research workflow is
+available or defect-free. Research/product decisions and external blockers remain
+open until their owners resolve their prerequisites.
+
+2026-11-13 qualification: the preserved focused local contracts passed under
+governed execution; actual renderer surfaces were inspected and label collisions
+repaired with affected renderer proof. This is not provider/service integration,
+scientific execution, full gate, release or merge acceptance. Missing providers
+and original research/product decisions remain open; historical receipts below
+are unchanged.
 
 - **O-1 — the declared Python floor is never exercised.** `pyproject.toml`
   declares `requires-python = ">=3.9"`, `uv.lock` declares

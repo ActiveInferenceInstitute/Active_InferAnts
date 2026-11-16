@@ -1,13 +1,29 @@
 # Continuous Improvement
 
-Follow-up actions, continuous improvement planning, and iterative refinement. This phase closes the loop between reporting and future operations.
+Follow-up specifications, local text/HTML formatting and provider-dependent
+orchestration. Service-backed execution requires real providers not included here.
 
 ## Modules
 
 | Module | Description |
 |---|---|
-| `specify_followup.py` | `FollowUpType`, `SessionType`, `UpdateArea` enums; `Session`, `Stakeholder`, `Resource` dataclasses; `TextReportGenerator` and `HTMLReportGenerator` classes |
-| `execute_followup.py` | `FollowUpExecutor` class — orchestrates full follow-up workflow integrating 7 services: `EmailService`, `ProjectManager`, `MetricsAnalyzer`, `ResourceAllocator`, `NotificationService`, `DatabaseService`, `TaskScheduler` |
+| `specify_followup.py` | `FollowUpType`, `SessionType`, `SessionModality`; `UpdateArea`, `Session`, `Stakeholder`, `Resource`; `FollowUpSpecification` and local text/HTML formatters |
+| `execute_followup.py` | `FollowUpExecutor` requires seven service providers plus `ErrorHandler`; these are not bundled integrations |
+
+Execution requires `EmailService`, `ProjectManager`, `MetricsAnalyzer`,
+`ResourceAllocator`, `NotificationService`, `DatabaseService`, `TaskScheduler`
+and `ErrorHandler`. Provider ownership, dependencies, configuration, effects
+and acceptance must be supplied explicitly.
+
+`SessionType` describes purpose; required `SessionModality` describes `VIRTUAL`
+or `IN_PERSON` delivery. Updates use `UpdateArea.notes`. Canonical JSON stores
+enum names, duration seconds, ISO timestamps and nullable dates; import restores
+declared typed fields. Historical `default=str` artifacts are not automatically
+rewritten or heuristically migrated.
+
+Handled component failures prevent successful finalization. Local finalization
+records actual specification state and a local UTC timestamp; it does not invent
+external persistence or notification effects.
 
 ## Pipeline Position
 
@@ -15,8 +31,8 @@ Follow-up actions, continuous improvement planning, and iterative refinement. Th
 4_REPORT → [5_FOLLOWUP] → 6_API
 ```
 
-- **Input**: Generated reports from `4_REPORT`
-- **Output**: Action items, session plans, and stakeholder communications; feeds back into `1_PREPARE`
+- **Intended input**: Report outcomes/follow-up specifications.
+- **Intended provider-dependent output**: Action items, sessions, stakeholder communications and feedback.
 
 ## Related
 

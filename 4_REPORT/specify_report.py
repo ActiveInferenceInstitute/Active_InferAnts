@@ -75,7 +75,6 @@ class ReportComponent(ABC):
 class DataSource(ReportComponent):
     """Detailed representation of a data source."""
 
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     type: DataSourceType
     description: str
@@ -83,6 +82,7 @@ class DataSource(ReportComponent):
     reliability: float  # 0.0 to 1.0
     update_frequency: str
     access_method: str
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
     last_updated: datetime = field(default_factory=datetime.now)
     data_schema: Optional[Dict[str, Any]] = None
     sample_data: Optional[Any] = None
@@ -111,13 +111,13 @@ class DataSource(ReportComponent):
 class AnalysisMethod(ReportComponent):
     """Detailed representation of an analysis method."""
 
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     type: AnalysisMethodType
     description: str
     expected_outcomes: str
     limitations: str
     required_tools: List[str]
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
     complexity: int = field(default=1)  # 1-5 scale
     execution_time: str = field(default="Unknown")
     validation_method: Optional[str] = None
@@ -148,12 +148,12 @@ class AnalysisMethod(ReportComponent):
 class TargetAudience(ReportComponent):
     """Detailed representation of the target audience."""
 
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     expertise_level: str
     key_interests: List[str]
     preferred_formats: List[DeliveryFormatType]
     decision_making_context: str
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
     technical_proficiency: int = field(default=3)  # 1-5 scale
     data_literacy: int = field(default=3)  # 1-5 scale
     primary_language: str = field(default="English")
@@ -186,11 +186,11 @@ class TargetAudience(ReportComponent):
 class DeliveryFormat(ReportComponent):
     """Detailed representation of the delivery format."""
 
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
     type: DeliveryFormatType
     reasoning: str
     alternatives: List[DeliveryFormatType]
     accessibility_considerations: str
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
     interactivity_level: int = field(default=1)  # 1-5 scale
     update_frequency: Optional[str] = None
     version_control: bool = False

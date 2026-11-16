@@ -26,6 +26,21 @@ Configuration is read from environment variables:
 Authentication follows the same convention as the Knowledge API: when
 `META_API_KEY` is unset the service runs in open local/dev mode.
 
+## Admission and task state
+
+Both computation routes require nonempty rectangular finite numeric matrices
+before creating tasks or incrementing request metrics. Model/schema errors and
+explicit matrix-admission errors are distinct rejection paths.
+
+A worker publishes `COMPLETED` only after producing a shape-preserving finite
+real result and finishing JSON-safe conversion. Failure publishes `FAILED`,
+no result and an error message. Status readers receive one coherent terminal
+projection.
+
+Tasks and metrics are process-local/in-memory and disappear on restart.
+These NumPy update endpoints are not durable distributed-job or
+scientific-qualification services.
+
 ## Source
 
 [`6_API/MetaInformAnt_API.py`](https://github.com/ActiveInferenceInstitute/Active_InferAnts/blob/main/6_API/MetaInformAnt_API.py)

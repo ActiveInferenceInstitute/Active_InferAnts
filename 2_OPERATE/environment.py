@@ -18,6 +18,9 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+# Observation and action coordinates: stay, east, west, south, north.
+GRID_MOVES = ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))
+
 
 class Environment:
     """A 2D grid world for ant-colony active-inference simulations.
@@ -98,19 +101,20 @@ class Environment:
         """Return the local pheromone signal around a cell as a vector.
 
         The signal is the 5-cell cross centred on the agent's position
-        (centre, north, south, east, west), which matches the 5-move action
-        space used by :class:`MetaInformAntSimulation`.
+        (centre, east, west, south, north), in ``GRID_MOVES`` action order.
         """
         cx = int(np.clip(x, 0, self.width - 1))
         cy = int(np.clip(y, 0, self.height - 1))
-        cross = [
-            (cy, cx),
-            (max(0, cy - 1), cx),
-            (min(self.height - 1, cy + 1), cx),
-            (cy, min(self.width - 1, cx + 1)),
-            (cy, max(0, cx - 1)),
-        ]
-        return np.asarray([self.pheromone[yy, xx] for yy, xx in cross], dtype=float)
+        return np.asarray(
+            [
+                self.pheromone[
+                    min(max(cy + dy, 0), self.height - 1),
+                    min(max(cx + dx, 0), self.width - 1),
+                ]
+                for dx, dy in GRID_MOVES
+            ],
+            dtype=float,
+        )
 
     def nearest_food_distance(self, x: int, y: int) -> float:
         """Euclidean distance to the nearest food source."""

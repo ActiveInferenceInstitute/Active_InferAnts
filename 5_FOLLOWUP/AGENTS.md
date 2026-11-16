@@ -4,17 +4,25 @@
 
 ## Purpose
 
-Follow-up actions, continuous improvement planning, and iterative refinement. This phase closes the loop between reporting and future operations.
+Follow-up specifications, local text/HTML formatting and provider-dependent
+orchestration. Service-backed execution requires real providers not included here.
 
 ## Directory Contents
 
-- 📄 `specify_followup.py` — Follow-up specification types: `FollowUpType`, `SessionType`, `UpdateArea` enums; `Session`, `Stakeholder`, `Resource` dataclasses; `TextReportGenerator` and `HTMLReportGenerator` classes
-- 📄 `execute_followup.py` — `FollowUpExecutor` class: orchestrates full follow-up workflow integrating 7 services — `EmailService`, `ProjectManager`, `MetricsAnalyzer`, `ResourceAllocator`, `NotificationService`, `DatabaseService`, `TaskScheduler`
+- `specify_followup.py` — `FollowUpType`, `SessionType`, `SessionModality` enums;
+  `UpdateArea`, `Session`, `Stakeholder`, `Resource` dataclasses;
+  `FollowUpSpecification` and local text/HTML formatters.
+- `execute_followup.py` — `FollowUpExecutor`: provider-dependent orchestration
+  requiring `EmailService`, `ProjectManager`, `MetricsAnalyzer`,
+  `ResourceAllocator`, `NotificationService`, `DatabaseService`,
+  `TaskScheduler` and `ErrorHandler`.
 
 ## Agent Instructions
 
-- Maintain the `FollowUpSpecification` dataclass hierarchy in `specify_followup.py`.
-- Ensure `FollowUpExecutor` correctly consumes all specification types and orchestrates all 7 services.
+- Maintain declared specification and typed serialization contracts.
+- Verify service-backed orchestration only with real configured providers and
+  explicit acceptance; service names alone do not establish availability.
+  Distinguish local formatting/finalization from external effects.
 - Preserve the session lifecycle: prepare → run → post-session tasks → status update.
 - Track the feedback loop: follow-up outputs should inform future `1_PREPARE` configurations.
 - Follow the repository's CC BY-NC-ND 4.0 license.
@@ -23,5 +31,5 @@ Follow-up actions, continuous improvement planning, and iterative refinement. Th
 ## Quality Checklist
 
 - [ ] All files documented and up-to-date
-- [ ] All 7 service integrations verified
+- [ ] Provider-dependent execution is explicitly distinguished from local specification/report formatting.
 - [ ] README.md and SPEC.md synchronized with this AGENTS.md

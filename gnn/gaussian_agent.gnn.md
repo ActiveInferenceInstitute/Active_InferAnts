@@ -110,7 +110,7 @@ prior_cov={
 #   y = H x + N(0, R)
 #   x_t+1 = F x_t + N(0, Q)          # F = I: no drift
 # Exact posterior (the agent's infer()):
-#   Pi_post = H^T R^-1 H + Q^-1 = (1/sensory_precision + 1/prior_precision) I
+#   Pi_post = H^T R^-1 H + Q^-1 = (sensory_precision + prior_precision) I
 #   mu_post = Pi_post^-1 (H^T R^-1 y + Q^-1 prior_mean)
 # The returned action is mu_post; learn(reward) updates
 #   prior_mean <- prior_mean + learning_rate * (mu_post - prior_mean)

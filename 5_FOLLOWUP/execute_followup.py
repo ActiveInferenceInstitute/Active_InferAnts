@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 from data_analysis import MetricsAnalyzer
@@ -13,7 +14,7 @@ from specify_followup import (
     FollowUpType,
     HTMLReportGenerator,
     Session,
-    SessionType,
+    SessionModality,
     Stakeholder,
     TextReportGenerator,
     UpdateArea,
@@ -39,6 +40,9 @@ class FollowUpExecutor:
         self.notification_service = NotificationService()
         self.database_service = DatabaseService()
         self.task_scheduler = TaskScheduler()
+        self._failed = False
+        self.completed_at = None
+        self.result = None
 
     def _setup_logger(self) -> logging.Logger:
         """
@@ -71,6 +75,10 @@ class FollowUpExecutor:
         )
 
         try:
+            self._failed = False
+            self.completed_at = None
+            self.result = None
+            self.specification.generate_followup_specification()
             self._initialize_followup()
             self._execute_update_areas()
             self._conduct_sessions()
@@ -81,17 +89,25 @@ class FollowUpExecutor:
             self._manage_timeline()
             self._allocate_resources()
             self._generate_and_distribute_reports()
-            self._finalize_followup()
         except Exception as e:
+            self._failed = True
             self.logger.error(f"Critical error during follow-up execution: {str(e)}")
             self.error_handler.handle_critical_error(e, self.specification.name)
             self.notification_service.send_alert("Critical Follow-up Error", str(e))
+            raise
         finally:
             self._cleanup()
 
-        self.logger.info(
-            f"Completed execution of follow-up for {self.specification.name}"
-        )
+        return self._finalize_followup()
+
+    def _finalize_followup(self):
+        """Finalize only owned local state after successful operations and cleanup."""
+        if self._failed:
+            raise RuntimeError("Follow-up contains failed operations")
+        self.result = self.specification.generate_followup_specification()
+        self.completed_at = datetime.now(timezone.utc)
+        self.logger.info("Completed follow-up for %s", self.specification.name)
+        return self.result
 
     def _initialize_followup(self):
         """
@@ -116,6 +132,7 @@ class FollowUpExecutor:
                 self.logger.info(f"Completed update for area: {area.area}")
                 self.database_service.update_area_status(area)
             except Exception as e:
+                self._failed = True
                 self.logger.error(f"Error updating area {area.area}: {str(e)}")
                 area.status = "Failed"
                 self.error_handler.handle_area_update_error(e, area)
@@ -132,11 +149,11 @@ class FollowUpExecutor:
         """
         # Implementation of area-specific update logic
         if area.area == "Database":
-            self.database_service.perform_database_update(area.details)
+            self.database_service.perform_database_update(area.notes)
         elif area.area == "Documentation":
-            self.project_manager.update_documentation(area.details)
+            self.project_manager.update_documentation(area.notes)
         elif area.area == "Infrastructure":
-            self.resource_allocator.update_infrastructure(area.details)
+            self.resource_allocator.update_infrastructure(area.notes)
         else:
             raise ValueError(f"Unsupported update area: {area.area}")
 
@@ -149,6 +166,8 @@ class FollowUpExecutor:
         for session in self.specification.sessions:
             self.logger.info(f"Conducting session: {session.type.name}")
             try:
+                if not isinstance(session.modality, SessionModality):
+                    raise ValueError("Session modality must be explicitly selected")
                 self._prepare_session(session)
                 self._run_session(session)
                 self._post_session_tasks(session)
@@ -156,6 +175,7 @@ class FollowUpExecutor:
                 self.logger.info(f"Completed session: {session.type.name}")
                 self.database_service.update_session_status(session)
             except Exception as e:
+                self._failed = True
                 self.logger.error(
                     f"Error conducting session {session.type.name}: {str(e)}"
                 )
@@ -185,12 +205,12 @@ class FollowUpExecutor:
             session (Session): The session to be run.
         """
         self.logger.info(f"Running session: {session.type.name}")
-        if session.type == SessionType.VIRTUAL:
+        if session.modality == SessionModality.VIRTUAL:
             self.project_manager.start_virtual_session(session)
-        elif session.type == SessionType.IN_PERSON:
+        elif session.modality == SessionModality.IN_PERSON:
             self.project_manager.start_in_person_session(session)
         else:
-            raise ValueError(f"Unsupported session type: {session.type}")
+            raise ValueError(f"Unsupported session modality: {session.modality}")
 
     def _post_session_tasks(self, session: Session):
         """
@@ -221,6 +241,7 @@ class FollowUpExecutor:
             self.logger.info("Completed debrief session")
             self.database_service.update_debrief_status(debrief)
         except Exception as e:
+            self._failed = True
             self.logger.error(f"Error during debrief session: {str(e)}")
             debrief["status"] = "Failed"
             self.error_handler.handle_debrief_error(e, debrief)
@@ -273,6 +294,7 @@ class FollowUpExecutor:
             self.logger.info(f"{plan['type']} plan is now active")
             self.database_service.update_plan_status(plan)
         except Exception as e:
+            self._failed = True
             self.logger.error(f"Error implementing plan: {str(e)}")
             plan["status"] = "Failed"
             self.error_handler.handle_plan_implementation_error(e, plan)
@@ -293,6 +315,7 @@ class FollowUpExecutor:
                 )
                 self.database_service.update_stakeholder_engagement(stakeholder)
             except Exception as e:
+                self._failed = True
                 self.logger.error(
                     f"Error engaging stakeholder {stakeholder.name}: {str(e)}"
                 )
@@ -333,6 +356,7 @@ class FollowUpExecutor:
             self.logger.info("Updated metrics and KPIs")
             self.database_service.update_metrics(updated_metrics)
         except Exception as e:
+            self._failed = True
             self.logger.error(f"Error tracking metrics: {str(e)}")
             self.error_handler.handle_metrics_error(e, metrics)
             self.notification_service.send_alert("Metrics Tracking Failed", str(e))
@@ -351,6 +375,7 @@ class FollowUpExecutor:
             self.database_service.update_timeline(updated_timeline)
         except Exception as e:
             self.logger.error(f"Error managing timeline: {str(e)}")
+            self._failed = True
             self.error_handler.handle_timeline_error(e, timeline)
             self.notification_service.send_alert("Timeline Management Failed", str(e))
 
@@ -367,6 +392,7 @@ class FollowUpExecutor:
                 self.logger.info(f"Allocated resource: {resource.name}")
                 self.database_service.update_resource_allocation(resource)
             except ValueError as ve:
+                self._failed = True
                 self.logger.error(
                     f"Value error allocating resource {resource.name}: {str(ve)}"
                 )
@@ -375,6 +401,7 @@ class FollowUpExecutor:
                     f"Resource Allocation Failed: {resource.name}", str(ve)
                 )
             except Exception as e:
+                self._failed = True
                 self.logger.error(
                     f"Unexpected error allocating resource {resource.name}: {str(e)}"
                 )
@@ -398,6 +425,7 @@ class FollowUpExecutor:
                 "Completed generation and distribution of follow-up reports"
             )
         except Exception as e:
+            self._failed = True
             self.logger.error(f"Error generating or distributing reports: {str(e)}")
             self.error_handler.handle_report_error(e)
 
@@ -440,6 +468,7 @@ class FollowUpExecutor:
                     stakeholder.contact, "Follow-up Reports", text_report, html_report
                 )
             except Exception as e:
+                self._failed = True
                 self.logger.error(
                     f"Error sending report to {stakeholder.name}: {str(e)}"
                 )
@@ -463,6 +492,7 @@ class FollowUpExecutor:
             )
             self.logger.info(f"Sent email to {recipient} with subject: {subject}")
         except Exception as e:
+            self._failed = True
             self.logger.error(f"Error sending email to {recipient}: {str(e)}")
             self.error_handler.handle_email_error(e, recipient)
 
@@ -472,14 +502,22 @@ class FollowUpExecutor:
         This includes closing database connections, releasing resources, and logging the cleanup.
         """
         self.logger.info("Performing follow-up cleanup operations")
-        try:
-            self.database_service.close_connections()
-            self.resource_allocator.release_allocation()
-            self.logger.info("Successfully performed cleanup operations")
-        except Exception as e:
-            self.logger.error(f"Error during cleanup operations: {str(e)}")
-            self.error_handler.handle_cleanup_error(e)
-            self.notification_service.send_alert("Cleanup Failed", str(e))
+        first_error = None
+        for operation in (
+            self.database_service.close_connections,
+            self.resource_allocator.release_allocation,
+        ):
+            try:
+                operation()
+            except Exception as exc:
+                self._failed = True
+                self.logger.error("Cleanup failed: %s", exc)
+                if first_error is None:
+                    first_error = exc
+        if first_error is not None:
+            self.error_handler.handle_cleanup_error(first_error)
+            self.notification_service.send_alert("Cleanup Failed", str(first_error))
+            raise first_error
 
 
 # Usage example:

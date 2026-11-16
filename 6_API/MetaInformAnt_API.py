@@ -72,7 +72,12 @@ def _normalise(data: dict[str, list[float]]) -> np.ndarray:
     """Convert a {feature: [values]} payload into a 2-D float array."""
     if not data:
         raise ValueError("Data cannot be empty")
-    return np.array([list(v) for v in data.values()], dtype=float)
+    matrix = np.asarray(list(data.values()), dtype=float)
+    if matrix.ndim != 2 or not matrix.size:
+        raise ValueError("Data must be a nonempty rectangular matrix")
+    if not np.isfinite(matrix).all():
+        raise ValueError("Data must contain only finite numbers")
+    return matrix
 
 
 # --------------------------------------------------------------------------- #
@@ -150,30 +155,36 @@ def federated_average_update(
     return params
 
 
-def _run_advanced(task_id: str, data: dict[str, list[float]], steps: int) -> None:
+def _result_payload(result: np.ndarray, shape: tuple[int, ...]) -> list[list[float]]:
+    """Finish finite, JSON-safe serialization before publishing completion."""
+    if not isinstance(result, np.ndarray) or result.shape != shape or np.iscomplexobj(result):
+        raise ValueError("Engine returned an invalid result matrix")
+    matrix = result.astype(float, copy=False)
+    if not np.isfinite(matrix).all():
+        raise ValueError("Engine returned nonfinite results")
+    return matrix.tolist()
+
+
+def _run_advanced(task_id: str, matrix: np.ndarray, steps: int) -> None:
     try:
-        arr = _normalise(data)
-        result = active_inference_update(arr, steps)
-        _tasks[task_id]["status"] = "COMPLETED"
-        _tasks[task_id]["result"] = result.tolist()
-    except Exception as e:  # pragma: no cover - defensive
+        result = active_inference_update(matrix, steps)
+        payload = _result_payload(result, matrix.shape)
+        _tasks[task_id] = {"status": "COMPLETED", "result": payload, "message": None}
+    except Exception as e:
         logger.exception("Advanced inference task %s failed", task_id)
-        _tasks[task_id]["status"] = "FAILED"
-        _tasks[task_id]["message"] = str(e)
+        _tasks[task_id] = {"status": "FAILED", "result": None, "message": str(e)}
 
 
 def _run_federated(
-    task_id: str, data: dict[str, list[float]], lr: float, epochs: int
+    task_id: str, matrix: np.ndarray, lr: float, epochs: int
 ) -> None:
     try:
-        arr = _normalise(data)
-        result = federated_average_update(arr, lr, epochs)
-        _tasks[task_id]["status"] = "COMPLETED"
-        _tasks[task_id]["result"] = result.tolist()
-    except Exception as e:  # pragma: no cover - defensive
+        result = federated_average_update(matrix, lr, epochs)
+        payload = _result_payload(result, matrix.shape)
+        _tasks[task_id] = {"status": "COMPLETED", "result": payload, "message": None}
+    except Exception as e:
         logger.exception("Federated task %s failed", task_id)
-        _tasks[task_id]["status"] = "FAILED"
-        _tasks[task_id]["message"] = str(e)
+        _tasks[task_id] = {"status": "FAILED", "result": None, "message": str(e)}
 
 
 # --------------------------------------------------------------------------- #
@@ -186,7 +197,7 @@ def perform_advanced_inference(
 ):
     try:
         # Validate eagerly so bad input fails fast with a 400.
-        _normalise(request.data)
+        matrix = _normalise(request.data)
         task_id = str(uuid.uuid4())
         _tasks[task_id] = {"status": "PROCESSING", "result": None, "message": None}
         _metrics["advanced_inference_requests"] += 1
@@ -194,7 +205,7 @@ def perform_advanced_inference(
 
         threading.Thread(
             target=_run_advanced,
-            args=(task_id, request.data, request.simulation_steps or 100),
+            args=(task_id, matrix, request.simulation_steps or 100),
             daemon=True,
         ).start()
         return TaskResponse(task_id=task_id, status="PROCESSING")
@@ -216,7 +227,7 @@ def perform_federated_learning(
     _: str | None = Depends(get_current_api_key),
 ):
     try:
-        _normalise(request.data)
+        matrix = _normalise(request.data)
         task_id = str(uuid.uuid4())
         _tasks[task_id] = {"status": "PROCESSING", "result": None, "message": None}
         _metrics["federated_learning_requests"] += 1
@@ -226,7 +237,7 @@ def perform_federated_learning(
             target=_run_federated,
             args=(
                 task_id,
-                request.data,
+                matrix,
                 request.learning_rate or 0.01,
                 request.epochs or 10,
             ),

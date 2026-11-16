@@ -51,6 +51,11 @@ def generate_concatenated_domains(domains: List[str], prompt: str, output_dir: s
     for domain_a, domain_b in product(domains, repeat=2):
         domain_a_name = os.path.splitext(os.path.basename(domain_a))[0]
         domain_b_name = os.path.splitext(os.path.basename(domain_b))[0]
+        output_filename = f'concatenated_{domain_a_name}_to_{domain_b_name}.md'
+        output_path = os.path.join(output_dir, output_filename)
+        if os.path.exists(output_path):
+            logger.info(f"Output already exists; preserving {output_path}")
+            continue
         logger.info(f"Processing combination: {domain_a_name} and {domain_b_name}")
         
         domain_a_content = load_file(domain_a)
@@ -58,8 +63,6 @@ def generate_concatenated_domains(domains: List[str], prompt: str, output_dir: s
         
         concatenated_content = generate_pro_shift_domains(domain_a_content, domain_b_content, prompt)
         
-        output_filename = f'concatenated_{domain_a_name}_to_{domain_b_name}.md'
-        output_path = os.path.join(output_dir, output_filename)
         save_file(concatenated_content, output_path)
         
         logger.info(f"Concatenated domain saved as: {output_filename}")
@@ -90,21 +93,25 @@ def process_domains(config: dict = DEFAULT_CONFIG) -> None:
         
         # Load domain contents
         domain_files = [os.path.join(input_domain_dir, f) for f in os.listdir(input_domain_dir) if f.endswith('.md')]
-        domains = [load_file(file) for file in domain_files]
 
         logger.info("Domains loaded successfully")
         logger.info("Starting concatenation process")
 
-        # Load the prompt
-        prompt_path = os.path.join(base_dir, 'Prompts', 'FieldSHIFT-2-Domain_Shift.md')
-        prompt = load_file(prompt_path)
-
-        # Generate concatenated domains
-        generate_concatenated_domains(domain_files, prompt, config['output_dirs']['Concatenated_Domain'])
+        output_dir = config['output_dirs']['Concatenated_Domain']
+        if any(
+            not os.path.exists(os.path.join(
+                output_dir,
+                f"concatenated_{os.path.splitext(os.path.basename(a))[0]}_to_{os.path.splitext(os.path.basename(b))[0]}.md",
+            ))
+            for a, b in product(domain_files, repeat=2)
+        ):
+            prompt_path = os.path.join(base_dir, 'Prompts', 'FieldSHIFT-2-Domain_Shift.md')
+            prompt = load_file(prompt_path)
+            generate_concatenated_domains(domain_files, prompt, output_dir)
 
         logger.info("Concatenation process completed successfully.")
         print(f"\n{'='*50}\nConcatenation process summary:\n{'-'*50}")
-        print(f"Total domains processed: {len(domains)}")
+        print(f"Total domains processed: {len(domain_files)}")
         print(f"Output directory: {config['output_dirs']['Concatenated_Domain']}")
         print(f"{'='*50}\n")
     except Exception as e:

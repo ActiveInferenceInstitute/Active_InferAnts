@@ -1,4 +1,10 @@
-Check all methods that they skip files already there.
+Existing-file preservation: the complete writer/caller ledger, both nested
+scripts, both meta-analysis modules, empty-file preservation, partial groups
+and offline no-provider-work cases passed the parent's governed focused
+software acceptance on 2026-11-13. This closure is not based on only four
+clustering files and is not credential/import-free entrypoint or scientific
+runtime acceptance. The grant-generation and all-folder language-analysis
+requests below remain separate and open (FS-2/FS-3).
 
 Write Pro-Grant (Completed catechism) for the Funding calls in the Grant Fond, for funding that PhD student. 
 

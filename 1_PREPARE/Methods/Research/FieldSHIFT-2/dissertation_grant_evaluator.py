@@ -118,24 +118,23 @@ def process_dissertation_evaluation(input_dir: str, output_base_dir: str, llm_pa
         llm_params (Dict[str, Any]): LLM parameters from config.
     """
     try:
-        # Load grant summary files as plain text
-        grant_summaries = []
+        # Discover paths; read descriptions only for missing outputs.
+        grant_paths = []
         grant_dir = os.path.join(os.path.dirname(__file__), '../Fonds/Summarized_Grants')
         for root, dirs, files in os.walk(grant_dir):
             for file in files:
                 if file.endswith('.md'):
                     grant_path = os.path.join(root, file)
-                    with open(grant_path, 'r') as f:
-                        grant_content = f.read()
                     grant_name = os.path.splitext(file)[0]
-                    grant_summaries.append((grant_name, grant_content))
-                    logger.info(f"Loaded grant summary: {file}")
+                    grant_paths.append((grant_name, grant_path))
+                    logger.info(f"Discovered grant summary: {file}")
 
+        grant_contents = {}
         for input_file in os.listdir(input_dir):
             if input_file.endswith(".md"):
                 input_file_path = os.path.join(input_dir, input_file)
                 
-                for grant_name, grant_content in grant_summaries:
+                for grant_name, grant_path in grant_paths:
                     # Prepare the output directory and file name
                     output_dir = os.path.join(output_base_dir, f"Evaluated_for_{grant_name}")
                     os.makedirs(output_dir, exist_ok=True)
@@ -146,12 +145,16 @@ def process_dissertation_evaluation(input_dir: str, output_base_dir: str, llm_pa
                     if os.path.exists(output_file_path):
                         continue
                     
+                    if grant_path not in grant_contents:
+                        with open(grant_path, 'r') as source:
+                            grant_contents[grant_path] = source.read()
+                    description = grant_contents[grant_path]
                     # Load the existing dissertation content
                     dissertation_content = load_file(input_file_path)
                     
                     # Evaluate the dissertation
                     start_time = time.time()
-                    evaluated_dissertation = evaluate_dissertation(dissertation_content, grant_content, llm_params)
+                    evaluated_dissertation = evaluate_dissertation(dissertation_content, description, llm_params)
                     end_time = time.time()
                     elapsed_time = end_time - start_time
                     logger.info(f"Dissertation evaluated for {grant_name} in {elapsed_time:.2f} seconds.")
