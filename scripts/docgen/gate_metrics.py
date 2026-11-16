@@ -345,7 +345,9 @@ def main(argv: list[str] | None = None) -> int:
     mode.add_argument("--write", action="store_true", help="measure and rewrite")
     mode.add_argument("--check", action="store_true", help="fail if stale")
     mode.add_argument(
-        "--refresh-counts", action="store_true", help="refresh inventory, retain measurements"
+        "--refresh-counts",
+        action="store_true",
+        help="refresh inventory, retain measurements",
     )
     mode.add_argument(
         "--write-baseline", action="store_true", help="re-freeze the baseline JSON"

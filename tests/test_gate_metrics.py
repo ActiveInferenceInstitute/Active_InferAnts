@@ -6,7 +6,9 @@ import re
 from pathlib import Path
 
 
-def test_refresh_counts_preserves_measurements_and_frozen_baseline(tmp_path, monkeypatch):
+def test_refresh_counts_preserves_measurements_and_frozen_baseline(
+    tmp_path, monkeypatch
+):
     root = Path(__file__).resolve().parents[1]
     spec = importlib.util.spec_from_file_location(
         "gate_metrics", root / "scripts/docgen/gate_metrics.py"
