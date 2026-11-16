@@ -482,7 +482,9 @@ class FollowUpSpecification:
         # Parameters:
         # - filename (str): The name of the file to export to.
         with open(filename, "w", encoding="utf-8") as f:
-            json.dump(self.generate_followup_specification(), f, indent=4, allow_nan=False)
+            json.dump(
+                self.generate_followup_specification(), f, indent=4, allow_nan=False
+            )
         self.logger.info(f"Exported follow-up specification to {filename}")
 
     def import_from_json(self, filename: str) -> None:

@@ -26,7 +26,6 @@ from active_infer_ants import ActiveInferenceAgent
 logger = logging.getLogger(__name__)
 
 
-
 class MetaInformAntSimulation:
     """A grid-world ant-colony active-inference simulation.
 

@@ -218,7 +218,9 @@ class SimulationExecutor:
             try:
                 self._cleanup()
             except Exception:
-                self.logger.exception("Cleanup failed while preserving the original failure")
+                self.logger.exception(
+                    "Cleanup failed while preserving the original failure"
+                )
             raise
         else:
             self._cleanup()

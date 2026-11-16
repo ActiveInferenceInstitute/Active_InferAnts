@@ -92,7 +92,9 @@ class SimulationPlanner:
             "META_CONFIG",
         ):
             if not isinstance(selected.get(key, {}), dict):
-                raise ValueError(f"Simulation configuration section must be an object: {key}")
+                raise ValueError(
+                    f"Simulation configuration section must be an object: {key}"
+                )
         self.settings = selected["SIMULATION_SETTINGS"]
         self.environment_config = selected["ENVIRONMENT_CONFIG"]
         self.ant_and_colony_config = selected.get("ANT_AND_COLONY_CONFIG", {})

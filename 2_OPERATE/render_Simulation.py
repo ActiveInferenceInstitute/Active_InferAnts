@@ -119,7 +119,9 @@ class SimulationRenderer:
                 heatmap, ax=self.ax, label="Pheromone Intensity", pad=0.16
             )
             self._colorbar.ax.tick_params(labelsize=12)
-            self._colorbar.set_label("Pheromone Intensity", fontsize=14, fontweight="bold")
+            self._colorbar.set_label(
+                "Pheromone Intensity", fontsize=14, fontweight="bold"
+            )
         else:
             self._colorbar.update_normal(heatmap)
 
@@ -141,7 +143,10 @@ class SimulationRenderer:
 
         self._plot_entities(
             [(nest.x, nest.y) for nest in self.nests],
-            "red", "Nests", marker="s", size=100,
+            "red",
+            "Nests",
+            marker="s",
+            size=100,
         )
         positions = getattr(self.simulation_environment, "agent_positions", None)
         if positions is None:

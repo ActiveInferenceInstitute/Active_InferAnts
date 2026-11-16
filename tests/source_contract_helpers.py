@@ -35,7 +35,8 @@ def load_definitions(relative, **values):
     path = ROOT / relative
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     nodes = [
-        node for node in tree.body
+        node
+        for node in tree.body
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
     ]
     namespace = {
@@ -48,16 +49,26 @@ def load_definitions(relative, **values):
         "np": np,
         "Counter": Counter,
         "product": product,
-        "DEFAULT_CONFIG": {"llm_params": {}, "analysis_params": {"linguistic_features": []}},
+        "DEFAULT_CONFIG": {
+            "llm_params": {},
+            "analysis_params": {"linguistic_features": []},
+        },
     }
     for node in tree.body:
         if isinstance(node, ast.Assign):
             for target in node.targets:
-                if isinstance(target, ast.Name) and target.id in {"TARGET_LANGUAGES", "TARGET_AUDIENCES"}:
+                if isinstance(target, ast.Name) and target.id in {
+                    "TARGET_LANGUAGES",
+                    "TARGET_AUDIENCES",
+                }:
                     namespace[target.id] = ast.literal_eval(node.value)
     namespace.update(values)
-    future = ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0)
-    module = ast.fix_missing_locations(ast.Module(body=[future, *nodes], type_ignores=[]))
+    future = ast.ImportFrom(
+        module="__future__", names=[ast.alias(name="annotations")], level=0
+    )
+    module = ast.fix_missing_locations(
+        ast.Module(body=[future, *nodes], type_ignores=[])
+    )
     exec(compile(module, str(path), "exec"), namespace)
     namespace.update(values)
     return namespace

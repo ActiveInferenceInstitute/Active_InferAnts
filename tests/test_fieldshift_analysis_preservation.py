@@ -15,7 +15,10 @@ from source_contract_helpers import FIELD, ForbiddenWork, load_definitions, seed
 
 SOURCES = [
     ("Meta_Analysis_Shifted_Dissertation.py", "DissertationMetaAnalysis"),
-    ("Meta_Analysis_Shifted_Dissertation_Outline.py", "DissertationOutlineMetaAnalysis"),
+    (
+        "Meta_Analysis_Shifted_Dissertation_Outline.py",
+        "DissertationOutlineMetaAnalysis",
+    ),
 ]
 PCA_PATHS = (
     "PCA_Analysis/Top_Terms_Per_Component.png",
@@ -25,19 +28,30 @@ PCA_PATHS = (
     "PCA_Analysis/3D_PCA_Plot.png",
 )
 CLUSTER_PATHS = (
-    "Clustering/KMeans_Clustering_PCA.png", "Clustering/KMeans_Clustering_tSNE.png",
-    "Clustering/KMeans_Clustering_SVD.png", "Clustering/Hierarchical_Clustering_PCA.png",
-    "Projections/PCA_Projection_By_Entity.png", "Projections/PCA_Projection_By_Domain.png",
-    "PCA_Analysis/Top_Terms_Per_Component_20.png", *PCA_PATHS,
+    "Clustering/KMeans_Clustering_PCA.png",
+    "Clustering/KMeans_Clustering_tSNE.png",
+    "Clustering/KMeans_Clustering_SVD.png",
+    "Clustering/Hierarchical_Clustering_PCA.png",
+    "Projections/PCA_Projection_By_Entity.png",
+    "Projections/PCA_Projection_By_Domain.png",
+    "PCA_Analysis/Top_Terms_Per_Component_20.png",
+    *PCA_PATHS,
 )
 OTHER_PATHS = (
-    "TopTerms/Top_30_Terms_Bar_Chart.png", "Heatmaps/Term_Frequency_Heatmap.png",
-    "Diversity/Shannon_Diversity_Indices.png", "Heatmaps/Entity_Domain_Combination_Heatmap.png",
-    "Networks/Term_Network_Graph.png", "Heatmaps/Term_Correlation_Heatmap.png",
-    "Heatmaps/Document_Similarity_Heatmap.png", "Heatmaps/Top_50_Terms_Document_Heatmap.png",
+    "TopTerms/Top_30_Terms_Bar_Chart.png",
+    "Heatmaps/Term_Frequency_Heatmap.png",
+    "Diversity/Shannon_Diversity_Indices.png",
+    "Heatmaps/Entity_Domain_Combination_Heatmap.png",
+    "Networks/Term_Network_Graph.png",
+    "Heatmaps/Term_Correlation_Heatmap.png",
+    "Heatmaps/Document_Similarity_Heatmap.png",
+    "Heatmaps/Top_50_Terms_Document_Heatmap.png",
     "Heatmaps/Top_50_Terms_Cooccurrence_Heatmap.png",
 )
-EXTRA_PATHS = ("Interactive/Interactive_3D_Scatter.html", "Dendrograms/Hierarchical_Clustering_Dendrogram.png")
+EXTRA_PATHS = (
+    "Interactive/Interactive_3D_Scatter.html",
+    "Dendrograms/Hierarchical_Clustering_Dendrogram.png",
+)
 
 
 class RenderFixture:
@@ -109,8 +123,12 @@ class PCAFixture:
 def instance(source, root, **values):
     rendering = RenderFixture()
     namespace = load_definitions(
-        FIELD / source[0], plt=rendering,
-        sns=SimpleNamespace(color_palette=lambda name, n_colors: ["blue"] * n_colors, despine=lambda **kwargs: None),
+        FIELD / source[0],
+        plt=rendering,
+        sns=SimpleNamespace(
+            color_palette=lambda name, n_colors: ["blue"] * n_colors,
+            despine=lambda **kwargs: None,
+        ),
         **values,
     )
     analyzer = object.__new__(namespace[source[1]])
@@ -123,27 +141,79 @@ def instance(source, root, **values):
 
 def expected_paths(source, files):
     extras = EXTRA_PATHS if source == SOURCES[0] else ()
-    return (*CLUSTER_PATHS, *extras, *OTHER_PATHS, *(f"WordClouds/{file}_wordcloud.png" for file in files))
+    return (
+        *CLUSTER_PATHS,
+        *extras,
+        *OTHER_PATHS,
+        *(f"WordClouds/{file}_wordcloud.png" for file in files),
+    )
 
 
 SINGLE = [
-    ("plot_top_terms_per_component", ("data", "data"), {"n_terms": 7}, "PCA_Analysis/Top_Terms_Per_Component_7.png"),
-    ("entity_domain_analysis", (), {}, "Heatmaps/Entity_Domain_Combination_Heatmap.png"),
-    ("plot_top_terms_bar_chart", ("data",), {"num_terms": 11}, "TopTerms/Top_11_Terms_Bar_Chart.png"),
-    ("plot_term_frequency_heatmap", ("data", "data"), {}, "Heatmaps/Term_Frequency_Heatmap.png"),
-    ("calculate_diversity_indices", ("data",), {}, "Diversity/Shannon_Diversity_Indices.png"),
+    (
+        "plot_top_terms_per_component",
+        ("data", "data"),
+        {"n_terms": 7},
+        "PCA_Analysis/Top_Terms_Per_Component_7.png",
+    ),
+    (
+        "entity_domain_analysis",
+        (),
+        {},
+        "Heatmaps/Entity_Domain_Combination_Heatmap.png",
+    ),
+    (
+        "plot_top_terms_bar_chart",
+        ("data",),
+        {"num_terms": 11},
+        "TopTerms/Top_11_Terms_Bar_Chart.png",
+    ),
+    (
+        "plot_term_frequency_heatmap",
+        ("data", "data"),
+        {},
+        "Heatmaps/Term_Frequency_Heatmap.png",
+    ),
+    (
+        "calculate_diversity_indices",
+        ("data",),
+        {},
+        "Diversity/Shannon_Diversity_Indices.png",
+    ),
     ("plot_term_network", ("data", "data"), {}, "Networks/Term_Network_Graph.png"),
-    ("plot_term_correlation_heatmap", ("data", "data"), {}, "Heatmaps/Term_Correlation_Heatmap.png"),
-    ("plot_document_similarity_heatmap", ("data",), {}, "Heatmaps/Document_Similarity_Heatmap.png"),
-    ("plot_term_document_heatmap", ("data", "data"), {"top_n": 7}, "Heatmaps/Top_7_Terms_Document_Heatmap.png"),
-    ("plot_term_cooccurrence_heatmap", ("data", "data"), {"top_n": 9}, "Heatmaps/Top_9_Terms_Cooccurrence_Heatmap.png"),
+    (
+        "plot_term_correlation_heatmap",
+        ("data", "data"),
+        {},
+        "Heatmaps/Term_Correlation_Heatmap.png",
+    ),
+    (
+        "plot_document_similarity_heatmap",
+        ("data",),
+        {},
+        "Heatmaps/Document_Similarity_Heatmap.png",
+    ),
+    (
+        "plot_term_document_heatmap",
+        ("data", "data"),
+        {"top_n": 7},
+        "Heatmaps/Top_7_Terms_Document_Heatmap.png",
+    ),
+    (
+        "plot_term_cooccurrence_heatmap",
+        ("data", "data"),
+        {"top_n": 9},
+        "Heatmaps/Top_9_Terms_Cooccurrence_Heatmap.png",
+    ),
 ]
 
 
 @pytest.mark.parametrize("source", SOURCES)
 @pytest.mark.parametrize("method,args,kwargs,target", SINGLE)
 @pytest.mark.parametrize("historical", [b"", b"historical\x00\xff\r\n"])
-def test_each_single_output_entrypoint_skips_before_data_or_rendering(tmp_path, source, method, args, kwargs, target, historical):
+def test_each_single_output_entrypoint_skips_before_data_or_rendering(
+    tmp_path, source, method, args, kwargs, target, historical
+):
     analyzer, namespace, rendering = instance(source, tmp_path)
     poison = ForbiddenWork()
     namespace["plt"] = poison
@@ -154,11 +224,16 @@ def test_each_single_output_entrypoint_skips_before_data_or_rendering(tmp_path, 
     assert poison.calls == [] and rendering.saved == []
 
 
-@pytest.mark.parametrize("method,target,args", [
-    ("generate_interactive_3d_scatter", EXTRA_PATHS[0], 2),
-    ("generate_dendrogram", EXTRA_PATHS[1], 1),
-])
-def test_dissertation_html_and_dendrogram_skip_before_construction(tmp_path, method, target, args):
+@pytest.mark.parametrize(
+    "method,target,args",
+    [
+        ("generate_interactive_3d_scatter", EXTRA_PATHS[0], 2),
+        ("generate_dendrogram", EXTRA_PATHS[1], 1),
+    ],
+)
+def test_dissertation_html_and_dendrogram_skip_before_construction(
+    tmp_path, method, target, args
+):
     poison = ForbiddenWork()
     analyzer, _, rendering = instance(SOURCES[0], tmp_path, go=poison, linkage=poison)
     path = seed_output(tmp_path, target)
@@ -170,7 +245,9 @@ def test_dissertation_html_and_dendrogram_skip_before_construction(tmp_path, met
 @pytest.mark.parametrize("source", SOURCES)
 def test_complete_groups_and_orchestrator_do_not_read_or_fit(tmp_path, source):
     analyzer, _, rendering = instance(source, tmp_path)
-    paths = [seed_output(tmp_path, path) for path in expected_paths(source, analyzer.files)]
+    paths = [
+        seed_output(tmp_path, path) for path in expected_paths(source, analyzer.files)
+    ]
     poison = ForbiddenWork()
     analyzer.perform_tfidf_analysis = poison
     analyzer.run_analysis()
@@ -183,7 +260,9 @@ def test_complete_groups_and_orchestrator_do_not_read_or_fit(tmp_path, source):
 
 @pytest.mark.parametrize("source", SOURCES)
 @pytest.mark.parametrize("missing", PCA_PATHS)
-def test_each_missing_pca_companion_is_created_without_rewriting_four_others(tmp_path, source, missing):
+def test_each_missing_pca_companion_is_created_without_rewriting_four_others(
+    tmp_path, source, missing
+):
     analyzer, _, rendering = instance(source, tmp_path)
     preserved = [seed_output(tmp_path, path) for path in PCA_PATHS if path != missing]
     analyzer.pca_interpretability(PCAFixture(), VectorizerFixture())
@@ -194,22 +273,44 @@ def test_each_missing_pca_companion_is_created_without_rewriting_four_others(tmp
 
 @pytest.mark.parametrize("source", SOURCES)
 @pytest.mark.parametrize("present", ["Entity", "Domain"])
-def test_projection_partial_pair_preserves_existing_companion(tmp_path, source, present):
+def test_projection_partial_pair_preserves_existing_companion(
+    tmp_path, source, present
+):
     analyzer, _, rendering = instance(source, tmp_path)
     preserved = seed_output(tmp_path, f"Projections/Custom_Projection_By_{present}.png")
     other = "Domain" if present == "Entity" else "Entity"
     analyzer.visualize_projections(np.array([[0.0, 1.0], [2.0, 3.0]]), "Custom")
-    assert rendering.saved == [tmp_path / f"Projections/Custom_Projection_By_{other}.png"]
+    assert rendering.saved == [
+        tmp_path / f"Projections/Custom_Projection_By_{other}.png"
+    ]
     assert preserved.read_bytes() == b"historical\x00\xff\r\n"
 
 
 @pytest.mark.parametrize("source", SOURCES)
-def test_missing_interpretation_is_not_hidden_by_existing_cluster_plots(tmp_path, source):
+def test_missing_interpretation_is_not_hidden_by_existing_cluster_plots(
+    tmp_path, source
+):
     poison = ForbiddenWork()
-    analyzer, namespace, rendering = instance(source, tmp_path, PCA=lambda **kwargs: PCAFixture(), KMeans=poison, AgglomerativeClustering=poison, TSNE=poison, TruncatedSVD=poison)
+    analyzer, namespace, rendering = instance(
+        source,
+        tmp_path,
+        PCA=lambda **kwargs: PCAFixture(),
+        KMeans=poison,
+        AgglomerativeClustering=poison,
+        TSNE=poison,
+        TruncatedSVD=poison,
+    )
     missing = "PCA_Analysis/Explained_Variance.png"
-    paths = [seed_output(tmp_path, path) for path in expected_paths(source, analyzer.files) if path != missing]
-    analyzer.perform_tfidf_analysis = lambda: (None, MatrixFixture(), VectorizerFixture())
+    paths = [
+        seed_output(tmp_path, path)
+        for path in expected_paths(source, analyzer.files)
+        if path != missing
+    ]
+    analyzer.perform_tfidf_analysis = lambda: (
+        None,
+        MatrixFixture(),
+        VectorizerFixture(),
+    )
     analyzer.cluster_documents()
     assert rendering.saved == [tmp_path / missing]
     assert poison.calls == []
@@ -230,7 +331,11 @@ def test_missing_wordcloud_remains_eligible_without_unneeded_tfidf(tmp_path, sou
 
     analyzer, _, rendering = instance(source, tmp_path, WordCloud=WordCloudFixture)
     missing = "WordClouds/bob_two.md_wordcloud.png"
-    paths = [seed_output(tmp_path, path) for path in expected_paths(source, analyzer.files) if path != missing]
+    paths = [
+        seed_output(tmp_path, path)
+        for path in expected_paths(source, analyzer.files)
+        if path != missing
+    ]
     poison = ForbiddenWork()
     analyzer.perform_tfidf_analysis = poison
     analyzer.run_analysis()
@@ -260,13 +365,24 @@ def test_interactive_caller_passes_the_existing_third_pca_coordinate(tmp_path):
             return np.array([0, 1])
 
     analyzer, _, rendering = instance(
-        SOURCES[0], tmp_path, PCA=lambda **kwargs: PCAFixture(), KMeans=KMeansFixture,
+        SOURCES[0],
+        tmp_path,
+        PCA=lambda **kwargs: PCAFixture(),
+        KMeans=KMeansFixture,
         silhouette_score=lambda *args: 0.5,
         go=SimpleNamespace(Figure=Figure, Scatter3d=lambda **kwargs: kwargs),
     )
     missing = EXTRA_PATHS[0]
-    paths = [seed_output(tmp_path, path) for path in expected_paths(SOURCES[0], analyzer.files) if path != missing]
-    analyzer.perform_tfidf_analysis = lambda: (None, MatrixFixture(), VectorizerFixture())
+    paths = [
+        seed_output(tmp_path, path)
+        for path in expected_paths(SOURCES[0], analyzer.files)
+        if path != missing
+    ]
+    analyzer.perform_tfidf_analysis = lambda: (
+        None,
+        MatrixFixture(),
+        VectorizerFixture(),
+    )
     analyzer.cluster_documents()
     assert json.loads((tmp_path / missing).read_text()) == {"z": [2.0, 52.0]}
     assert rendering.saved == []

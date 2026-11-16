@@ -157,7 +157,11 @@ def federated_average_update(
 
 def _result_payload(result: np.ndarray, shape: tuple[int, ...]) -> list[list[float]]:
     """Finish finite, JSON-safe serialization before publishing completion."""
-    if not isinstance(result, np.ndarray) or result.shape != shape or np.iscomplexobj(result):
+    if (
+        not isinstance(result, np.ndarray)
+        or result.shape != shape
+        or np.iscomplexobj(result)
+    ):
         raise ValueError("Engine returned an invalid result matrix")
     matrix = result.astype(float, copy=False)
     if not np.isfinite(matrix).all():
@@ -175,9 +179,7 @@ def _run_advanced(task_id: str, matrix: np.ndarray, steps: int) -> None:
         _tasks[task_id] = {"status": "FAILED", "result": None, "message": str(e)}
 
 
-def _run_federated(
-    task_id: str, matrix: np.ndarray, lr: float, epochs: int
-) -> None:
+def _run_federated(task_id: str, matrix: np.ndarray, lr: float, epochs: int) -> None:
     try:
         result = federated_average_update(matrix, lr, epochs)
         payload = _result_payload(result, matrix.shape)

@@ -8,12 +8,17 @@ from MetaInformAnt_Simulation import MetaInformAntSimulation
 MOVES = [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]
 
 
-@pytest.mark.parametrize("position", [(2, 2), (0, 0), (4, 0), (0, 4), (4, 4), (0, 2), (4, 2), (2, 0), (2, 4)])
+@pytest.mark.parametrize(
+    "position", [(2, 2), (0, 0), (4, 0), (0, 4), (4, 4), (0, 2), (4, 2), (2, 0), (2, 4)]
+)
 def test_observation_order_and_boundary_clipping(position):
     environment = Environment(5, 5, num_food_sources=0, num_nests=0, seed=0)
     environment.pheromone[:] = np.arange(25).reshape(5, 5)
     x, y = position
-    expected = [environment.pheromone[min(max(y + dy, 0), 4), min(max(x + dx, 0), 4)] for dx, dy in MOVES]
+    expected = [
+        environment.pheromone[min(max(y + dy, 0), 4), min(max(x + dx, 0), 4)]
+        for dx, dy in MOVES
+    ]
     np.testing.assert_array_equal(environment.sense_pheromone(x, y), expected)
 
 

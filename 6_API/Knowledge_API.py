@@ -245,9 +245,11 @@ def _is_source_conflict(error: IntegrityError) -> bool:
     if getattr(original, "sqlite_errorcode", None) == sqlite3.SQLITE_CONSTRAINT_UNIQUE:
         return str(original) == "UNIQUE constraint failed: knowledge_items.source"
     state = getattr(original, "sqlstate", None) or getattr(original, "pgcode", None)
-    return state == "23505" and getattr(
-        getattr(original, "diag", None), "constraint_name", None
-    ) == "ix_knowledge_items_source"
+    return (
+        state == "23505"
+        and getattr(getattr(original, "diag", None), "constraint_name", None)
+        == "ix_knowledge_items_source"
+    )
 
 
 def _delete_from_secondary(clients, source: str) -> None:
@@ -316,7 +318,9 @@ def create_knowledge(
                 status_code=409, detail="Knowledge source already exists"
             ) from None
         logger.error("Error creating knowledge: %s", exc)
-        raise HTTPException(status_code=500, detail="Error creating knowledge") from None
+        raise HTTPException(
+            status_code=500, detail="Error creating knowledge"
+        ) from None
     except Exception as e:
         db.rollback()
         logger.error("Error creating knowledge: %s", e)
@@ -354,7 +358,9 @@ def update_knowledge(
 ):
     try:
         if source != knowledge.source:
-            raise HTTPException(status_code=400, detail="Body source must match URL source")
+            raise HTTPException(
+                status_code=400, detail="Body source must match URL source"
+            )
         item = db.query(KnowledgeItem).filter(KnowledgeItem.source == source).first()
         if not item:
             raise HTTPException(status_code=404, detail="Knowledge not found")

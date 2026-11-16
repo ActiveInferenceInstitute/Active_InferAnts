@@ -15,8 +15,14 @@ def test_refresh_uses_live_positions_without_growing_axes_or_artists():
             environment.agent_positions[0] = (step % 6, (step + 1) % 6)
             environment.pheromone[0, 0] = step
             renderer.refresh_visualization(step)
-            agents = [artist for artist in renderer.ax.collections if artist.get_label() == "Ants"]
-            np.testing.assert_array_equal(agents[0].get_offsets(), [environment.agent_positions[0]])
+            agents = [
+                artist
+                for artist in renderer.ax.collections
+                if artist.get_label() == "Ants"
+            ]
+            np.testing.assert_array_equal(
+                agents[0].get_offsets(), [environment.agent_positions[0]]
+            )
             assert len(renderer.fig.axes) == 2
             assert len(renderer.ax.images) == 1
             assert len(renderer.ax.collections) == 2
@@ -33,7 +39,13 @@ def test_repeated_post_views_release_owned_twin_axes_and_close_only_owned_figure
     figure_number = renderer.fig.number
     try:
         for _ in range(3):
-            renderer.render_post_simulation({"convergence": [0.1, 0.2], "best_path": [(0, 0), (1, 1)], "performance_metrics": {"reward": 1.0}})
+            renderer.render_post_simulation(
+                {
+                    "convergence": [0.1, 0.2],
+                    "best_path": [(0, 0), (1, 1)],
+                    "performance_metrics": {"reward": 1.0},
+                }
+            )
             assert len(renderer.fig.axes) == 3
             assert len(renderer.ax.lines) == 1
             assert len(renderer.ax.texts) == 1
