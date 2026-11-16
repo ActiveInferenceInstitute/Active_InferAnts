@@ -28,6 +28,8 @@ class SimulationRenderer:
         self.agents = agents
         self.fig, self.ax = plt.subplots(figsize=(14, 12))
         self.colormap = self._create_custom_colormap()
+        self._colorbar = None
+        self._convergence_ax = None
         self._configure_plot_environment()
         self.animation: Optional[animation.FuncAnimation] = None
         logging.info("SimulationRenderer initialized successfully.")
@@ -75,28 +77,13 @@ class SimulationRenderer:
 
     def _plot_entities(
         self,
-        entities: List[Entity],
+        positions: List[Tuple[float, float]],
         color: str,
         label: str,
         marker: str = "o",
         size: int = 50,
     ) -> None:
-        """Plot entities on the simulation environment.
-
-        Parameters
-        ----------
-        entities : List[Entity]
-            The list of entities to plot.
-        color : str
-            Color of the entities.
-        label : str
-            Label for the entities.
-        marker : str, optional
-            Marker style, by default 'o'.
-        size : int, optional
-            Size of the markers, by default 50.
-        """
-        positions = [(entity.x, entity.y) for entity in entities]
+        """Plot coordinates without snapshotting the live agent projection."""
         if positions:
             x, y = zip(*positions)
             self.ax.scatter(
@@ -110,7 +97,6 @@ class SimulationRenderer:
                 s=size,
                 zorder=3,
             )
-            logging.debug(f"Plotted {label} with color {color}.")
 
     def _plot_pheromone_trails(self) -> None:
         """Plot pheromone trails as a heatmap with enhanced visualization."""
@@ -128,14 +114,22 @@ class SimulationRenderer:
             interpolation="gaussian",
             zorder=1,
         )
-        colorbar = self.fig.colorbar(
-            heatmap, ax=self.ax, label="Pheromone Intensity", pad=0.02
-        )
-        colorbar.ax.tick_params(labelsize=12)
-        colorbar.set_label("Pheromone Intensity", fontsize=14, fontweight="bold")
+        if self._colorbar is None:
+            self._colorbar = self.fig.colorbar(
+                heatmap, ax=self.ax, label="Pheromone Intensity", pad=0.16
+            )
+            self._colorbar.ax.tick_params(labelsize=12)
+            self._colorbar.set_label(
+                "Pheromone Intensity", fontsize=14, fontweight="bold"
+            )
+        else:
+            self._colorbar.update_normal(heatmap)
 
     def _refresh_environment(self, frame: Optional[int] = None) -> List[plt.Artist]:
         """Refresh the environment for the next frame or step."""
+        if self._convergence_ax is not None:
+            self._convergence_ax.remove()
+            self._convergence_ax = None
         self.ax.clear()
         self._configure_plot_environment()
         self._plot_pheromone_trails()
@@ -147,8 +141,17 @@ class SimulationRenderer:
                 fontweight="bold",
             )
 
-        self._plot_entities(self.nests, "red", "Nests", marker="s", size=100)
-        self._plot_entities(self.agents, "black", "Ants", marker="^", size=80)
+        self._plot_entities(
+            [(nest.x, nest.y) for nest in self.nests],
+            "red",
+            "Nests",
+            marker="s",
+            size=100,
+        )
+        positions = getattr(self.simulation_environment, "agent_positions", None)
+        if positions is None:
+            positions = [(agent.x, agent.y) for agent in self.agents]
+        self._plot_entities(positions, "black", "Ants", marker="^", size=80)
 
         legend = self.ax.legend(
             loc="upper right", fontsize=14, framealpha=0.9, edgecolor="black"
@@ -205,6 +208,7 @@ class SimulationRenderer:
         if "convergence" in simulation_results:
             convergence_data = simulation_results["convergence"]
             ax2 = self.ax.twinx()
+            self._convergence_ax = ax2
             ax2.plot(convergence_data, "r--", label="Convergence", linewidth=2)
             ax2.set_ylabel(
                 "Convergence Metric", color="r", fontsize=16, fontweight="bold"
@@ -240,14 +244,23 @@ class SimulationRenderer:
             [f"{k.replace('_', ' ').title()}: {v:.2f}" for k, v in metrics.items()]
         )
         self.ax.text(
-            0.02,
+            0.98,
             0.98,
             text_box,
             transform=self.ax.transAxes,
             fontsize=12,
             verticalalignment="top",
+            horizontalalignment="right",
             bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.8),
         )
+
+    def close(self) -> None:
+        """Stop the owned animation and close only this renderer's figure."""
+        if self.animation is not None:
+            if self.animation.event_source is not None:
+                self.animation.event_source.stop()
+            self.animation = None
+        plt.close(self.fig)
 
     def save_animation(self, filename: str, fps: int = 30, dpi: int = 300) -> None:
         """Save the animation to a file.

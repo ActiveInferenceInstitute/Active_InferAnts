@@ -9,7 +9,7 @@ FastAPI-based knowledge management service with a SQL-first primary store and be
 | Framework | FastAPI |
 | Primary store | SQLAlchemy (SQLite by default; set `KNOWLEDGE_DB_URL` for PostgreSQL or another RDBMS) |
 | Document store | MongoDB via `pymongo` (best-effort secondary store) |
-| Cache | Redis via `redis` (best-effort secondary store) |
+| Secondary copy | Redis via `redis`: best-effort write copy, not a read-through cache |
 | Graph DB | Neo4j via the `neo4j` driver (best-effort secondary store) |
 | Search | Elasticsearch via the `elasticsearch` client (best-effort secondary store) |
 | Auth | Optional API key via `APIKeyHeader` (`X-API-Key`) |
@@ -17,9 +17,9 @@ FastAPI-based knowledge management service with a SQL-first primary store and be
 
 ## Authentication
 
-Authentication is **enabled only when `KNOWLEDGE_API_KEY` is set** in the
-environment. When it is set, mutating endpoints require the key via the
-`X-API-Key` header and the check uses a constant-time comparison:
+Authentication is enabled only when `KNOWLEDGE_API_KEY` is set. When enabled,
+every knowledge CRUD/list route requires `X-API-Key`, checked with constant-time
+comparison. Unconfigured mode is open local/development use.
 
 ```python
 from fastapi.security import APIKeyHeader
@@ -45,13 +45,25 @@ All configuration is read from `KNOWLEDGE_*` environment variables (see the
 | `KNOWLEDGE_API_KEY` | *(empty)* | Enables API-key authentication when set |
 | `KNOWLEDGE_ALLOW_ORIGINS` | `http://localhost:8000` | Comma-separated CORS origins (never `*`) |
 
-## Key Features
+## Execution and Consistency
 
-- CORS middleware restricted to configured origins
-- Auto-generated OpenAPI/Swagger documentation
-- Best-effort synchronous write fan-out to secondary stores (writes never fail when a store is unavailable)
-- Pydantic model validation with custom validators
-- Graceful degradation when secondary stores are absent
+Handlers, SQLAlchemy access and secondary clients are synchronous. SQL is the
+authoritative primary; reads/lists query SQL only. Redis is not read as a cache.
+
+Creates/updates commit SQL before best-effort secondary writes. Deletes commit
+SQL before best-effort secondary removal. No distributed transaction, real-time
+consistency, cache, retry or automatic-convergence guarantee is provided.
+
+`PUT` body source must match the URL source; mismatch is 400 and renaming is
+not implemented. Duplicate source creation, including a recognized commit-time
+source uniqueness conflict, is 409. Unrelated database failures remain errors.
+Failure paths roll back the current SQL transaction; rollback does not reverse
+an already committed primary or secondary effect.
+
+Secondary failures are logged and can leave absent/stale copies even when
+primary mutation succeeds. SQL-only operation remains available without
+optional stores. List uses `skip`/`limit` pagination; CORS remains restricted
+to configured origins.
 
 ## Source
 

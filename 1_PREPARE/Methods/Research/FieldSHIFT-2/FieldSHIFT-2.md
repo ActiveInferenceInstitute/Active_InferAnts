@@ -1,129 +1,69 @@
-# FieldSHIFT-2: Advanced Domain Shifting Framework
+# FieldSHIFT-2: Domain Shifting Framework
 
-FieldSHIFT-2 is a sophisticated system for executing domain shifting operations. It provides a high-level interface for users to transform input domains into shifted domains and generate corresponding dissertation outlines.
+FieldSHIFT-2 contains research scripts for domain transformations,
+dissertation/outline generation, evaluation, translation and analysis.
+Real provider access and scientific-runtime qualification remain separate
+from the existing-output preservation contract.
 
-## Overview
+## Actual source layout
 
-FieldSHIFT-2 is a framework for domain shifting operations. It processes input domains, generates pro-shifted and shifted domains, and creates dissertation outlines. The system also includes translation and linguistic analysis features for result evaluation.
-
-## Directory Structure
-
+```text
 FieldSHIFT-2/
-├── src/
-│   ├── core/
-│   │   ├── FieldSHIFT-2.py
-│   │   ├── config.py
-│   │   └── utils.py
-│   ├── modules/
-│   │   ├── domain_processing/
-│   │   │   ├── generate_pro_shift_domains.py
-│   │   │   └── shift_domains.py
-│   │   ├── dissertation/
-│   │   │   ├── dissertation_outline_generator.py
-│   │   │   ├── dissertation_generator.py
-│   │   │   ├── dissertation_improver.py
-│   │   │   └── dissertation_translation.py
-│   │   └── analysis/
-│   │       └── language_analysis.py
-│   └── shared/
-│       └── constants.py
-├── tests/
-│   └── [test files]
-├── docs/
-│   └── [documentation files]
+├── config.py
+├── utils.py
+├── generate_pro_shift_domains.py
+├── shift_domains.py
+├── dissertation_outline_generator.py
+├── dissertation_generator.py
+├── dissertation_explainer.py
+├── dissertation_improver.py
+├── dissertation_translation.py
+├── dissertation_entity_evaluation.py
+├── dissertation_grant_evaluator.py
+├── Meta_Analysis_Shifted_Dissertation.py
+├── Meta_Analysis_Shifted_Dissertation_Outline.py
+├── IN_PROGRESS/
+│   ├── language_analysis.py
+│   └── generate_pre_pro_shifted_grants.py
 ├── Inputs_and_Outputs/
-│   ├── Domain/
-│   ├── Pro-Shifted_Domain/
-│   ├── Shifted_Domain/
-│   ├── Shifted_Domain_Dissertation_Outline/
-│   └── Analyses/
-├── requirements.txt
-├── README.md
-└── .gitignore
+├── FieldSHIFT_Meta/
+└── FieldSHIFT-1/
+```
 
-## Key Components
+There is no `src/core/FieldSHIFT-2.py` master CLI or central `--config`
+orchestrator. The scripts are flat modules except for the two named
+`IN_PROGRESS` consumers. `config.py` supplies Python configuration; each
+caller's actual directory/full-path arguments control its output, rather than
+an invented common dissertation or analysis destination.
+Preserved artifacts under `Inputs_and_Outputs/`, `FieldSHIFT_Meta/` and the
+predecessor tree are not rewritten to match an aspirational layout.
 
-### FieldSHIFT-2.py
+## Writers and execution boundary
 
-- **Input**: Configuration file (specified via --config argument)
-- **Output**: Manages and orchestrates the entire domain shifting process, writing results to all designated output folders.
-- **Functionality**: Acts as the main entry point for the FieldSHIFT-2 framework, coordinating the execution of various modules and ensuring the workflow progresses smoothly from input to final output.
+`save_file(content, full_path)` writes caller-serialized UTF-8 text; it has no
+implicit directory/filename overload. Existing destinations, including empty
+files, are preserved before artifact-specific input/provider/computation work.
+Complete groups skip; partial groups preserve existing companions while
+eligible missing outputs remain independent. Both meta-analysis modules
+participate in this contract.
 
-### generate_pro_shift_domains.py
+`IN_PROGRESS/language_analysis.py` writes `analysis.json` and a conditional
+PCA companion. Existing companions are preserved independently; nested
+linguistic features are not silently flattened into a new scientific model.
 
-- **Input**: Domain files from `Inputs_and_Outputs/Domain/`
-- **Output**: Pro-shifted domain files in `Inputs_and_Outputs/Pro-Shifted_Domain/`
-- **Functionality**: Processes raw domain files to generate pro-shifted domains, which serve as intermediate representations before the final domain shift. This step involves initial transformations and preparations for more advanced domain shifting.
+Normal imports and entrypoints retain their optional-library, key/configuration
+and NLTK prerequisites. Preservation controls are not credential-free execution,
+provider integration or permission to generate research outputs. Grant-product
+generation and all-folder language analysis remain separate owner decisions;
+see [the original pending requests](IN_PROGRESS/FieldShift_TODO.md).
 
-### shift_domains.py
+## References and maintenance
 
-- **Input**: Pro-shifted domain files from `Inputs_and_Outputs/Pro-Shifted_Domain/`
-- **Output**: Shifted domain files in `Inputs_and_Outputs/Shifted_Domain/`
-- **Functionality**: Executes the core domain shifting operations, transforming pro-shifted domains into their final shifted versions. This module leverages advanced language models to perform sophisticated domain transformations.
+The [pipeline inventory](README.md) and [writer specification](SPEC.md) describe
+the current local interfaces. The predecessor paper and its historical CSVs
+remain historical evidence, not newly executed writer entrypoints.
 
-### dissertation_outline_generator.py
+Contribute through the repository's normal review process.
+Contact <blanket@activeinference.institute>.
+Repository license: CC BY-NC-ND 4.0.
 
-- **Input**: Shifted domain files from `Inputs_and_Outputs/Shifted_Domain/`
-- **Output**: Dissertation outline files in `Inputs_and_Outputs/Shifted_Domain_Dissertation_Outline/`
-- **Functionality**: Generates structured dissertation outlines based on the shifted domain files, ensuring coherence and logical flow. This module creates a high-level framework for dissertations, organizing content into a clear and logical structure.
-
-### dissertation_generator.py
-
-- **Input**: Dissertation outline files from `Inputs_and_Outputs/Shifted_Domain_Dissertation_Outline/`
-- **Output**: Complete dissertation drafts in `Inputs_and_Outputs/Shifted_Domain_Dissertation_Outline/`
-- **Functionality**: Expands dissertation outlines into full drafts, adding detailed content and ensuring academic rigor. This module enhances the outlines with comprehensive sections, including introduction, methodology, results, and discussion.
-
-### dissertation_improver.py
-
-- **Input**: Dissertation drafts from `Inputs_and_Outputs/Shifted_Domain_Dissertation_Outline/`
-- **Output**: Improved dissertation drafts in `Inputs_and_Outputs/Shifted_Domain_Dissertation_Outline/`
-- **Functionality**: Enhances the quality of dissertation drafts by refining content, improving clarity, and ensuring adherence to academic standards. This module focuses on polishing the drafts to meet high academic and publication standards.
-
-### dissertation_translation.py
-
-- **Input**: Dissertation drafts from `Inputs_and_Outputs/Shifted_Domain_Dissertation_Outline/`
-- **Output**: Translated dissertation drafts in `Inputs_and_Outputs/Shifted_Domain_Dissertation_Outline/`
-- **Functionality**: Translates dissertation drafts into different languages, maintaining the original meaning and context. This module ensures that the dissertations are accessible to a broader audience by providing accurate translations.
-
-### language_analysis.py
-
-- **Input**: All folders in `Inputs_and_Outputs/`
-- **Output**: Analysis results in `Inputs_and_Outputs/Analyses/`
-- **Functionality**: Performs comprehensive linguistic analysis on all input and output files, providing insights into language patterns, quality, and consistency. This module evaluates the linguistic aspects of the content, ensuring high-quality and consistent language use across all documents.
-
-### utils.py
-
-- **Functionality**: Provides utility functions for file I/O, logging, and LLM setup. This module contains helper functions to streamline file operations, manage logs, and configure language models, ensuring smooth operation across the entire project. It is used by all other modules to perform common tasks efficiently.
-
-### config.py
-
-- **Input**: Configuration file specified by command-line argument
-- **Output**: Configuration dictionary used by other modules
-- **Functionality**: Loads and parses the configuration file, providing a configuration dictionary that other modules use to access settings and parameters. This module ensures that all components of the framework are correctly configured and can access necessary parameters.
-
-## Installation
-
-1. Clone the repository
-
-## Usage
-
-Run the scripts.
-
-## Configuration
-
-Create a Python configuration file specifying:
-
-- Input/output directories
-- Domain file paths
-- Prompts
-- LLM parameters
-- Analysis parameters
-
-## Contributing
-
-Contribute on Github.
-Contact <blanket@activeinference.institute>
-
-## License
-
-...

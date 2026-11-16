@@ -170,8 +170,6 @@ class SimulationExecutor:
             ),
             "Simulation conclusion",
         )
-        self.data_logger.finalize()
-        self.performance_monitor.stop()
         self._generate_final_report()
 
     def _generate_final_report(self) -> None:
@@ -200,6 +198,7 @@ class SimulationExecutor:
             self.logger.info("Simulation report saved to %s", report_file)
         except OSError as e:
             self.logger.error("Failed to save simulation report: %s", e)
+            raise
 
     def run(self) -> None:
         """Run the complete simulation sequence."""
@@ -211,9 +210,39 @@ class SimulationExecutor:
             ("Simulation conclusion", self.conclude_simulation),
         ]
 
-        for description, step_function in simulation_steps:
-            self.logger.info("%s in progress.", description)
-            step_function()
+        try:
+            for description, step_function in simulation_steps:
+                self.logger.info("%s in progress.", description)
+                step_function()
+        except BaseException:
+            try:
+                self._cleanup()
+            except Exception:
+                self.logger.exception(
+                    "Cleanup failed while preserving the original failure"
+                )
+            raise
+        else:
+            self._cleanup()
+
+    def _cleanup(self) -> None:
+        """Attempt every owned cleanup; do not turn cleanup errors into success."""
+        first_error = None
+        operations = [
+            self.performance_monitor.stop,
+            self.data_logger.finalize,
+        ]
+        if self.renderer is not None:
+            operations.append(self.renderer.close)
+        for operation in operations:
+            try:
+                operation()
+            except Exception as exc:
+                self.logger.exception("Simulation cleanup failed")
+                if first_error is None:
+                    first_error = exc
+        if first_error is not None:
+            raise first_error
 
     def _safely_execute(self, operation: Callable[[], None], description: str) -> None:
         """Execute a callable operation safely, handling exceptions."""
@@ -230,14 +259,10 @@ def main() -> None:
         executor.run()
     except SimulationError as se:
         logging.critical("Simulation failed: %s", se, exc_info=True)
+        raise
     except Exception as e:
         logging.critical("Unexpected error: %s", e, exc_info=True)
-    finally:
-        # Perform necessary cleanup.
-        if executor.performance_monitor:
-            executor.performance_monitor.stop()
-        if executor.data_logger:
-            executor.data_logger.finalize()
+        raise
 
 
 if __name__ == "__main__":

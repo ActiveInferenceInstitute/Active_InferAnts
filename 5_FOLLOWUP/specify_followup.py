@@ -22,6 +22,26 @@ class SessionType(Enum):
     LESSONS_LEARNED = auto()
 
 
+class SessionModality(Enum):
+    VIRTUAL = auto()
+    IN_PERSON = auto()
+
+
+def _json_value(value):
+    """Encode declared enums, timestamps and durations without string fallbacks."""
+    if isinstance(value, Enum):
+        return value.name
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, timedelta):
+        return value.total_seconds()
+    if isinstance(value, dict):
+        return {key: _json_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_value(item) for item in value]
+    return value
+
+
 @dataclass
 class UpdateArea:
     area: str
@@ -37,6 +57,7 @@ class Session:
     date: datetime
     duration: timedelta
     facilitator: str
+    modality: SessionModality
     status: str = "Scheduled"
     attendees: List[str] = field(default_factory=list)
     outcomes: Optional[str] = None
@@ -86,7 +107,7 @@ class TextReportGenerator(ReportGenerator):
         report_lines.append("\nSessions:")
         for session in data["sessions"]:
             report_lines.append(
-                f" - {session['type']} on {session['date']} for {session['duration']} minutes"
+                f" - {session['type']} on {session['date']} for {session['duration']} seconds"
             )
 
         report_lines.append("\nDebrief Details:")
@@ -140,7 +161,7 @@ class HTMLReportGenerator(ReportGenerator):
 
         html_content += "<h2>Sessions</h2><ul>"
         for session in data["sessions"]:
-            html_content += f"<li>{session['type']} on {session['date']} for {session['duration']} minutes</li>"
+            html_content += f"<li>{session['type']} on {session['date']} for {session['duration']} seconds</li>"
         html_content += "</ul>"
 
         html_content += "<h2>Debrief Details</h2><ul>"
@@ -196,7 +217,7 @@ class FollowUpSpecification:
         self.plan_details: Dict[str, Any] = {}
         self.stakeholders: List[Stakeholder] = []
         self.metrics: Dict[str, Any] = {}
-        self.timeline: Dict[str, datetime] = {}
+        self.timeline: Dict[str, Any] = {}
         self.resources: List[Resource] = []
         self.logger = self._setup_logger()
 
@@ -244,7 +265,8 @@ class FollowUpSpecification:
         date: datetime,
         duration: timedelta,
         facilitator: str,
-        attendees: List[str] = [],
+        modality: SessionModality,
+        attendees: Optional[List[str]] = None,
     ) -> None:
         # Adds a session to the list of sessions to be conducted, with comprehensive details.
         #
@@ -253,6 +275,7 @@ class FollowUpSpecification:
         # - date (datetime): The scheduled date and time for the session.
         # - duration (timedelta): The planned duration of the session.
         # - facilitator (str): The name of the session facilitator.
+        # - modality (SessionModality): Explicit virtual/in-person delivery channel.
         # - attendees (List[str]): List of attendees for the session.
         if not any(s.type == session_type for s in self.sessions):
             self.sessions.append(
@@ -261,7 +284,8 @@ class FollowUpSpecification:
                     date=date,
                     duration=duration,
                     facilitator=facilitator,
-                    attendees=attendees,
+                    modality=modality,
+                    attendees=list(attendees) if attendees is not None else [],
                 )
             )
             self.logger.info(f"Added session: {session_type.name}")
@@ -446,26 +470,21 @@ class FollowUpSpecification:
             "plan": self.plan_details,
             "stakeholders": [asdict(stakeholder) for stakeholder in self.stakeholders],
             "metrics": self.metrics,
-            "timeline": {
-                k: v.isoformat()
-                if isinstance(v, datetime)
-                else {mk: mv.isoformat() for mk, mv in v.items()}
-                if k == "milestones"
-                else v
-                for k, v in self.timeline.items()
-            },
+            "timeline": self.timeline,
             "resources": [asdict(resource) for resource in self.resources],
         }
         self.logger.info("Generated comprehensive follow-up specification.")
-        return specification
+        return _json_value(specification)
 
     def export_to_json(self, filename: str) -> None:
         # Exports the follow-up specification to a JSON file.
         #
         # Parameters:
         # - filename (str): The name of the file to export to.
-        with open(filename, "w") as f:
-            json.dump(self.generate_followup_specification(), f, indent=4, default=str)
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(
+                self.generate_followup_specification(), f, indent=4, allow_nan=False
+            )
         self.logger.info(f"Exported follow-up specification to {filename}")
 
     def import_from_json(self, filename: str) -> None:
@@ -481,7 +500,7 @@ class FollowUpSpecification:
             KeyError: If required keys are missing in the JSON data.
         """
         try:
-            with open(filename, "r") as f:
+            with open(filename, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             self.name = data["name"]
@@ -492,27 +511,34 @@ class FollowUpSpecification:
                     **{
                         **session,
                         "type": SessionType[session["type"]],
+                        "modality": SessionModality[session["modality"]],
                         "date": datetime.fromisoformat(session["date"]),
                         "duration": timedelta(seconds=session["duration"]),
                     }
                 )
                 for session in data["sessions"]
             ]
-            self.debrief_details = {
-                **data["debrief"],
-                "date": datetime.fromisoformat(data["debrief"]["date"]),
-            }
+            self.debrief_details = dict(data["debrief"])
+            if self.debrief_details.get("date") is not None:
+                self.debrief_details["date"] = datetime.fromisoformat(
+                    self.debrief_details["date"]
+                )
             self.plan_details = data["plan"]
             self.stakeholders = [
                 Stakeholder(**stakeholder) for stakeholder in data["stakeholders"]
             ]
             self.metrics = data["metrics"]
             self.timeline = {
-                k: datetime.fromisoformat(v)
-                if k in ["start_date", "end_date"]
-                else {mk: datetime.fromisoformat(mv) for mk, mv in v.items()}
-                if k == "milestones"
-                else v
+                k: (
+                    (datetime.fromisoformat(v) if v is not None else None)
+                    if k in ["start_date", "end_date"]
+                    else {
+                        mk: datetime.fromisoformat(mv) if mv is not None else None
+                        for mk, mv in v.items()
+                    }
+                    if k == "milestones"
+                    else v
+                )
                 for k, v in data["timeline"].items()
             }
             self.resources = [

@@ -88,7 +88,7 @@ By implementing the same algorithms in multiple programming languages, we ensure
 
 ### 🔌 Integration Ecosystem
 - **REST APIs**: FastAPI-based knowledge management and inference services
-- **Database Support**: Multi-database architecture (PostgreSQL, MongoDB, Redis, Neo4j, Elasticsearch)
+- **Knowledge Storage**: SQLAlchemy primary store, SQLite by default, with optional best-effort MongoDB, Redis, Neo4j and Elasticsearch secondaries.
 - **Third-Party Integrations**: BPMN, Coda, ActivityPub, Nostr, Kafka, and more
 - **Container Ready**: Docker support for easy deployment and scaling
 
@@ -553,15 +553,15 @@ graph LR
   - [`summarize.py`](3_MEASURE/summarize.py) - Automated summarization
 
 - **`4_REPORT/`** - Reporting and communication systems
-  - [`execute_report.py`](4_REPORT/execute_report.py) - Report generation
+  - [`execute_report.py`](4_REPORT/execute_report.py) - Provider-dependent asynchronous reporting orchestration; real providers are not bundled.
   - [`specify_report.py`](4_REPORT/specify_report.py) - Report specifications
 
 - **`5_FOLLOWUP/`** - Continuous improvement and follow-up actions
-  - [`execute_followup.py`](5_FOLLOWUP/execute_followup.py) - Follow-up execution
+  - [`execute_followup.py`](5_FOLLOWUP/execute_followup.py) - Provider-dependent follow-up orchestration; real services are not bundled.
   - [`specify_followup.py`](5_FOLLOWUP/specify_followup.py) - Follow-up planning
 
 - **`6_API/`** - REST APIs and external interfaces
-  - [`Knowledge_API.py`](6_API/Knowledge_API.py) - Multi-database knowledge API
+  - [`Knowledge_API.py`](6_API/Knowledge_API.py) - Synchronous SQL-first knowledge API with best-effort secondary stores.
   - [`MetaInformAnt_API.py`](6_API/MetaInformAnt_API.py) - Meta-information API
 
 - **`9_OTHER/`** - Third-party integrations and specialized modules
@@ -602,28 +602,26 @@ Active InferAnts implements Active Inference algorithms in 50 programming langua
 
 ### Knowledge Management API
 
-A comprehensive REST API for managing knowledge across multiple databases with automatic synchronization:
+A FastAPI knowledge service with synchronous SQLAlchemy access. SQLite is the
+default primary; configured synchronous clients provide optional best-effort
+MongoDB, Redis, Neo4j and Elasticsearch operations.
 
-```python
-# FastAPI-based service running on port 8000
-# Features: Multi-database support, caching, async operations
-# Endpoints: CRUD operations, search, analytics
-```
+SQL is authoritative. Reads/lists query SQL, not Redis; Redis is a secondary
+copy, not a read-through cache. SQL and secondary operations are not one atomic
+transaction. Secondary failures can leave missing or stale copies; successful
+primary writes do not guarantee real-time consistency or convergence.
 
-**Key Features:**
-- **Multi-Database Architecture**: PostgreSQL, MongoDB, Redis, Neo4j, Elasticsearch
-- **Asynchronous Operations**: High-performance async/await patterns
-- **Auto-Synchronization**: Real-time data consistency across databases
-- **API Key Authentication**: Secure access control
-- **Interactive Documentation**: Auto-generated OpenAPI/Swagger docs
-- **Caching Layer**: Redis-based caching for improved performance
+Features: SQL-first CRUD and pagination; optional secondary stores;
+environment-enabled API-key authentication on every knowledge CRUD/list route;
+OpenAPI/Swagger and ReDoc. No search/analytics endpoints or distributed
+transaction are exposed.
 
 **Endpoints:**
 - `POST /api/knowledge/` - Create knowledge entry
 - `GET /api/knowledge/{source}` - Retrieve knowledge
 - `PUT /api/knowledge/{source}` - Update knowledge
 - `DELETE /api/knowledge/{source}` - Delete knowledge
-- `GET /api/knowledge/` - List all knowledge entries
+- `GET /api/knowledge/` - List entries using `skip`/`limit` pagination.
 
 ### Meta-Information API
 

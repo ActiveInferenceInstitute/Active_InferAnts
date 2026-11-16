@@ -17,10 +17,11 @@ plan_Simulation.py → execute_Simulation.py → render_Simulation.py
 
 ### Step 2: Execute
 
-`execute_Simulation.py` runs:
-- `SimulationExecutor` manages the time-stepped loop
-- Configurable visualization frequency and sleep duration
-- Outputs simulation traces for measurement
+`SimulationExecutor` manages the time-stepped loop. Its constructor accepts
+`visualization_interval`, `pause_duration`, `log_level`, `output_dir`, and
+`max_steps`; see [executor parameters](../operations/simulation_operations.md#simulationexecutor-parameters).
+It records steps and produces local `simulation_report.txt` under `output_dir`.
+Required failures are not successful runs.
 
 ### Step 3: Render
 
@@ -41,9 +42,14 @@ python3 3_MEASURE/summarize.py         # Entropy-based summarization
 
 ### Reporting (`4_REPORT/`)
 
-```bash
-python3 4_REPORT/execute_report.py     # Async report generation
-```
+`4_REPORT/` defines report specifications and asynchronous orchestration,
+not a standalone report-generation CLI. Real collection, analysis, generation,
+delivery and error providers are not bundled. Service-backed `5_FOLLOWUP/`
+execution likewise requires owner-selected providers and qualified
+configuration/dependencies.
+
+The local `2_OPERATE` simulation report is separate. Do not substitute
+unrelated simulation support modules for missing report/follow-up providers.
 
 ## Cognitive Analysis
 

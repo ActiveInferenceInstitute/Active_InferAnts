@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 from typing import List, Dict, Any
 from textstat import textstat
@@ -34,6 +35,9 @@ def calculate_readability(text: str) -> Dict[str, float]:
     }
 
 def perform_pca_analysis(features: List[float], output_dir: str, filename: str) -> None:
+    pca_plot_path = os.path.join(output_dir, f'{filename}_pca.png')
+    if os.path.exists(pca_plot_path):
+        return
     logger.info(f"Performing PCA analysis for {filename}")
     pca = PCA(n_components=2)
     principal_components = pca.fit_transform(features)
@@ -44,7 +48,6 @@ def perform_pca_analysis(features: List[float], output_dir: str, filename: str) 
     plt.xlabel('Principal Component 1')
     plt.ylabel('Principal Component 2')
     
-    pca_plot_path = os.path.join(output_dir, f'{filename}_pca.png')
     plt.savefig(pca_plot_path)
     logger.info(f"PCA plot saved to {pca_plot_path}")
 
@@ -68,6 +71,10 @@ def analyze_text(text: str, analysis_params: Dict[str, Any]) -> Dict[str, Any]:
     return results
 
 def perform_linguistic_analysis(input_dir: str, output_dir: str) -> None:
+    analysis_path = os.path.join(output_dir, 'analysis.json')
+    pca_path = os.path.join(output_dir, f'{os.path.basename(input_dir)}_pca.png')
+    if os.path.exists(analysis_path) and os.path.exists(pca_path):
+        return
     analysis_params = DEFAULT_CONFIG['analysis_params']
     results = {}
     all_features = []
@@ -83,10 +90,11 @@ def perform_linguistic_analysis(input_dir: str, output_dir: str) -> None:
             all_features.append(list(analysis_result.values()))
 
     os.makedirs(output_dir, exist_ok=True)
-    save_file(results, output_dir, 'analysis.json')
-    logger.info(f"Analysis results saved to {os.path.join(output_dir, 'analysis.json')}")
+    if not os.path.exists(analysis_path):
+        save_file(json.dumps(results, indent=2), analysis_path)
+        logger.info(f"Analysis results saved to {analysis_path}")
 
-    if all_features and all_features[0]:
+    if not os.path.exists(pca_path) and all_features and all_features[0]:
         perform_pca_analysis(all_features, output_dir, os.path.basename(input_dir))
 
 def perform_meta_analysis(base_dir: str) -> None:

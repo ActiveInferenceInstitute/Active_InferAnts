@@ -11,6 +11,7 @@ environment rather than being hardcoded in source.
 import hmac
 import logging
 import os
+import sqlite3
 from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Query
@@ -20,6 +21,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import JSON, Column, DateTime, Integer, String, create_engine, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 
@@ -237,6 +239,49 @@ def _sync_to_secondary(clients, knowledge: KnowledgeBase) -> None:
             logger.warning("Neo4j write failed: %s", e)
 
 
+def _is_source_conflict(error: IntegrityError) -> bool:
+    """Recognize only the mapped source-uniqueness constraint."""
+    original = error.orig
+    if getattr(original, "sqlite_errorcode", None) == sqlite3.SQLITE_CONSTRAINT_UNIQUE:
+        return str(original) == "UNIQUE constraint failed: knowledge_items.source"
+    state = getattr(original, "sqlstate", None) or getattr(original, "pgcode", None)
+    return (
+        state == "23505"
+        and getattr(getattr(original, "diag", None), "constraint_name", None)
+        == "ix_knowledge_items_source"
+    )
+
+
+def _delete_from_secondary(clients, source: str) -> None:
+    """Delete the committed SQL identity from each secondary, best effort."""
+    if clients["mongo"] is not None:
+        try:
+            clients["mongo"][config.MONGO_DB]["knowledge_items"].delete_one(
+                {"source": source}
+            )
+        except Exception as exc:
+            logger.warning("Mongo delete failed: %s", exc)
+    if clients["redis"] is not None:
+        try:
+            clients["redis"].delete(f"knowledge:{source}")
+        except Exception as exc:
+            logger.warning("Redis delete failed: %s", exc)
+    if clients["es"] is not None:
+        try:
+            clients["es"].delete(index=config.ES_INDEX, id=source)
+        except Exception as exc:
+            logger.warning("Elasticsearch delete failed: %s", exc)
+    if clients["neo4j"] is not None:
+        try:
+            with clients["neo4j"].session() as session:
+                session.run(
+                    "MATCH (k:Knowledge {source: $source}) DETACH DELETE k",
+                    source=source,
+                )
+        except Exception as exc:
+            logger.warning("Neo4j delete failed: %s", exc)
+
+
 # --------------------------------------------------------------------------- #
 # Endpoints
 # --------------------------------------------------------------------------- #
@@ -264,8 +309,20 @@ def create_knowledge(
         logger.info("Knowledge created: %s", knowledge.source)
         return {"message": "Knowledge created successfully", "id": item.id}
     except HTTPException:
+        db.rollback()
         raise
+    except IntegrityError as exc:
+        db.rollback()
+        if _is_source_conflict(exc):
+            raise HTTPException(
+                status_code=409, detail="Knowledge source already exists"
+            ) from None
+        logger.error("Error creating knowledge: %s", exc)
+        raise HTTPException(
+            status_code=500, detail="Error creating knowledge"
+        ) from None
     except Exception as e:
+        db.rollback()
         logger.error("Error creating knowledge: %s", e)
         raise HTTPException(
             status_code=500, detail="Error creating knowledge"
@@ -300,6 +357,10 @@ def update_knowledge(
     _: str | None = Depends(get_api_key),
 ):
     try:
+        if source != knowledge.source:
+            raise HTTPException(
+                status_code=400, detail="Body source must match URL source"
+            )
         item = db.query(KnowledgeItem).filter(KnowledgeItem.source == source).first()
         if not item:
             raise HTTPException(status_code=404, detail="Knowledge not found")
@@ -310,8 +371,10 @@ def update_knowledge(
         logger.info("Knowledge updated: %s", source)
         return {"message": "Knowledge updated successfully"}
     except HTTPException:
+        db.rollback()
         raise
     except Exception as e:
+        db.rollback()
         logger.error("Error updating knowledge: %s", e)
         raise HTTPException(
             status_code=500, detail="Error updating knowledge"
@@ -330,11 +393,14 @@ def delete_knowledge(
             raise HTTPException(status_code=404, detail="Knowledge not found")
         db.delete(item)
         db.commit()
+        _delete_from_secondary(_get_clients(), source)
         logger.info("Knowledge deleted: %s", source)
         return {"message": "Knowledge deleted successfully"}
     except HTTPException:
+        db.rollback()
         raise
     except Exception as e:
+        db.rollback()
         logger.error("Error deleting knowledge: %s", e)
         raise HTTPException(
             status_code=500, detail="Error deleting knowledge"

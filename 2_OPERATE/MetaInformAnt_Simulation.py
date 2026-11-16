@@ -19,19 +19,11 @@ import logging
 from typing import Any
 
 import numpy as np
-from environment import Environment
+from environment import GRID_MOVES, Environment
 
 from active_infer_ants import ActiveInferenceAgent
 
 logger = logging.getLogger(__name__)
-
-_MOVEMENT = [
-    (0, 0),  # stay
-    (1, 0),  # east
-    (-1, 0),  # west
-    (0, 1),  # south
-    (0, -1),  # north
-]
 
 
 class MetaInformAntSimulation:
@@ -92,7 +84,7 @@ class MetaInformAntSimulation:
             self.colony = None
             self.agents = [
                 ActiveInferenceAgent(
-                    n_dims=len(_MOVEMENT),
+                    n_dims=len(GRID_MOVES),
                     seed=int(self.rng.integers(0, 2**31 - 1)),
                     **self.agent_params,
                 )
@@ -163,8 +155,8 @@ class MetaInformAntSimulation:
     ) -> float:
         """Move an agent according to its action vector and deposit pheromone."""
         move_index = int(np.argmax(np.asarray(action)))
-        move_index = min(max(move_index, 0), len(_MOVEMENT) - 1)
-        dx, dy = _MOVEMENT[move_index]
+        move_index = min(max(move_index, 0), len(GRID_MOVES) - 1)
+        dx, dy = GRID_MOVES[move_index]
         nx = int(np.clip(x + dx, 0, self.environment.width - 1))
         ny = int(np.clip(y + dy, 0, self.environment.height - 1))
         self.positions[index] = (nx, ny)

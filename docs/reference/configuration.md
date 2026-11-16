@@ -30,3 +30,21 @@ Simulation values are nested under `initial_values`; runtime/output settings are
 | `num_observations` | 3 | Number of observation channels |
 | `num_actions` | 2 | Number of available actions |
 | Prior distribution | Uniform | D = [0.25, 0.25, 0.25, 0.25] |
+
+## `2_OPERATE` planner selection
+
+`SimulationPlanner(config_path=..., seed=...)` accepts a separate module-shaped
+JSON configuration. `SIMULATION_SETTINGS` and `ENVIRONMENT_CONFIG` are required
+objects; `ANT_AND_COLONY_CONFIG` and `META_CONFIG` are optional objects.
+Selected values control planner helpers, environment construction, agent/niche
+parameters, execution settings and resource estimates.
+
+This is not an implicit translation of root `config.json` and its
+`initial_values`/`max_iterations` schema. Invalid file/object/section selections
+fail rather than silently choosing module defaults. Without `config_path`,
+the planner owns a copy of the existing module configuration.
+
+Each `create_simulation()` creates fresh environment/agent state. A previous
+run's pheromones, steps, positions or step-budget override are not continuation
+state. Reusing the same seed reproduces initialization; continuation requires
+a separate explicit contract.

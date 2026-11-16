@@ -30,6 +30,19 @@ Domain-shifting dissertation framework that translates research across disciplin
 - 📄 `shift_domains.py`
 - 📄 `utils.py`
 
+## Writer contract
+
+The shared text writer is `save_file(content, full_path)`: two arguments,
+caller-owned serialization and verbatim UTF-8 text, with no implicit
+directory/filename overload. Structured linguistic results are explicitly
+JSON-serialized before saving. Existing outputs, including empty files, are
+preserved rather than resumed, repaired or silently overwritten.
+
+Multi-artifact methods guard complete groups and individual companions.
+Existing PCA/projection/JSON companions do not suppress eligible missing
+outputs. Scientific parameters, feature definitions, input filters, filename
+conventions and historical tuple serialization are unchanged.
+
 ## Version
 
 - **Framework**: Active InferAnts

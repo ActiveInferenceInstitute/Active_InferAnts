@@ -133,24 +133,23 @@ def process_dissertation_evaluation(input_dir: str, output_base_dir: str, llm_pa
         llm_params (Dict[str, Any]): LLM parameters from config.
     """
     try:
-        # Load evaluator modules as plain text
-        evaluator_modules = []
+        # Discover paths; read descriptions only for missing outputs.
+        evaluator_paths = []
         entity_dir = os.path.join(os.path.dirname(__file__), '../Fonds/Entity')
         for root, dirs, files in os.walk(entity_dir):
             for file in files:
                 if file.endswith('.py'):
                     module_path = os.path.join(root, file)
-                    with open(module_path, 'r') as f:
-                        module_content = f.read()
                     evaluator_name = os.path.splitext(file)[0]
-                    evaluator_modules.append((evaluator_name, module_content))
-                    logger.info(f"Loaded evaluator module: {file}")
+                    evaluator_paths.append((evaluator_name, module_path))
+                    logger.info(f"Discovered evaluator module: {file}")
 
+        evaluator_contents = {}
         for input_file in os.listdir(input_dir):
             if input_file.endswith(".md"):
                 input_file_path = os.path.join(input_dir, input_file)
                 
-                for evaluator_name, evaluator_content in evaluator_modules:
+                for evaluator_name, evaluator_path in evaluator_paths:
                     # Prepare the output directory and file name
                     output_dir = os.path.join(output_base_dir, f"Evaluated_by_{evaluator_name}")
                     os.makedirs(output_dir, exist_ok=True)
@@ -161,12 +160,16 @@ def process_dissertation_evaluation(input_dir: str, output_base_dir: str, llm_pa
                     if os.path.exists(output_file_path):
                         continue
                     
+                    if evaluator_path not in evaluator_contents:
+                        with open(evaluator_path, 'r') as source:
+                            evaluator_contents[evaluator_path] = source.read()
+                    description = evaluator_contents[evaluator_path]
                     # Load the existing dissertation content
                     dissertation_content = load_file(input_file_path)
                     
                     # Evaluate the dissertation
                     start_time = time.time()
-                    evaluated_dissertation = evaluate_dissertation(dissertation_content, evaluator_name, evaluator_content, llm_params)
+                    evaluated_dissertation = evaluate_dissertation(dissertation_content, evaluator_name, description, llm_params)
                     end_time = time.time()
                     elapsed_time = end_time - start_time
                     logger.info(f"Dissertation evaluated by {evaluator_name} in {elapsed_time:.2f} seconds.")
