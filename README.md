@@ -3,7 +3,7 @@
 **A Multi-Language Active Inference Framework for Advanced AI Research and Applications**
 
 [![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Multi-Language](https://img.shields.io/badge/languages-50-green.svg)](#multi-language-support)
 [![Active Inference](https://img.shields.io/badge/AI-Active_Inference-purple.svg)](https://en.wikipedia.org/wiki/Active_inference)
 
@@ -312,7 +312,7 @@ python3 0_CONTEXT/Computer_Languages/master_controller.py status
 
 ### Prerequisites
 
-- **Python 3.9+** (for core functionality and master controller)
+- **Python 3.12+** (for core functionality and master controller)
 - **Git** (for cloning and version control)
 - **50 Programming Languages** (optional, for multi-language implementations)
 
@@ -754,7 +754,7 @@ python3 6_API/Knowledge_API.py
 - **Type Checking**: none configured — annotations are documentation, not a gate
 - **Testing**: pytest, selected by the `gnn` marker so `./run.sh test-fast` needs no GNN checkout
 - **Documentation**: MkDocs for the `docs/` hub, built strictly by `./run.sh docs`; FastAPI-generated OpenAPI for the APIs
-- **CI/CD**: GitHub Actions runs the same arms (`.github/workflows/ci.yml`, Python 3.10–3.12)
+- **CI/CD**: GitHub Actions runs the same arms (`.github/workflows/ci.yml`, Python 3.12–3.14)
 
 ### Contributing Guidelines
 

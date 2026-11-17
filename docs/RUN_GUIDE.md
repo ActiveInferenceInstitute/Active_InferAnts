@@ -30,8 +30,8 @@ starting a different host `python3` for each source file.
 
 `requirements-dev.txt` remains a compatibility pip install of the declared
 extras, not a second CI environment. It does not enforce the lock.
-`pyproject.toml` declares Python `>=3.9`; CI retains its existing 3.10–3.12
-coverage. Local verification on this host covers the interpreter recorded in
+`pyproject.toml` declares Python `>=3.12`; CI covers 3.12–3.14 (the
+`gnn-conformance` job runs on 3.12). Local verification on this host covers the interpreter recorded in
 the [generated metrics](_generated/gate_metrics.md), not the whole CI matrix.
 
 ## Arms
