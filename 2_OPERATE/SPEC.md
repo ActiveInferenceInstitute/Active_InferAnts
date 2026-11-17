@@ -35,7 +35,7 @@ Runtime execution, simulation management, and cognitive utilities. This phase or
 
 ## Dependencies
 
-- Python 3.9+
+- Python 3.12+
 - NumPy, SciPy (core mathematical operations), matplotlib (rendering)
 - `active_infer_ants` package (agent-side API)
 - See `requirements.txt` at repository root for full dependency list

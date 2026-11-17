@@ -55,7 +55,7 @@ Global parameters in `config.json`:
 
 ## Dependencies
 
-- **Python 3.9+** (core orchestration)
+- **Python 3.12+** (core orchestration)
 - **NumPy, SciPy** (mathematical operations)
 - **FastAPI, uvicorn** (API services)
 - **50 language runtimes** (optional, for multi-language implementations)

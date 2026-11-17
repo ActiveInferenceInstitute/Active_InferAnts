@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.9+ (matching `pyproject.toml`)
+- Python 3.12+ (matching `pyproject.toml`)
 - NumPy, matplotlib, pandas, seaborn
 - PyMDP (`pip install pymdp`) only for the `pymdp_Ant_*` agents in `1_PREPARE/Things`
 
