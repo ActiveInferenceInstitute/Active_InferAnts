@@ -30,7 +30,7 @@ Welcome to **Active InferAnts** - a comprehensive, multi-language framework that
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
   - [🙏 Acknowledgments](#-acknowledgments)
-  - [📞 Contact](#-contact)
+  - [📞 Contact](#-contact--community)
 
 ## 🎯 Overview
 
