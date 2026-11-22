@@ -36,7 +36,7 @@
     "jest": "^30.5.2",
     "ts-jest": "^29.4.15",
     "tsx": "^4.23.15",
-    "typescript": "~6.0.3"
+    "typescript": "~7.0.2"
   },
   "engines": {
     "node": ">=22.13.0"
