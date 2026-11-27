@@ -1,0 +1,30 @@
+paper:
+  title: "Model contracts and operational phases in Active InferAnts"
+  subtitle: "A software methods report for a multi-language research framework"
+
+authors:
+  - name: "Active Inference Institute"
+
+publication:
+  repository_url: "https://github.com/ActiveInferenceInstitute/Active_InferAnts"
+  release_status: "unreleased"
+
+metadata:
+  language: "en"
+  license: "CC-BY-NC-ND-4.0"
+
+keywords:
+  - "active inference"
+  - "Gaussian agents"
+  - "model conformance"
+  - "research software"
+
+manuscript_dir: "docs/manuscript"
+
+render:
+  formats:
+    pdf: true
+    html: true
+    slides: false
+    docx: false
+    epub: false

@@ -38,3 +38,5 @@ model.visualize(results)
 ```
 
 See the [repository README](https://github.com/ActiveInferenceInstitute/Active_InferAnts/blob/main/README.md) for the full quick start.
+
+[Software methods manuscript](manuscript/README.md)

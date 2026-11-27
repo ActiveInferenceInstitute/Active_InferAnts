@@ -25,6 +25,7 @@ index of every long-lived document, generated from the tree by
 | [Systems](systems/README.md) | P3IF, Cognitive Sovereignty, IC2S2, William Blake |
 | [Testing](testing/README.md) | Testing strategy, cross-language tests, verification |
 | [Tutorials](tutorials/README.md) | First agent, pipeline, results analysis, benchmarking |
+| [Manuscript](manuscript/README.md) | Software methods and template rendering |
 
 Each section has its own `README.md` index, `AGENTS.md` agent guide, and
 `SPEC.md`. Per-section document counts are in the

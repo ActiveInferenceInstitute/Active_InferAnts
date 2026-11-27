@@ -9,7 +9,7 @@ section's own count. The narrative hub is [`README.md`](README.md);
 measured gate numbers (arm wall times, test counts) are in
 [`_generated/gate_metrics.md`](_generated/gate_metrics.md).
 
-**85 tracked Markdown files under `docs/`.**
+**94 tracked Markdown files under `docs/`.**
 
 ## Section totals
 
@@ -25,7 +25,8 @@ measured gate numbers (arm wall times, test counts) are in
 | [`systems/`](systems/README.md) | 9 | P3IF, Cognitive Sovereignty, IC2S2, William Blake |
 | [`testing/`](testing/README.md) | 6 | Testing strategy and verification methods |
 | [`tutorials/`](tutorials/README.md) | 9 | First agent, pipeline, analysis, grants, benchmarking |
-| **Total in sections** | **78** | plus the hub, index, and generated pages below |
+| [`manuscript/`](manuscript/README.md) | 9 | Software methods and template rendering |
+| **Total in sections** | **87** | plus the hub, index, and generated pages below |
 
 ## Hub and generated pages
 
@@ -143,3 +144,15 @@ measured gate numbers (arm wall times, test counts) are in
 - [`first_agent.md`](tutorials/first_agent.md)
 - [`grant_generation.md`](tutorials/grant_generation.md)
 - [`running_pipeline.md`](tutorials/running_pipeline.md)
+
+## manuscript/
+
+- [`00_abstract.md`](manuscript/00_abstract.md)
+- [`01_introduction.md`](manuscript/01_introduction.md)
+- [`02_methods.md`](manuscript/02_methods.md)
+- [`03_results.md`](manuscript/03_results.md)
+- [`04_reproducibility.md`](manuscript/04_reproducibility.md)
+- [`99_references.md`](manuscript/99_references.md)
+- [`AGENTS.md`](manuscript/AGENTS.md)
+- [`README.md`](manuscript/README.md)
+- [`preamble.md`](manuscript/preamble.md)
