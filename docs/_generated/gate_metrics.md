@@ -9,7 +9,7 @@ with the arms executed through `./run.sh` exactly as CI executes them.
 Wall time is the arm's own wall clock, so it includes interpreter
 startup and the arm's subprocesses.
 
-Inventory refreshed 2026-11-16; the arm measurements and baseline retain their original provenance.
+Inventory refreshed 2026-11-27; the arm measurements and baseline retain their original provenance.
 
 ## Current arms
 
@@ -38,8 +38,8 @@ gnn-marked module to test-fast), so nothing is run twice by the gate.
 | Fact | Value |
 |---|---:|
 | Tracked Python files | 293 |
-| Tracked Markdown files | 7277 |
-| Markdown files under `docs/` | 85 |
+| Tracked Markdown files | 7286 |
+| Markdown files under `docs/` | 94 |
 
 ## Out of scope
 
@@ -137,15 +137,15 @@ distribution; no hosted-CI speedup is inferred.
     "source": "6ebea3739466d441fbaede06608608ba8fe4cda2"
   },
   "counts": {
-    "docs_markdown": 85,
+    "docs_markdown": 94,
     "tests_fast": 274,
     "tests_full": 281,
     "tests_gnn": 7,
-    "tracked_markdown": 7277,
+    "tracked_markdown": 7286,
     "tracked_python": 293
   },
   "host": "Darwin arm64, Python 3.12.16",
-  "inventory_recorded": "2026-11-16",
+  "inventory_recorded": "2026-11-27",
   "out_of_scope": {
     "0_CONTEXT": "Found 8803 errors.",
     "1_PREPARE": "Found 371 errors.",

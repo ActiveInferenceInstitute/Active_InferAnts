@@ -33,6 +33,7 @@ SECTIONS: tuple[tuple[str, str], ...] = (
     ("systems", "P3IF, Cognitive Sovereignty, IC2S2, William Blake"),
     ("testing", "Testing strategy and verification methods"),
     ("tutorials", "First agent, pipeline, analysis, grants, benchmarking"),
+    ("manuscript", "Software methods and template rendering"),
 )
 
 
