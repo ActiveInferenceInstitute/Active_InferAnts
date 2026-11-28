@@ -30,13 +30,13 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^26.6.6",
-    "@typescript-eslint/eslint-plugin": "^8.72.2",
+    "@typescript-eslint/eslint-plugin": "^8.73.0",
     "@typescript-eslint/parser": "^8.72.2",
     "eslint": "^10.15.0",
     "jest": "^30.5.2",
     "ts-jest": "^29.4.15",
     "tsx": "^4.23.15",
-    "typescript": "~6.0.3"
+    "typescript": "~7.0.2"
   },
   "engines": {
     "node": ">=22.13.0"
