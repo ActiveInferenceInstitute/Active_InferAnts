@@ -46,7 +46,7 @@ dev = [
     "pre-commit>=3.7",
     # Pinned: the gate and pre-commit run this exact linter, so a formatting or
     # rule-set change is a reviewed dependency bump, not machine drift.
-    "ruff==0.17.5",
+    "ruff==0.17.6",
 ]
 docs = [
     "mkdocs>=1.6",
